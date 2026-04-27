@@ -1,0 +1,9 @@
+{
+  "IoGeneration": {
+    "PlcType": "\u6C47\u5DDD\u4E2D\u578BPLC",
+    "OperationNumber": "OP70",
+    "ControlDbMultiplier": 100,
+    "ControlDbOffset": 0,
+    "DriveDbOffset": 50
+  }
+}

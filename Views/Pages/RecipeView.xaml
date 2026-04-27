@@ -1,0 +1,124 @@
+<UserControl x:Class="ApexHMI.Views.Pages.RecipeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0"
+                    Style="{StaticResource CardBorderStyle}"
+                    Padding="16"
+                    Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="配方管理" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                    <TextBlock Text="当前配方" Foreground="#94A3B8"/>
+                    <ComboBox ItemsSource="{Binding Recipes}"
+                              SelectedValuePath="Name"
+                              DisplayMemberPath="Name"
+                              SelectedValue="{Binding SelectedRecipeName}"
+                              Margin="0,6,0,12"/>
+                    <WrapPanel>
+                        <Button Content="加载到参数"
+                                Command="{Binding ShellViewModel.ApplyRecipeCommand}"
+                                CommandParameter="{Binding SelectedRecipeName}"
+                                Style="{StaticResource PrimaryButtonStyle}"/>
+                        <Button Content="新建配方"
+                                Command="{Binding ShellViewModel.CreateRecipeCommand}"
+                                Background="#374151"
+                                Foreground="White"
+                                BorderBrush="#374151"
+                                Padding="12,8"
+                                Margin="0,0,8,8"/>
+                        <Button Content="复制当前"
+                                Command="{Binding ShellViewModel.DuplicateRecipeCommand}"
+                                Background="#374151"
+                                Foreground="White"
+                                BorderBrush="#374151"
+                                Padding="12,8"
+                                Margin="0,0,8,8"/>
+                        <Button Content="删除当前"
+                                Command="{Binding ShellViewModel.DeleteRecipeCommand}"
+                                Background="#B91C1C"
+                                Foreground="White"
+                                BorderBrush="#B91C1C"
+                                Padding="12,8"
+                                Margin="0,0,8,8"/>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <Button Content="用当前参数覆盖配方"
+                                Command="{Binding ShellViewModel.CaptureCurrentParametersToRecipeCommand}"
+                                Background="#0F766E"
+                                Foreground="White"
+                                BorderBrush="#0F766E"
+                                Padding="12,8"
+                                Margin="0,0,8,8"/>
+                        <Button Content="加载配方文件"
+                                Command="{Binding ShellViewModel.LoadRecipesCommand}"
+                                Background="#374151"
+                                Foreground="White"
+                                BorderBrush="#374151"
+                                Padding="12,8"
+                                Margin="0,0,8,8"/>
+                        <Button Content="保存配方文件"
+                                Command="{Binding ShellViewModel.SaveRecipesCommand}"
+                                Background="#0F766E"
+                                Foreground="White"
+                                BorderBrush="#0F766E"
+                                Padding="12,8"/>
+                    </WrapPanel>
+                    <TextBlock Text="说明：支持新建 / 复制 / 删除 / 保存当前参数快照 / 加载到参数页。"
+                               Foreground="#94A3B8"
+                               Margin="0,12,0,0"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="220"/>
+                    </Grid.RowDefinitions>
+                    <DataGrid ItemsSource="{Binding Recipes}"
+                              AutoGenerateColumns="False"
+                              Background="#111827"
+                              Foreground="White"
+                              BorderBrush="#1F2937"
+                              Margin="0,0,0,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="配方名" Binding="{Binding Name}" Width="*"/>
+                            <DataGridTextColumn Header="产品编码" Binding="{Binding ProductCode}" Width="*"/>
+                            <DataGridTextColumn Header="版本" Binding="{Binding Version}" Width="*"/>
+                            <DataGridTextColumn Header="说明" Binding="{Binding Description}" Width="2*"/>
+                            <DataGridTextColumn Header="更新时间" Binding="{Binding UpdatedAt}" Width="*"/>
+                            <DataGridTextColumn Header="更新人" Binding="{Binding UpdatedBy}" Width="*"/>
+                            <DataGridCheckBoxColumn Header="启用" Binding="{Binding IsActive}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Border Grid.Row="1" Background="#0B1324" CornerRadius="8" Padding="12">
+                        <StackPanel>
+                            <TextBlock Text="当前配方参数快照" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+                            <DataGrid ItemsSource="{Binding ActiveRecipeParameters}"
+                                      AutoGenerateColumns="False"
+                                      Background="#111827"
+                                      Foreground="White"
+                                      BorderBrush="#1F2937">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="分类" Binding="{Binding Category}" Width="*"/>
+                                    <DataGridTextColumn Header="参数名" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridTextColumn Header="值" Binding="{Binding Value}" Width="*"/>
+                                    <DataGridTextColumn Header="单位" Binding="{Binding Unit}" Width="*"/>
+                                    <DataGridTextColumn Header="说明" Binding="{Binding Description}" Width="2*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,16 @@
+{
+  "GitPull": {
+    "RepositoryUrl": "https://github.com/xu99564907-bot/inproshop.git",
+    "Branch": "",
+    "TargetFolder": "C:\\Users\\Administrator\\Desktop\\2026-04-07\\ApexHMI\\PLC",
+    "ProjectFolderName": "Team-Test5",
+    "Username": "",
+    "AccessToken": "",
+    "IncludeProjectFiles": true,
+    "SyncGeneratedToGit": true,
+    "ForceResetLocal": true,
+    "PushProjectBranchToRemote": true,
+    "CommitAndPushAfterGenerate": true,
+    "AutoCommitMessageTemplate": ""
+  }
+}

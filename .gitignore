@@ -1,0 +1,23 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.cache
+*.pdb
+*.pre_redecode
+
+backup/
+backup_*/
+*.log
+stderr.log
+dist/
+Generated/
+
+# Runtime-only local state
+config/opc-resolved-node-cache.json
+config/alarm-history.json
+config/trend-history.csv
+config/IoTable/
+config/pki/
+config/pki-probe/

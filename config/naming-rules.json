@@ -1,0 +1,60 @@
+{
+  "Cylinder": {
+    "MotionAssignmentMode": "ByRowOrder",
+    "FirstOccurrenceRole": "Work",
+    "SecondOccurrenceRole": "Home",
+    "GroupedSuffixes": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "SegmentSeparators": [
+      "_"
+    ],
+    "HomeKeywords": [
+      "下降",
+      "缩回",
+      "松开",
+      "打开",
+      "取料",
+      "退回",
+      "复位",
+      "关闭",
+      "原点"
+    ],
+    "WorkKeywords": [
+      "上升",
+      "伸出",
+      "夹紧",
+      "放料",
+      "推出",
+      "前进",
+      "上料",
+      "压下",
+      "闭合"
+    ],
+    "VerticalKeywords": [
+      "上下",
+      "上升",
+      "下降",
+      "升降"
+    ]
+  },
+  "Axis": {
+    "PositiveKeywords": [
+      "正转",
+      "正向",
+      "前进",
+      "上升",
+      "伸出"
+    ],
+    "NegativeKeywords": [
+      "反转",
+      "反向",
+      "后退",
+      "下降",
+      "缩回"
+    ]
+  }
+}

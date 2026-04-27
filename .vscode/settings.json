@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^dotnet build \\.\\\\ApexHMI\\.csproj /p:UseAppHost=false /p:OutDir=\\.\\\\bin\\\\Debug\\\\refactor-verify\\\\$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

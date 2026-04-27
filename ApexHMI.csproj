@@ -1,0 +1,92 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <UseWPF>true</UseWPF>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\exe\</OutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);backup\**;backup_*\**;dist\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="backup\**;backup_*\**" />
+    <Page Remove="backup\**;backup_*\**" />
+    <Resource Remove="backup\**;backup_*\**" />
+    <None Remove="backup\**;backup_*\**" />
+    <EmbeddedResource Remove="backup\**;backup_*\**" />
+    <Compile Remove="dist\**" />
+    <Page Remove="dist\**" />
+    <Resource Remove="dist\**" />
+    <None Remove="dist\**" />
+    <EmbeddedResource Remove="dist\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
+    <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+    <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.5.378.134" />
+    <PackageReference Include="System.Text.Json" Version="10.0.5" />
+  </ItemGroup>
+
+  <!-- Runtime assets copied to output so the exe can be run standalone -->
+  <ItemGroup>
+    <!-- PLC program templates required by IoProgramGenerationService -->
+    <Content Include="Templates\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Help page reads README.md at runtime -->
+    <Content Include="README.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Preset config files shipped with the build.
+         Runtime-only artifacts (certificates, resolved node cache, performance logs,
+         IO table history, flow archives) are intentionally excluded: they must be
+         regenerated per deployment host. -->
+    <Content Include="config\*.json"
+             Exclude="config\opc-resolved-node-cache.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="config\*.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Sample tag CSV referenced in README -->
+    <Content Include="sample-tags.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
+    <!-- Bootstrap launcher: checks/install .NET Framework 4.8 when missing -->
+    <Content Include="deploy\Run-ApexHMI.cmd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Run-ApexHMI.cmd</TargetPath>
+    </Content>
+
+    <!-- Optional launcher for copied deployment layout (same as double-clicking ApexHMI.exe) -->
+    <Content Include="deploy\Run-ApexHMI-Offline.cmd">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Run-ApexHMI-Offline.cmd</TargetPath>
+    </Content>
+
+    <!-- InProShop/CODESYS script used to import generated ST files into the open .project -->
+    <Content Include="deploy\inproshop_import.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>inproshop_import.py</TargetPath>
+    </Content>
+  </ItemGroup>
+
+</Project>

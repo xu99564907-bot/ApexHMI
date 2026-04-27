@@ -1,0 +1,43 @@
+<UserControl x:Class="ApexHMI.Views.Pages.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,10,0">
+                <StackPanel>
+                    <TextBlock Text="登录权限" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                    <TextBlock Text="当前身份" Foreground="#CBD5E1"/>
+                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,4,0,12"/>
+                    <TextBlock Text="密码" Foreground="#CBD5E1"/>
+                    <PasswordBox PasswordChanged="RolePasswordBox_PasswordChanged" Margin="0,4,0,12"/>
+                    <WrapPanel>
+                        <Button Content="操作员" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Operator" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
+                        <Button Content="工程师" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Engineer" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
+                        <Button Content="管理员" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Administrator" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
+                    </WrapPanel>
+                    <Button Content="退出登录" Command="{Binding ShellViewModel.LogoutCommand}" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C" Padding="12,8" Width="120"/>
+                    <TextBlock Text="示例密码：工程师 123456，管理员 admin888" Margin="0,12,0,0" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="权限说明" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
+                    <TextBlock Text="操作员：查看、监控、设备操作。" Foreground="#CBD5E1" Margin="0,0,0,8"/>
+                    <TextBlock Text="工程师：可修改大部分工艺与设备参数。" Foreground="#CBD5E1" Margin="0,0,0,8"/>
+                    <TextBlock Text="管理员：最高权限，可维护系统级参数和报警复位。" Foreground="#CBD5E1" Margin="0,0,0,8"/>
+                    <TextBlock Text="当前参数页是否允许编辑：" Foreground="#CBD5E1" Margin="0,12,0,4"/>
+                    <TextBlock Text="{Binding CanEditParameters}" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="当前是否允许报警复位：" Foreground="#CBD5E1" Margin="0,12,0,4"/>
+                    <TextBlock Text="{Binding CanAdmin}" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

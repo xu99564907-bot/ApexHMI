@@ -1,0 +1,158 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace ApexHMI.Models;
+
+public partial class ManualCylinderBlockItem : ObservableObject
+{
+    [ObservableProperty]
+    private int cylinderIndex;
+
+    [ObservableProperty]
+    private int displayOrder;
+
+    [ObservableProperty]
+    private string displayName = string.Empty;
+
+    [ObservableProperty]
+    private string homeCommandTagName = string.Empty;
+
+    [ObservableProperty]
+    private string workCommandTagName = string.Empty;
+
+    [ObservableProperty]
+    private string homeSensorTagName = string.Empty;
+
+    [ObservableProperty]
+    private string workSensorTagName = string.Empty;
+
+    [ObservableProperty]
+    private string homeInterlockTagName = string.Empty;
+
+    [ObservableProperty]
+    private string workInterlockTagName = string.Empty;
+
+    [ObservableProperty]
+    private string homeValueTagName = string.Empty;
+
+    [ObservableProperty]
+    private string workValueTagName = string.Empty;
+
+    [ObservableProperty]
+    private string homeCommandDisplayName = string.Empty;
+
+    [ObservableProperty]
+    private string workCommandDisplayName = string.Empty;
+
+    [ObservableProperty]
+    private string homeSensorDisplayName = string.Empty;
+
+    [ObservableProperty]
+    private string workSensorDisplayName = string.Empty;
+
+    [ObservableProperty]
+    private string homeCommandAddress = string.Empty;
+
+    [ObservableProperty]
+    private string workCommandAddress = string.Empty;
+
+    [ObservableProperty]
+    private string homeSensorAddress = string.Empty;
+
+    [ObservableProperty]
+    private string workSensorAddress = string.Empty;
+
+    [ObservableProperty]
+    private bool isVerticalNaming;
+
+    [ObservableProperty]
+    private bool homeActive;
+
+    [ObservableProperty]
+    private bool workActive;
+
+    [ObservableProperty]
+    private bool homeInterlockActive = true;
+
+    [ObservableProperty]
+    private bool workInterlockActive = true;
+
+    [ObservableProperty]
+    private bool outputActive;
+
+    [ObservableProperty]
+    private bool homeCommandActive;
+
+    [ObservableProperty]
+    private bool workCommandActive;
+
+    [ObservableProperty]
+    private bool errorActive;
+
+    [ObservableProperty]
+    private string errorIdText = "0";
+
+    [ObservableProperty]
+    private string statusText = "待机";
+
+    [ObservableProperty]
+    private string currentStateText = "未绑定状态";
+
+    [ObservableProperty]
+    private string interlockHint = string.Empty;
+
+    public string WorkCommandLabel => !string.IsNullOrWhiteSpace(WorkCommandDisplayName)
+        ? WorkCommandDisplayName
+        : IsVerticalNaming ? "上升" : "伸出";
+
+    public string HomeCommandLabel => !string.IsNullOrWhiteSpace(HomeCommandDisplayName)
+        ? HomeCommandDisplayName
+        : IsVerticalNaming ? "下降" : "缩回";
+
+    public string WorkPositionLabel => !string.IsNullOrWhiteSpace(WorkSensorDisplayName)
+        ? WorkSensorDisplayName
+        : IsVerticalNaming ? "上升到位" : "伸出到位";
+
+    public string HomePositionLabel => !string.IsNullOrWhiteSpace(HomeSensorDisplayName)
+        ? HomeSensorDisplayName
+        : IsVerticalNaming ? "下降到位" : "缩回到位";
+
+    public string WorkInterlockLabel => $"{WorkCommandLabel}互锁";
+
+    public string HomeInterlockLabel => $"{HomeCommandLabel}互锁";
+
+    partial void OnDisplayNameChanged(string value)
+    {
+        NotifyCylinderLabelsChanged();
+    }
+
+    partial void OnWorkCommandDisplayNameChanged(string value)
+    {
+        OnPropertyChanged(nameof(WorkCommandLabel));
+        OnPropertyChanged(nameof(WorkInterlockLabel));
+    }
+
+    partial void OnHomeCommandDisplayNameChanged(string value)
+    {
+        OnPropertyChanged(nameof(HomeCommandLabel));
+        OnPropertyChanged(nameof(HomeInterlockLabel));
+    }
+
+    partial void OnWorkSensorDisplayNameChanged(string value) => OnPropertyChanged(nameof(WorkPositionLabel));
+
+    partial void OnHomeSensorDisplayNameChanged(string value) => OnPropertyChanged(nameof(HomePositionLabel));
+
+    partial void OnIsVerticalNamingChanged(bool value)
+    {
+        NotifyCylinderLabelsChanged();
+    }
+
+    private void NotifyCylinderLabelsChanged()
+    {
+        OnPropertyChanged(nameof(WorkCommandLabel));
+        OnPropertyChanged(nameof(HomeCommandLabel));
+        OnPropertyChanged(nameof(WorkPositionLabel));
+        OnPropertyChanged(nameof(HomePositionLabel));
+        OnPropertyChanged(nameof(WorkInterlockLabel));
+        OnPropertyChanged(nameof(HomeInterlockLabel));
+    }
+}

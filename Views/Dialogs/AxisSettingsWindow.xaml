@@ -1,0 +1,232 @@
+<Window x:Class="ApexHMI.Views.Dialogs.AxisSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="轴参数设定"
+        Height="860"
+        Width="980"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="#F8FAFC">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="轴参数设定" FontSize="24" FontWeight="Bold" Foreground="#0F172A"/>
+                <TextBlock Text="{Binding SelectedAxisSettingsBlock.DisplayName, TargetNullValue=未选择轴}" FontSize="16" FontWeight="SemiBold" Foreground="#2563EB" Margin="0,8,0,0"/>
+                <TextBlock Text="当前弹窗显示轴块对应的命令、参数、状态变量地址和值。" Foreground="#64748B" Margin="0,8,0,0"/>
+            </StackPanel>
+
+            <Border Grid.Row="1" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,16,0,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="180"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="编号" Foreground="#475569"/>
+                        <TextBox Text="{Binding SelectedAxisSettingsBlock.DisplayOrder, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                        <TextBlock Text="轴名称" Foreground="#475569"/>
+                        <TextBox Text="{Binding SelectedAxisSettingsBlock.DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="当前状态" FontWeight="SemiBold" Foreground="#0F172A"/>
+                            <TextBlock Text="{Binding SelectedAxisCurrentStateText}" Foreground="#1D4ED8" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding SelectedAxisInterlockHint}" Foreground="#475569" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="2">
+                <Border Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="按钮命令变量" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="1" Text="使能" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedAxisPowerCommandBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding SelectedAxisPowerCommandValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="2" Text="停止" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectedAxisStopCommandBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding SelectedAxisStopCommandValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="3" Text="参考点" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SelectedAxisReferenceCommandBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding SelectedAxisReferenceCommandValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="4" Text="点动前进" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SelectedAxisJogForwardBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding SelectedAxisJogForwardValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="5" Text="点动后退" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding SelectedAxisJogBackwardBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="5" Grid.Column="2" Text="{Binding SelectedAxisJogBackwardValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="6" Text="启动定位" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding SelectedAxisStartPositionCommandBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="6" Grid.Column="2" Text="{Binding SelectedAxisStartPositionCommandValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="7" Text="示教使能" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding SelectedAxisTeachEnableBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="7" Grid.Column="2" Text="{Binding SelectedAxisTeachEnableValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="8" Text="写入位置" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding SelectedAxisTeachWriteBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="8" Grid.Column="2" Text="{Binding SelectedAxisTeachWriteValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="9" Text="位置定位" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="9" Grid.Column="1" Text="{Binding SelectedAxisMoveToPointBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="9" Grid.Column="2" Text="{Binding SelectedAxisMoveToPointValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="10" Text="点位选择" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding SelectedAxisPointSelectBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="10" Grid.Column="2" Text="{Binding SelectedAxisPointSelectValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,0,0,12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="参数和互锁变量" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="1" Text="设定位置" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedAxisSetPositionBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding SelectedAxisSetPositionValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="2" Text="设定速度" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectedAxisSetVelocityBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding SelectedAxisSetVelocityValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="3" Text="回原互锁" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SelectedAxisHomeInterlockBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding SelectedAxisHomeInterlockValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="4" Text="点动互锁" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SelectedAxisJogInterlockBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding SelectedAxisJogInterlockValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="5" Text="定位互锁" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding SelectedAxisPositionInterlockBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="5" Grid.Column="2" Text="{Binding SelectedAxisPositionInterlockValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+                    </Grid>
+                </Border>
+
+                <Border Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="10" Padding="16">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="状态反馈变量" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="1" Text="原点信号" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SelectedAxisHomeSignalBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding SelectedAxisHomeSignalValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="2" Text="正极限" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding SelectedAxisPositiveLimitBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="2" Grid.Column="2" Text="{Binding SelectedAxisPositiveLimitValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="3" Text="负极限" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding SelectedAxisNegativeLimitBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="3" Grid.Column="2" Text="{Binding SelectedAxisNegativeLimitValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="4" Text="使能反馈" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SelectedAxisServoFeedbackBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="2" Text="{Binding SelectedAxisServoFeedbackValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="5" Text="PowerON" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding SelectedAxisPowerOnBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="5" Grid.Column="2" Text="{Binding SelectedAxisPowerOnValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="6" Text="Busy" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding SelectedAxisBusyBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="6" Grid.Column="2" Text="{Binding SelectedAxisBusyValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="7" Text="PosOK" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding SelectedAxisPosOkBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="7" Grid.Column="2" Text="{Binding SelectedAxisPosOkValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="8" Text="原点完成" Foreground="#475569" Margin="0,6,12,0"/>
+                        <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding SelectedAxisInitializedBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,4,12,0"/>
+                        <TextBox Grid.Row="8" Grid.Column="2" Text="{Binding SelectedAxisInitializedValue, Mode=OneWay}" IsReadOnly="True" Margin="0,4,0,0"/>
+
+                        <TextBlock Grid.Row="9" Text="故障 / 状态" Foreground="#475569" Margin="0,6,12,0"/>
+                        <StackPanel Grid.Row="9" Grid.Column="1" Orientation="Vertical" Margin="0,4,12,0">
+                            <TextBox Text="{Binding SelectedAxisErrorBinding, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding SelectedAxisStateBinding, Mode=OneWay}" IsReadOnly="True"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="9" Grid.Column="2" Orientation="Vertical" Margin="0,4,0,0">
+                            <TextBox Text="{Binding SelectedAxisErrorValue, Mode=OneWay}" IsReadOnly="True" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding SelectedAxisStateValue, Mode=OneWay}" IsReadOnly="True"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <DockPanel Grid.Row="3" Margin="0,16,0,0">
+                <TextBlock Text="弹窗打开时会周期读取当前轴块绑定的 PLC 节点。" Foreground="#64748B" VerticalAlignment="Center"/>
+                <Button DockPanel.Dock="Right" Content="关闭" Click="CloseButton_Click" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="18,8"/>
+            </DockPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>
