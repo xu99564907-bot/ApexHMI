@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- === MainWindow Menu === -->
+  <data name="AppTitle" xml:space="preserve"><value>PLC OPC UA HMI 设计器</value></data>
+  <data name="Menu_File" xml:space="preserve"><value>文件</value></data>
+  <data name="Menu_ImportXmlTag" xml:space="preserve"><value>导入 XML 变量</value></data>
+  <data name="Menu_ImportCsvTag" xml:space="preserve"><value>导入 CSV 变量</value></data>
+  <data name="Menu_ImportIoTable" xml:space="preserve"><value>导入 IO 表</value></data>
+  <data name="Menu_GenerateManualProgram" xml:space="preserve"><value>生成手动程序</value></data>
+  <data name="Menu_ImportFlowCsv" xml:space="preserve"><value>导入流程 CSV</value></data>
+  <data name="Menu_OpenIoGenDir" xml:space="preserve"><value>打开 IO 生成目录</value></data>
+  <data name="Menu_Exit" xml:space="preserve"><value>退出</value></data>
+  <data name="Menu_Edit" xml:space="preserve"><value>编辑</value></data>
+  <data name="Menu_ExportReport" xml:space="preserve"><value>导出报表</value></data>
+  <data name="Menu_Window" xml:space="preserve"><value>窗口</value></data>
+  <data name="Menu_ToggleRuntime" xml:space="preserve"><value>切换运行/设计态</value></data>
+  <data name="Menu_Maximize" xml:space="preserve"><value>窗口最大化</value></data>
+  <data name="Menu_Restore" xml:space="preserve"><value>窗口还原</value></data>
+  <data name="Menu_Topmost" xml:space="preserve"><value>窗口置顶</value></data>
+  <data name="Menu_Help" xml:space="preserve"><value>帮助</value></data>
+  <data name="Menu_UsageHelp" xml:space="preserve"><value>使用说明</value></data>
+  <data name="Menu_OpenReadme" xml:space="preserve"><value>打开 README</value></data>
+  <data name="Menu_About" xml:space="preserve"><value>关于</value></data>
+  <!-- === Navigation === -->
+  <data name="Nav_CurrentSection" xml:space="preserve"><value>当前界面</value></data>
+  <data name="Nav_SubNav" xml:space="preserve"><value>子页面导航</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>主界面</value></data>
+  <data name="Nav_Monitor" xml:space="preserve"><value>监控</value></data>
+  <data name="Nav_Manual" xml:space="preserve"><value>手动操作</value></data>
+  <data name="Nav_Parameter" xml:space="preserve"><value>参数设定</value></data>
+  <data name="Nav_Recipe" xml:space="preserve"><value>配方管理</value></data>
+  <data name="Nav_Alarm" xml:space="preserve"><value>报警画面</value></data>
+  <data name="Nav_Login" xml:space="preserve"><value>登录</value></data>
+  <data name="Nav_Designer" xml:space="preserve"><value>设计器</value></data>
+  <!-- === Tab Headers === -->
+  <data name="Tab_Home" xml:space="preserve"><value>运行总览</value></data>
+  <data name="Tab_Monitor" xml:space="preserve"><value>监视画面</value></data>
+  <data name="Tab_Recipe" xml:space="preserve"><value>配方管理</value></data>
+  <data name="Tab_Manual" xml:space="preserve"><value>手动画面</value></data>
+  <data name="Tab_Parameter" xml:space="preserve"><value>参数设定</value></data>
+  <data name="Tab_Alarm" xml:space="preserve"><value>报警画面</value></data>
+  <data name="Tab_Login" xml:space="preserve"><value>登录权限</value></data>
+  <data name="Tab_Audit" xml:space="preserve"><value>操作审计</value></data>
+  <data name="Tab_Designer" xml:space="preserve"><value>设计器</value></data>
+  <data name="Tab_Runtime" xml:space="preserve"><value>运行页面</value></data>
+  <!-- === Status Bar === -->
+  <data name="StatusBar_PlcPrefix" xml:space="preserve"><value>PLC：</value></data>
+  <data name="StatusBar_AppTagline" xml:space="preserve"><value>C# / WPF / OPC UA / HMI Designer</value></data>
+  <!-- === Home View === -->
+  <data name="Home_RuntimeHint" xml:space="preserve"><value>运行态聚焦生产、状态、报警与重点处理信息。</value></data>
+  <data name="Home_ModeInfo" xml:space="preserve"><value>模式说明</value></data>
+  <data name="Home_CommStatus" xml:space="preserve"><value>通讯状态</value></data>
+  <data name="Home_ProductionStatus" xml:space="preserve"><value>生产状态</value></data>
+  <data name="Home_ProductionCount" xml:space="preserve"><value>生产计数</value></data>
+  <data name="Home_OeeRate" xml:space="preserve"><value>稼动率 OEE</value></data>
+  <data name="Home_DeviceStatus" xml:space="preserve"><value>设备状态</value></data>
+  <data name="Home_ActiveAlarms" xml:space="preserve"><value>活动报警</value></data>
+  <data name="Home_UnackAlarms" xml:space="preserve"><value>未确认报警</value></data>
+  <data name="Home_RuntimePage" xml:space="preserve"><value>正式运行页</value></data>
+  <data name="Home_OverviewHint" xml:space="preserve"><value>设备总览 / 生产 KPI / 重点报警</value></data>
+  <data name="Home_LineControl" xml:space="preserve"><value>产线主控区</value></data>
+  <data name="Home_LineHint" xml:space="preserve"><value>保留常用操作，避免运行页堆叠过多控制项。</value></data>
+  <data name="Home_GotoManual" xml:space="preserve"><value>进入手动画面</value></data>
+  <data name="Home_GotoAlarm" xml:space="preserve"><value>进入报警画面</value></data>
+  <data name="Home_RefreshStatus" xml:space="preserve"><value>刷新现场状态</value></data>
+  <data name="Home_RunMode" xml:space="preserve"><value>运行模式</value></data>
+  <data name="Home_Mode_Debug" xml:space="preserve"><value>调试模式</value></data>
+  <data name="Home_Mode_DryRun" xml:space="preserve"><value>空跑模式</value></data>
+  <data name="Home_Mode_Bypass" xml:space="preserve"><value>过站模式</value></data>
+  <data name="Home_Mode_Manual" xml:space="preserve"><value>人工模式</value></data>
+  <data name="Home_Mode_Auto" xml:space="preserve"><value>自动模式</value></data>
+  <data name="Home_RunOps" xml:space="preserve"><value>运行操作</value></data>
+  <data name="Home_LongPressStart" xml:space="preserve"><value>长按启动</value></data>
+  <data name="Home_ImmediateStop" xml:space="preserve"><value>立即停止</value></data>
+  <data name="Home_AlarmReset" xml:space="preserve"><value>报警复位</value></data>
+  <data name="Home_StartHint" xml:space="preserve"><value>启动按钮需长按 1 秒生效；停止按钮点击即刻生效。</value></data>
+  <data name="Home_ModeReady" xml:space="preserve"><value>模式就绪</value></data>
+  <data name="Home_AlarmClear" xml:space="preserve"><value>报警清除</value></data>
+  <data name="Home_InterlockReady" xml:space="preserve"><value>联锁就绪</value></data>
+  <data name="Home_KeyAlarms" xml:space="preserve"><value>重点报警</value></data>
+  <data name="Home_RuntimeSummary" xml:space="preserve"><value>运行页摘要</value></data>
+  <data name="Home_AutoFlowStatus" xml:space="preserve"><value>自动流程状态</value></data>
+  <data name="Home_FlowLog" xml:space="preserve"><value>动作流程日志</value></data>
+  <!-- === Monitor View === -->
+  <data name="Monitor_DetailedData" xml:space="preserve"><value>详细生产数据</value></data>
+  <data name="Monitor_Category" xml:space="preserve"><value>监视分类：</value></data>
+  <data name="Monitor_Flow" xml:space="preserve"><value>流程：</value></data>
+  <data name="Monitor_StepNo" xml:space="preserve"><value>步号：</value></data>
+  <data name="Monitor_Time" xml:space="preserve"><value>时间：</value></data>
+  <data name="Monitor_OnlyAbnormal" xml:space="preserve"><value>仅异常</value></data>
+  <data name="Monitor_Refresh" xml:space="preserve"><value>刷新视图</value></data>
+  <data name="Monitor_LoadTrend" xml:space="preserve"><value>加载历史趋势</value></data>
+  <data name="Monitor_ImportFlowCsvAnalysis" xml:space="preserve"><value>导入流程CSV分析</value></data>
+  <data name="Monitor_WorkOrder" xml:space="preserve"><value>工单号</value></data>
+  <data name="Monitor_Recipe" xml:space="preserve"><value>配方</value></data>
+  <data name="Monitor_ShiftStatus" xml:space="preserve"><value>班次状态</value></data>
+  <data name="Monitor_TargetOutput" xml:space="preserve"><value>目标产量</value></data>
+  <data name="Monitor_TrendStatus" xml:space="preserve"><value>历史趋势落盘状态</value></data>
+  <data name="Monitor_TrendDesc" xml:space="preserve"><value>系统每次刷新时会自动将 OEE / 产量 / 报警数追加写入 trend-history.csv。</value></data>
+  <data name="Monitor_ProductionKPI" xml:space="preserve"><value>生产 KPI</value></data>
+  <data name="Monitor_DeviceStats" xml:space="preserve"><value>设备运行统计</value></data>
+  <data name="Monitor_OutputTrend" xml:space="preserve"><value>产量趋势</value></data>
+  <data name="Monitor_OeeAlarmTrend" xml:space="preserve"><value>流程 / OEE / 报警趋势</value></data>
+  <data name="Monitor_IoStatus" xml:space="preserve"><value>输入监控</value></data>
+  <data name="Monitor_OutputMonitor" xml:space="preserve"><value>输出监控</value></data>
+  <data name="Monitor_OpcDebugger" xml:space="preserve"><value>OPC UA 内置调试器</value></data>
+  <data name="Monitor_BrowseRoot" xml:space="preserve"><value>浏览根节点</value></data>
+  <data name="Monitor_ReadSelected" xml:space="preserve"><value>读取选中节点</value></data>
+  <data name="Monitor_AddToVarTable" xml:space="preserve"><value>加入变量表</value></data>
+  <data name="Monitor_NodeDetail" xml:space="preserve"><value>节点详情</value></data>
+  <data name="Monitor_DisplayName" xml:space="preserve"><value>显示名</value></data>
+  <data name="Monitor_NodeType" xml:space="preserve"><value>节点类型</value></data>
+  <data name="Monitor_DataType" xml:space="preserve"><value>数据类型</value></data>
+  <data name="Monitor_CurrentValue" xml:space="preserve"><value>当前值</value></data>
+  <data name="Monitor_Status" xml:space="preserve"><value>状态</value></data>
+  <data name="Monitor_Timestamp" xml:space="preserve"><value>时间戳</value></data>
+  <data name="Monitor_MainFlowTrace" xml:space="preserve"><value>主流程步号 Trace</value></data>
+  <data name="Monitor_TraceAxisHint" xml:space="preserve"><value>横轴：时间 / 纵轴：主流程步号</value></data>
+  <data name="Monitor_Line1" xml:space="preserve"><value>主线1</value></data>
+  <data name="Monitor_Line2" xml:space="preserve"><value>主线2</value></data>
+  <data name="Monitor_Line3" xml:space="preserve"><value>主线3</value></data>
+  <data name="Monitor_CursorFollow" xml:space="preserve"><value>光标跟随</value></data>
+  <data name="Monitor_ZoomHint" xml:space="preserve"><value>Shift+左键拖拽缩放，双击复位</value></data>
+  <data name="Monitor_Zoom" xml:space="preserve"><value>缩放</value></data>
+  <data name="Monitor_Pause" xml:space="preserve"><value>暂停采样</value></data>
+  <data name="Monitor_Resume" xml:space="preserve"><value>继续采样</value></data>
+  <data name="Monitor_Replay" xml:space="preserve"><value>历史回放</value></data>
+  <data name="Monitor_BackToRealtime" xml:space="preserve"><value>回到实时</value></data>
+  <data name="Monitor_ExportCsv" xml:space="preserve"><value>导出CSV</value></data>
+  <data name="Monitor_SaveSession" xml:space="preserve"><value>保存会话</value></data>
+  <data name="Monitor_LoadSession" xml:space="preserve"><value>加载会话</value></data>
+  <data name="Monitor_LocateTime" xml:space="preserve"><value>定位时间</value></data>
+  <data name="Monitor_Locate" xml:space="preserve"><value>定位</value></data>
+  <data name="Monitor_FlowCol" xml:space="preserve"><value>流程</value></data>
+  <data name="Monitor_StepCol" xml:space="preserve"><value>步号</value></data>
+  <data name="Monitor_StartCol" xml:space="preserve"><value>开始</value></data>
+  <data name="Monitor_EndCol" xml:space="preserve"><value>结束</value></data>
+  <data name="Monitor_DurationCol" xml:space="preserve"><value>耗时(s)</value></data>
+  <data name="Monitor_ResultCol" xml:space="preserve"><value>结果</value></data>
+  <data name="Monitor_RelatedAlarmCol" xml:space="preserve"><value>关联报警</value></data>
+  <data name="Monitor_LinkCol" xml:space="preserve"><value>联动</value></data>
+  <data name="Monitor_ViewAlarm" xml:space="preserve"><value>看报警</value></data>
+  <data name="Monitor_FlowIssueSummary" xml:space="preserve"><value>流程异常统计汇总 / 排行榜</value></data>
+  <data name="Monitor_JumpToAlarm" xml:space="preserve"><value>跳转报警页</value></data>
+  <data name="Monitor_JumpToAudit" xml:space="preserve"><value>跳转审计页</value></data>
+  <data name="Monitor_ExportIssueReport" xml:space="preserve"><value>导出异常报告</value></data>
+  <data name="Monitor_CategoryCol" xml:space="preserve"><value>分类</value></data>
+  <data name="Monitor_ObjectCol" xml:space="preserve"><value>对象</value></data>
+  <data name="Monitor_MetricCol" xml:space="preserve"><value>指标</value></data>
+  <data name="Monitor_ConclusionCol" xml:space="preserve"><value>结论</value></data>
+  <!-- === Alarm View === -->
+  <data name="Alarm_ParentHint" xml:space="preserve"><value>报警父页面已按左侧子导航切换显示。</value></data>
+  <data name="Alarm_AckAll" xml:space="preserve"><value>确认全部报警</value></data>
+  <data name="Alarm_ResetAll" xml:space="preserve"><value>复位全部报警</value></data>
+  <data name="Alarm_SaveHistory" xml:space="preserve"><value>保存报警历史</value></data>
+  <data name="Alarm_LoadHistory" xml:space="preserve"><value>加载报警历史</value></data>
+  <data name="Alarm_Current" xml:space="preserve"><value>当前报警</value></data>
+  <data name="Alarm_History" xml:space="preserve"><value>历史报警</value></data>
+  <data name="Alarm_Log" xml:space="preserve"><value>日志</value></data>
+  <data name="Alarm_Statistics" xml:space="preserve"><value>报警统计</value></data>
+  <data name="Alarm_Level" xml:space="preserve"><value>级别：</value></data>
+  <data name="Alarm_Time" xml:space="preserve"><value>时间：</value></data>
+  <data name="Alarm_OnlyFocus" xml:space="preserve"><value>只看重点报警</value></data>
+  <data name="Alarm_FocusSuggestion" xml:space="preserve"><value>重点处理建议</value></data>
+  <data name="Alarm_Col_Time" xml:space="preserve"><value>时间</value></data>
+  <data name="Alarm_Col_Level" xml:space="preserve"><value>级别</value></data>
+  <data name="Alarm_Col_Source" xml:space="preserve"><value>来源</value></data>
+  <data name="Alarm_Col_Message" xml:space="preserve"><value>内容</value></data>
+  <data name="Alarm_Col_State" xml:space="preserve"><value>状态</value></data>
+  <data name="Alarm_Col_Count" xml:space="preserve"><value>次数</value></data>
+  <data name="Alarm_Col_Acknowledged" xml:space="preserve"><value>已确认</value></data>
+  <data name="Alarm_Col_AckBy" xml:space="preserve"><value>确认人</value></data>
+  <data name="Alarm_Col_TotalCount" xml:space="preserve"><value>累计次数</value></data>
+  <data name="Alarm_Col_Suggestion" xml:space="preserve"><value>处理建议</value></data>
+  <data name="Alarm_Col_Link" xml:space="preserve"><value>联动</value></data>
+  <data name="Alarm_ViewFlow" xml:space="preserve"><value>看流程</value></data>
+  <!-- === Recipe View === -->
+  <data name="Recipe_Title" xml:space="preserve"><value>配方管理</value></data>
+  <data name="Recipe_Current" xml:space="preserve"><value>当前配方</value></data>
+  <data name="Recipe_LoadToParam" xml:space="preserve"><value>加载到参数</value></data>
+  <data name="Recipe_New" xml:space="preserve"><value>新建配方</value></data>
+  <data name="Recipe_Duplicate" xml:space="preserve"><value>复制当前</value></data>
+  <data name="Recipe_Delete" xml:space="preserve"><value>删除当前</value></data>
+  <data name="Recipe_Capture" xml:space="preserve"><value>用当前参数覆盖配方</value></data>
+  <data name="Recipe_LoadFile" xml:space="preserve"><value>加载配方文件</value></data>
+  <data name="Recipe_SaveFile" xml:space="preserve"><value>保存配方文件</value></data>
+  <data name="Recipe_Hint" xml:space="preserve"><value>说明：支持新建 / 复制 / 删除 / 保存当前参数快照 / 加载到参数页。</value></data>
+  <data name="Recipe_Col_Name" xml:space="preserve"><value>配方名</value></data>
+  <data name="Recipe_Col_ProductCode" xml:space="preserve"><value>产品编码</value></data>
+  <data name="Recipe_Col_Version" xml:space="preserve"><value>版本</value></data>
+  <data name="Recipe_Col_Description" xml:space="preserve"><value>说明</value></data>
+  <data name="Recipe_Col_UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
+  <data name="Recipe_Col_UpdatedBy" xml:space="preserve"><value>更新人</value></data>
+  <data name="Recipe_Col_Active" xml:space="preserve"><value>启用</value></data>
+  <data name="Recipe_Snapshot" xml:space="preserve"><value>当前配方参数快照</value></data>
+  <data name="Recipe_Col_Category" xml:space="preserve"><value>分类</value></data>
+  <data name="Recipe_Col_ParamName" xml:space="preserve"><value>参数名</value></data>
+  <data name="Recipe_Col_Value" xml:space="preserve"><value>值</value></data>
+  <data name="Recipe_Col_Unit" xml:space="preserve"><value>单位</value></data>
+  <!-- === Parameter View === -->
+  <data name="Param_CurrentRole" xml:space="preserve"><value>当前角色：</value></data>
+  <data name="Param_CommStatus" xml:space="preserve"><value>通讯状态：</value></data>
+  <data name="Param_CommHint" xml:space="preserve"><value>PLC / OPC UA 通讯参数通过独立配置窗口管理。</value></data>
+  <data name="Param_OpenCommConfig" xml:space="preserve"><value>打开 PLC 通讯配置</value></data>
+  <data name="Param_Connect" xml:space="preserve"><value>连接</value></data>
+  <data name="Param_Disconnect" xml:space="preserve"><value>断开</value></data>
+  <data name="Param_Load" xml:space="preserve"><value>加载参数</value></data>
+  <data name="Param_Save" xml:space="preserve"><value>保存参数</value></data>
+  <data name="Param_Col_Group" xml:space="preserve"><value>分组</value></data>
+  <data name="Param_Col_HmiVar" xml:space="preserve"><value>HMI变量</value></data>
+  <data name="Param_Col_PlcVar" xml:space="preserve"><value>PLC变量</value></data>
+  <data name="Param_Col_Direction" xml:space="preserve"><value>绑定方向</value></data>
+  <data name="Param_Col_Description" xml:space="preserve"><value>说明</value></data>
+  <data name="Param_Col_MinRole" xml:space="preserve"><value>最小权限</value></data>
+  <data name="Param_Col_EditStatus" xml:space="preserve"><value>编辑状态</value></data>
+  <!-- === Audit View === -->
+  <data name="Audit_Title" xml:space="preserve"><value>操作审计</value></data>
+  <!-- === Designer View === -->
+  <data name="Designer_Title" xml:space="preserve"><value>设计器</value></data>
+  <!-- === Login View === -->
+  <data name="Login_Title" xml:space="preserve"><value>登录</value></data>
+</root>

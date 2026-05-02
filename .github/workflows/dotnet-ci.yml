@@ -1,0 +1,40 @@
+name: .NET CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore ApexHMI.sln -p:NuGetAudit=false
+
+      - name: Build
+        run: dotnet build ApexHMI.sln --configuration Release --no-restore -p:NuGetAudit=false
+
+      - name: Test with coverage
+        run: dotnet test tests\ApexHMI.Tests\ApexHMI.Tests.csproj --configuration Release --no-restore -p:NuGetAudit=false --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Upload test results and coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-coverage
+          path: TestResults
+          if-no-files-found: warn

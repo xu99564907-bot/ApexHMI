@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- === MainWindow Menu === -->
+  <data name="AppTitle" xml:space="preserve"><value>PLC OPC UA HMI Designer</value></data>
+  <data name="Menu_File" xml:space="preserve"><value>File</value></data>
+  <data name="Menu_ImportXmlTag" xml:space="preserve"><value>Import XML Tags</value></data>
+  <data name="Menu_ImportCsvTag" xml:space="preserve"><value>Import CSV Tags</value></data>
+  <data name="Menu_ImportIoTable" xml:space="preserve"><value>Import IO Table</value></data>
+  <data name="Menu_GenerateManualProgram" xml:space="preserve"><value>Generate Manual Program</value></data>
+  <data name="Menu_ImportFlowCsv" xml:space="preserve"><value>Import Flow CSV</value></data>
+  <data name="Menu_OpenIoGenDir" xml:space="preserve"><value>Open IO Generation Directory</value></data>
+  <data name="Menu_Exit" xml:space="preserve"><value>Exit</value></data>
+  <data name="Menu_Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Menu_ExportReport" xml:space="preserve"><value>Export Report</value></data>
+  <data name="Menu_Window" xml:space="preserve"><value>Window</value></data>
+  <data name="Menu_ToggleRuntime" xml:space="preserve"><value>Toggle Runtime/Design</value></data>
+  <data name="Menu_Maximize" xml:space="preserve"><value>Maximize</value></data>
+  <data name="Menu_Restore" xml:space="preserve"><value>Restore</value></data>
+  <data name="Menu_Topmost" xml:space="preserve"><value>Always on Top</value></data>
+  <data name="Menu_Help" xml:space="preserve"><value>Help</value></data>
+  <data name="Menu_UsageHelp" xml:space="preserve"><value>Usage Help</value></data>
+  <data name="Menu_OpenReadme" xml:space="preserve"><value>Open README</value></data>
+  <data name="Menu_About" xml:space="preserve"><value>About</value></data>
+  <!-- === Navigation === -->
+  <data name="Nav_CurrentSection" xml:space="preserve"><value>Current View</value></data>
+  <data name="Nav_SubNav" xml:space="preserve"><value>Sub Navigation</value></data>
+  <data name="Nav_Home" xml:space="preserve"><value>Home</value></data>
+  <data name="Nav_Monitor" xml:space="preserve"><value>Monitor</value></data>
+  <data name="Nav_Manual" xml:space="preserve"><value>Manual Control</value></data>
+  <data name="Nav_Parameter" xml:space="preserve"><value>Parameter</value></data>
+  <data name="Nav_Recipe" xml:space="preserve"><value>Recipe</value></data>
+  <data name="Nav_Alarm" xml:space="preserve"><value>Alarms</value></data>
+  <data name="Nav_Login" xml:space="preserve"><value>Login</value></data>
+  <data name="Nav_Designer" xml:space="preserve"><value>Designer</value></data>
+  <!-- === Tab Headers === -->
+  <data name="Tab_Home" xml:space="preserve"><value>Overview</value></data>
+  <data name="Tab_Monitor" xml:space="preserve"><value>Monitor</value></data>
+  <data name="Tab_Recipe" xml:space="preserve"><value>Recipe</value></data>
+  <data name="Tab_Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Tab_Parameter" xml:space="preserve"><value>Parameter</value></data>
+  <data name="Tab_Alarm" xml:space="preserve"><value>Alarms</value></data>
+  <data name="Tab_Login" xml:space="preserve"><value>Login &amp; Permissions</value></data>
+  <data name="Tab_Audit" xml:space="preserve"><value>Audit</value></data>
+  <data name="Tab_Designer" xml:space="preserve"><value>Designer</value></data>
+  <data name="Tab_Runtime" xml:space="preserve"><value>Runtime</value></data>
+  <!-- === Status Bar === -->
+  <data name="StatusBar_PlcPrefix" xml:space="preserve"><value>PLC: </value></data>
+  <data name="StatusBar_AppTagline" xml:space="preserve"><value>C# / WPF / OPC UA / HMI Designer</value></data>
+  <!-- === Home View === -->
+  <data name="Home_RuntimeHint" xml:space="preserve"><value>Runtime mode focuses on production status, alarms, and key information processing.</value></data>
+  <data name="Home_ModeInfo" xml:space="preserve"><value>Mode Info</value></data>
+  <data name="Home_CommStatus" xml:space="preserve"><value>Communication</value></data>
+  <data name="Home_ProductionStatus" xml:space="preserve"><value>Production Status</value></data>
+  <data name="Home_ProductionCount" xml:space="preserve"><value>Production Count</value></data>
+  <data name="Home_OeeRate" xml:space="preserve"><value>OEE Rate</value></data>
+  <data name="Home_DeviceStatus" xml:space="preserve"><value>Device Status</value></data>
+  <data name="Home_ActiveAlarms" xml:space="preserve"><value>Active Alarms</value></data>
+  <data name="Home_UnackAlarms" xml:space="preserve"><value>Unacknowledged</value></data>
+  <data name="Home_RuntimePage" xml:space="preserve"><value>Runtime Page</value></data>
+  <data name="Home_OverviewHint" xml:space="preserve"><value>Device Overview / Production KPI / Key Alarms</value></data>
+  <data name="Home_LineControl" xml:space="preserve"><value>Line Control Area</value></data>
+  <data name="Home_LineHint" xml:space="preserve"><value>Keep frequently-used operations here to avoid cluttering the runtime page.</value></data>
+  <data name="Home_GotoManual" xml:space="preserve"><value>Go to Manual</value></data>
+  <data name="Home_GotoAlarm" xml:space="preserve"><value>Go to Alarms</value></data>
+  <data name="Home_RefreshStatus" xml:space="preserve"><value>Refresh Status</value></data>
+  <data name="Home_RunMode" xml:space="preserve"><value>Run Mode</value></data>
+  <data name="Home_Mode_Debug" xml:space="preserve"><value>Debug</value></data>
+  <data name="Home_Mode_DryRun" xml:space="preserve"><value>Dry Run</value></data>
+  <data name="Home_Mode_Bypass" xml:space="preserve"><value>Bypass</value></data>
+  <data name="Home_Mode_Manual" xml:space="preserve"><value>Manual</value></data>
+  <data name="Home_Mode_Auto" xml:space="preserve"><value>Auto</value></data>
+  <data name="Home_RunOps" xml:space="preserve"><value>Run Operations</value></data>
+  <data name="Home_LongPressStart" xml:space="preserve"><value>Hold to Start</value></data>
+  <data name="Home_ImmediateStop" xml:space="preserve"><value>Stop Now</value></data>
+  <data name="Home_AlarmReset" xml:space="preserve"><value>Alarm Reset</value></data>
+  <data name="Home_StartHint" xml:space="preserve"><value>Start requires 1s hold; Stop takes effect immediately.</value></data>
+  <data name="Home_ModeReady" xml:space="preserve"><value>Mode Ready</value></data>
+  <data name="Home_AlarmClear" xml:space="preserve"><value>Alarm Clear</value></data>
+  <data name="Home_InterlockReady" xml:space="preserve"><value>Interlock Ready</value></data>
+  <data name="Home_KeyAlarms" xml:space="preserve"><value>Key Alarms</value></data>
+  <data name="Home_RuntimeSummary" xml:space="preserve"><value>Runtime Summary</value></data>
+  <data name="Home_AutoFlowStatus" xml:space="preserve"><value>Auto Flow Status</value></data>
+  <data name="Home_FlowLog" xml:space="preserve"><value>Flow Action Log</value></data>
+  <!-- === Monitor View === -->
+  <data name="Monitor_DetailedData" xml:space="preserve"><value>Detailed Production Data</value></data>
+  <data name="Monitor_Category" xml:space="preserve"><value>Monitor Category: </value></data>
+  <data name="Monitor_Flow" xml:space="preserve"><value>Flow: </value></data>
+  <data name="Monitor_StepNo" xml:space="preserve"><value>Step: </value></data>
+  <data name="Monitor_Time" xml:space="preserve"><value>Time: </value></data>
+  <data name="Monitor_OnlyAbnormal" xml:space="preserve"><value>Abnormal Only</value></data>
+  <data name="Monitor_Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="Monitor_LoadTrend" xml:space="preserve"><value>Load History Trend</value></data>
+  <data name="Monitor_ImportFlowCsvAnalysis" xml:space="preserve"><value>Import Flow CSV Analysis</value></data>
+  <data name="Monitor_WorkOrder" xml:space="preserve"><value>Work Order</value></data>
+  <data name="Monitor_Recipe" xml:space="preserve"><value>Recipe</value></data>
+  <data name="Monitor_ShiftStatus" xml:space="preserve"><value>Shift Status</value></data>
+  <data name="Monitor_TargetOutput" xml:space="preserve"><value>Target Output</value></data>
+  <data name="Monitor_TrendStatus" xml:space="preserve"><value>Trend History Status</value></data>
+  <data name="Monitor_TrendDesc" xml:space="preserve"><value>OEE / Output / Alarm counts are automatically appended to trend-history.csv on each refresh.</value></data>
+  <data name="Monitor_ProductionKPI" xml:space="preserve"><value>Production KPI</value></data>
+  <data name="Monitor_DeviceStats" xml:space="preserve"><value>Device Running Statistics</value></data>
+  <data name="Monitor_OutputTrend" xml:space="preserve"><value>Output Trend</value></data>
+  <data name="Monitor_OeeAlarmTrend" xml:space="preserve"><value>Flow / OEE / Alarm Trend</value></data>
+  <data name="Monitor_IoStatus" xml:space="preserve"><value>Input Monitor</value></data>
+  <data name="Monitor_OutputMonitor" xml:space="preserve"><value>Output Monitor</value></data>
+  <data name="Monitor_OpcDebugger" xml:space="preserve"><value>OPC UA Built-in Debugger</value></data>
+  <data name="Monitor_BrowseRoot" xml:space="preserve"><value>Browse Root</value></data>
+  <data name="Monitor_ReadSelected" xml:space="preserve"><value>Read Selected Node</value></data>
+  <data name="Monitor_AddToVarTable" xml:space="preserve"><value>Add to Variable Table</value></data>
+  <data name="Monitor_NodeDetail" xml:space="preserve"><value>Node Details</value></data>
+  <data name="Monitor_DisplayName" xml:space="preserve"><value>Display Name</value></data>
+  <data name="Monitor_NodeType" xml:space="preserve"><value>Node Type</value></data>
+  <data name="Monitor_DataType" xml:space="preserve"><value>Data Type</value></data>
+  <data name="Monitor_CurrentValue" xml:space="preserve"><value>Current Value</value></data>
+  <data name="Monitor_Status" xml:space="preserve"><value>Status</value></data>
+  <data name="Monitor_Timestamp" xml:space="preserve"><value>Timestamp</value></data>
+  <data name="Monitor_MainFlowTrace" xml:space="preserve"><value>Main Flow Step Trace</value></data>
+  <data name="Monitor_TraceAxisHint" xml:space="preserve"><value>X: Time / Y: Main Flow Step</value></data>
+  <data name="Monitor_Line1" xml:space="preserve"><value>Line 1</value></data>
+  <data name="Monitor_Line2" xml:space="preserve"><value>Line 2</value></data>
+  <data name="Monitor_Line3" xml:space="preserve"><value>Line 3</value></data>
+  <data name="Monitor_CursorFollow" xml:space="preserve"><value>Cursor Follow</value></data>
+  <data name="Monitor_ZoomHint" xml:space="preserve"><value>Shift+Left drag to zoom, double-click to reset</value></data>
+  <data name="Monitor_Zoom" xml:space="preserve"><value>Zoom</value></data>
+  <data name="Monitor_Pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="Monitor_Resume" xml:space="preserve"><value>Resume</value></data>
+  <data name="Monitor_Replay" xml:space="preserve"><value>Replay</value></data>
+  <data name="Monitor_BackToRealtime" xml:space="preserve"><value>Back to Live</value></data>
+  <data name="Monitor_ExportCsv" xml:space="preserve"><value>Export CSV</value></data>
+  <data name="Monitor_SaveSession" xml:space="preserve"><value>Save Session</value></data>
+  <data name="Monitor_LoadSession" xml:space="preserve"><value>Load Session</value></data>
+  <data name="Monitor_LocateTime" xml:space="preserve"><value>Locate Time</value></data>
+  <data name="Monitor_Locate" xml:space="preserve"><value>Locate</value></data>
+  <data name="Monitor_FlowCol" xml:space="preserve"><value>Flow</value></data>
+  <data name="Monitor_StepCol" xml:space="preserve"><value>Step</value></data>
+  <data name="Monitor_StartCol" xml:space="preserve"><value>Start</value></data>
+  <data name="Monitor_EndCol" xml:space="preserve"><value>End</value></data>
+  <data name="Monitor_DurationCol" xml:space="preserve"><value>Duration(s)</value></data>
+  <data name="Monitor_ResultCol" xml:space="preserve"><value>Result</value></data>
+  <data name="Monitor_RelatedAlarmCol" xml:space="preserve"><value>Related Alarm</value></data>
+  <data name="Monitor_LinkCol" xml:space="preserve"><value>Link</value></data>
+  <data name="Monitor_ViewAlarm" xml:space="preserve"><value>View Alarm</value></data>
+  <data name="Monitor_FlowIssueSummary" xml:space="preserve"><value>Flow Issue Summary / Rankings</value></data>
+  <data name="Monitor_JumpToAlarm" xml:space="preserve"><value>Jump to Alarm</value></data>
+  <data name="Monitor_JumpToAudit" xml:space="preserve"><value>Jump to Audit</value></data>
+  <data name="Monitor_ExportIssueReport" xml:space="preserve"><value>Export Issue Report</value></data>
+  <data name="Monitor_CategoryCol" xml:space="preserve"><value>Category</value></data>
+  <data name="Monitor_ObjectCol" xml:space="preserve"><value>Object</value></data>
+  <data name="Monitor_MetricCol" xml:space="preserve"><value>Metric</value></data>
+  <data name="Monitor_ConclusionCol" xml:space="preserve"><value>Conclusion</value></data>
+  <!-- === Alarm View === -->
+  <data name="Alarm_ParentHint" xml:space="preserve"><value>The alarm page has switched display by left sub-navigation.</value></data>
+  <data name="Alarm_AckAll" xml:space="preserve"><value>Acknowledge All</value></data>
+  <data name="Alarm_ResetAll" xml:space="preserve"><value>Reset All</value></data>
+  <data name="Alarm_SaveHistory" xml:space="preserve"><value>Save History</value></data>
+  <data name="Alarm_LoadHistory" xml:space="preserve"><value>Load History</value></data>
+  <data name="Alarm_Current" xml:space="preserve"><value>Current Alarms</value></data>
+  <data name="Alarm_History" xml:space="preserve"><value>Alarm History</value></data>
+  <data name="Alarm_Log" xml:space="preserve"><value>Log</value></data>
+  <data name="Alarm_Statistics" xml:space="preserve"><value>Alarm Statistics</value></data>
+  <data name="Alarm_Level" xml:space="preserve"><value>Level: </value></data>
+  <data name="Alarm_Time" xml:space="preserve"><value>Time: </value></data>
+  <data name="Alarm_OnlyFocus" xml:space="preserve"><value>Key Alarms Only</value></data>
+  <data name="Alarm_FocusSuggestion" xml:space="preserve"><value>Key Handling Suggestions</value></data>
+  <data name="Alarm_Col_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Alarm_Col_Level" xml:space="preserve"><value>Level</value></data>
+  <data name="Alarm_Col_Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Alarm_Col_Message" xml:space="preserve"><value>Message</value></data>
+  <data name="Alarm_Col_State" xml:space="preserve"><value>State</value></data>
+  <data name="Alarm_Col_Count" xml:space="preserve"><value>Count</value></data>
+  <data name="Alarm_Col_Acknowledged" xml:space="preserve"><value>Acknowledged</value></data>
+  <data name="Alarm_Col_AckBy" xml:space="preserve"><value>Acknowledged By</value></data>
+  <data name="Alarm_Col_TotalCount" xml:space="preserve"><value>Total Count</value></data>
+  <data name="Alarm_Col_Suggestion" xml:space="preserve"><value>Suggestion</value></data>
+  <data name="Alarm_Col_Link" xml:space="preserve"><value>Link</value></data>
+  <data name="Alarm_ViewFlow" xml:space="preserve"><value>View Flow</value></data>
+  <!-- === Recipe View === -->
+  <data name="Recipe_Title" xml:space="preserve"><value>Recipe Management</value></data>
+  <data name="Recipe_Current" xml:space="preserve"><value>Current Recipe</value></data>
+  <data name="Recipe_LoadToParam" xml:space="preserve"><value>Apply to Parameters</value></data>
+  <data name="Recipe_New" xml:space="preserve"><value>New Recipe</value></data>
+  <data name="Recipe_Duplicate" xml:space="preserve"><value>Duplicate</value></data>
+  <data name="Recipe_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Recipe_Capture" xml:space="preserve"><value>Capture Parameters to Recipe</value></data>
+  <data name="Recipe_LoadFile" xml:space="preserve"><value>Load Recipe File</value></data>
+  <data name="Recipe_SaveFile" xml:space="preserve"><value>Save Recipe File</value></data>
+  <data name="Recipe_Hint" xml:space="preserve"><value>Supports create, duplicate, delete, capture current parameters, and apply to parameter page.</value></data>
+  <data name="Recipe_Col_Name" xml:space="preserve"><value>Recipe Name</value></data>
+  <data name="Recipe_Col_ProductCode" xml:space="preserve"><value>Product Code</value></data>
+  <data name="Recipe_Col_Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Recipe_Col_Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Recipe_Col_UpdatedAt" xml:space="preserve"><value>Updated At</value></data>
+  <data name="Recipe_Col_UpdatedBy" xml:space="preserve"><value>Updated By</value></data>
+  <data name="Recipe_Col_Active" xml:space="preserve"><value>Active</value></data>
+  <data name="Recipe_Snapshot" xml:space="preserve"><value>Current Recipe Parameter Snapshot</value></data>
+  <data name="Recipe_Col_Category" xml:space="preserve"><value>Category</value></data>
+  <data name="Recipe_Col_ParamName" xml:space="preserve"><value>Parameter Name</value></data>
+  <data name="Recipe_Col_Value" xml:space="preserve"><value>Value</value></data>
+  <data name="Recipe_Col_Unit" xml:space="preserve"><value>Unit</value></data>
+  <!-- === Parameter View === -->
+  <data name="Param_CurrentRole" xml:space="preserve"><value>Current Role: </value></data>
+  <data name="Param_CommStatus" xml:space="preserve"><value>Comm Status: </value></data>
+  <data name="Param_CommHint" xml:space="preserve"><value>PLC / OPC UA communication parameters are managed via a separate configuration window.</value></data>
+  <data name="Param_OpenCommConfig" xml:space="preserve"><value>Open PLC Comm Config</value></data>
+  <data name="Param_Connect" xml:space="preserve"><value>Connect</value></data>
+  <data name="Param_Disconnect" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="Param_Load" xml:space="preserve"><value>Load Parameters</value></data>
+  <data name="Param_Save" xml:space="preserve"><value>Save Parameters</value></data>
+  <data name="Param_Col_Group" xml:space="preserve"><value>Group</value></data>
+  <data name="Param_Col_HmiVar" xml:space="preserve"><value>HMI Variable</value></data>
+  <data name="Param_Col_PlcVar" xml:space="preserve"><value>PLC Variable</value></data>
+  <data name="Param_Col_Direction" xml:space="preserve"><value>Direction</value></data>
+  <data name="Param_Col_Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Param_Col_MinRole" xml:space="preserve"><value>Min Role</value></data>
+  <data name="Param_Col_EditStatus" xml:space="preserve"><value>Edit Status</value></data>
+  <!-- === Audit View === -->
+  <data name="Audit_Title" xml:space="preserve"><value>Operation Audit</value></data>
+  <!-- === Designer View === -->
+  <data name="Designer_Title" xml:space="preserve"><value>Designer</value></data>
+  <!-- === Login View === -->
+  <data name="Login_Title" xml:space="preserve"><value>Login</value></data>
+</root>
