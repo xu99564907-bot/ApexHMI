@@ -8,45 +8,45 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Text.Json;
+using ApexHMI.Services.OpcUa;
 using Opc.Ua;
 using Opc.Ua.Client;
 using Opc.Ua.Configuration;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using Microsoft.Extensions.Options;
+using Serilog;
 
 namespace ApexHMI.Services;
 
 public class OpcUaService : IOpcUaService
 {
-    private const int ConnectAttemptTimeoutMs = 15000;
-    private const int ResolveParallelism = 8;
-    private const int MaxNodeIdProbeCandidates = 48;
-    private static bool EnableOpcPerfTrace => true;
-
+    private readonly OpcUaRuntimeOptions _runtimeOptions;
     private Session? _session;
     private ApplicationConfiguration? _configuration;
     private Subscription? _subscription;
-    private readonly Dictionary<string, MonitoredItem> _monitoredItems = new();
+    private readonly ConcurrentDictionary<string, MonitoredItem> _monitoredItems = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, NodeId> _resolvedNodeIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<string, byte> _unresolvedNodeIds = new(StringComparer.OrdinalIgnoreCase);
-    private readonly HashSet<string> _subscribedTagNames = new(StringComparer.OrdinalIgnoreCase);
-    private readonly SemaphoreSlim _cacheIoLock = new(1, 1);
-    private readonly object _perfLogLock = new();
+    private readonly ConcurrentDictionary<string, byte> _subscribedTagNames = new(StringComparer.OrdinalIgnoreCase);
+    private readonly OpcUaResolvedNodeCacheStore _resolvedNodeCacheStore = new();
     private string _activeEndpointKey = string.Empty;
-    private readonly object _preferredApplicationSymbolLock = new();
-    private int? _preferredApplicationNamespaceIndex;
-    private string? _preferredApplicationSymbolPrefix;
+    private PreferredApplicationSymbolTemplate? _preferredApplicationSymbolTemplate;
+
+    public OpcUaService(IOptions<OpcUaRuntimeOptions>? runtimeOptions = null)
+    {
+        _runtimeOptions = runtimeOptions?.Value ?? new OpcUaRuntimeOptions();
+    }
 
     public bool IsConnected => _session?.Connected == true;
     public string ConnectionStatus => IsConnected ? "已连接" : "未连接";
-    public IReadOnlyCollection<string> SubscribedTagNames => _subscribedTagNames;
+    public IReadOnlyCollection<string> SubscribedTagNames => _subscribedTagNames.Keys.ToArray();
     public event Action<string, string>? TagValueChanged;
 
     public async Task ConnectAsync(OpcUaConnectionOptions options, CancellationToken cancellationToken = default)
     {
-        _activeEndpointKey = NormalizeEndpointKey(options.GetEndpointUrl());
-        _configuration = await BuildConfigurationAsync().ConfigureAwait(false);
+        _activeEndpointKey = OpcUaResolvedNodeCacheStore.NormalizeEndpointKey(options.GetEndpointUrl());
+        _configuration = await OpcUaApplicationConfigurationFactory.BuildAsync().ConfigureAwait(false);
         await DisconnectAsync(cancellationToken).ConfigureAwait(false);
         _resolvedNodeIds.Clear();
         _unresolvedNodeIds.Clear();
@@ -58,15 +58,16 @@ public class OpcUaService : IOpcUaService
         try
         {
             _session = await WithTimeoutAsync(
-                ct => CreateDirectSessionAsync(_configuration, options.GetEndpointUrl(), options, ct),
-                ConnectAttemptTimeoutMs,
+                ct => OpcUaSessionFactory.CreateDirectAsync(_configuration, options.GetEndpointUrl(), options, ct),
+                _runtimeOptions.ConnectAttemptTimeoutMs,
                 cancellationToken).ConfigureAwait(false);
-            await LoadResolvedNodeCacheAsync(_activeEndpointKey, cancellationToken).ConfigureAwait(false);
+            await MergeResolvedNodeCacheAsync(cancellationToken).ConfigureAwait(false);
             return;
         }
         catch (Exception ex)
         {
             directAttemptException = ex;
+            Log.Warning(ex, "OPC UA 直连尝试失败，Endpoint={Endpoint}", options.GetEndpointUrl());
             // Fallback to discovery-based attempts below.
         }
 
@@ -79,15 +80,16 @@ public class OpcUaService : IOpcUaService
             try
             {
                 _session = await WithTimeoutAsync(
-                    ct => CreateSessionAsync(_configuration, attempt.EndpointUrl, attempt.UseSecurity, options, ct),
-                    ConnectAttemptTimeoutMs,
+                    ct => OpcUaSessionFactory.CreateAsync(_configuration, attempt.EndpointUrl, attempt.UseSecurity, options, ct),
+                    _runtimeOptions.ConnectAttemptTimeoutMs,
                     cancellationToken).ConfigureAwait(false);
-                await LoadResolvedNodeCacheAsync(_activeEndpointKey, cancellationToken).ConfigureAwait(false);
+                await MergeResolvedNodeCacheAsync(cancellationToken).ConfigureAwait(false);
                 return;
             }
             catch (Exception ex)
             {
                 lastException = ex;
+                Log.Warning(ex, "OPC UA 连接尝试失败，Endpoint={Endpoint}, Security={Security}", attempt.EndpointUrl, attempt.UseSecurity);
                 attemptErrors.Add($"{attempt.EndpointUrl} (security={(attempt.UseSecurity ? "on" : "off")}): {ex.Message}");
             }
         }
@@ -112,7 +114,7 @@ public class OpcUaService : IOpcUaService
     {
         if (!string.IsNullOrWhiteSpace(_activeEndpointKey) && _resolvedNodeIds.Count > 0)
         {
-            await SaveResolvedNodeCacheAsync(_activeEndpointKey, cancellationToken).ConfigureAwait(false);
+            await _resolvedNodeCacheStore.SaveAsync(_activeEndpointKey, _resolvedNodeIds, cancellationToken).ConfigureAwait(false);
         }
 
         try
@@ -122,8 +124,9 @@ public class OpcUaService : IOpcUaService
                 5000,
                 cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            Log.Debug(ex, "OPC UA 取消订阅超时或取消，继续断开会话");
             // Continue tearing down the session.
         }
 
@@ -146,8 +149,9 @@ public class OpcUaService : IOpcUaService
                 5000,
                 cancellationToken).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
+            Log.Debug(ex, "OPC UA 关闭会话超时或取消，继续释放资源");
             // Proceed to dispose.
         }
 
@@ -168,7 +172,7 @@ public class OpcUaService : IOpcUaService
         var resolvedSlots = new (NodeId NodeId, TagItem Tag)?[tagList.Count];
 
         var resolveSw = Stopwatch.StartNew();
-        using var resolveLimiter = new SemaphoreSlim(ResolveParallelism, ResolveParallelism);
+        using var resolveLimiter = new SemaphoreSlim(_runtimeOptions.ResolveParallelism, _runtimeOptions.ResolveParallelism);
         var resolveTasks = Enumerable.Range(0, tagList.Count).Select(async i =>
         {
             var tag = tagList[i];
@@ -178,8 +182,9 @@ public class OpcUaService : IOpcUaService
                 var nodeId = await ResolveNodeIdAsync(tag.NodeId).ConfigureAwait(false);
                 resolvedSlots[i] = (nodeId, tag);
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Debug(ex, "OPC UA Tag NodeId 解析失败，Tag={TagName}, NodeId={NodeId}", tag.Name, tag.NodeId);
                 result[tag.Name] = "ERR: UnresolvedNode";
             }
             finally
@@ -240,6 +245,7 @@ public class OpcUaService : IOpcUaService
         }
         catch (Exception ex)
         {
+            Log.Warning(ex, "OPC UA 批量读取 Tag 失败");
             foreach (var tag in tags)
             {
                 result.TryAdd(tag.Name, $"ERR: {ex.Message}");
@@ -277,8 +283,9 @@ public class OpcUaService : IOpcUaService
             {
                 resolvedRequests.Add((rawNodeId, await ResolveNodeIdAsync(rawNodeId)));
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Debug(ex, "OPC UA NodeId 解析失败，NodeId={NodeId}", rawNodeId);
                 result[rawNodeId] = "ERR: UnresolvedNode";
             }
         }
@@ -312,6 +319,7 @@ public class OpcUaService : IOpcUaService
         }
         catch (Exception ex)
         {
+            Log.Warning(ex, "OPC UA 批量读取 NodeId 失败");
             foreach (var request in resolvedRequests)
             {
                 result.TryAdd(request.RawNodeId, $"ERR: {ex.Message}");
@@ -359,7 +367,7 @@ public class OpcUaService : IOpcUaService
             return;
         }
 
-        using var limiter = new SemaphoreSlim(ResolveParallelism, ResolveParallelism);
+        using var limiter = new SemaphoreSlim(_runtimeOptions.ResolveParallelism, _runtimeOptions.ResolveParallelism);
         var tasks = inputs.Select(async nodeId =>
         {
             await limiter.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -367,8 +375,9 @@ public class OpcUaService : IOpcUaService
             {
                 await ResolveNodeIdAsync(nodeId).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Debug(ex, "OPC UA 预热 NodeId 失败，NodeId={NodeId}", nodeId);
                 // 预解析阶段允许个别节点失败，运行时会按原逻辑继续回退探测。
             }
             finally
@@ -381,7 +390,7 @@ public class OpcUaService : IOpcUaService
 
         if (!string.IsNullOrWhiteSpace(_activeEndpointKey) && _resolvedNodeIds.Count > 0)
         {
-            await SaveResolvedNodeCacheAsync(_activeEndpointKey, cancellationToken).ConfigureAwait(false);
+            await _resolvedNodeCacheStore.SaveAsync(_activeEndpointKey, _resolvedNodeIds, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -456,6 +465,13 @@ public class OpcUaService : IOpcUaService
             return;
         }
 
+        var tagList = tags.Where(t => !string.IsNullOrWhiteSpace(t.NodeId)).ToList();
+        if (tagList.Count == 0)
+        {
+            await UnsubscribeAllAsync(cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
         await UnsubscribeAllAsync(cancellationToken).ConfigureAwait(false);
 
         _subscription = new Subscription(_session.DefaultSubscription)
@@ -467,7 +483,7 @@ public class OpcUaService : IOpcUaService
         _session.AddSubscription(_subscription);
         await _subscription.CreateAsync(cancellationToken).ConfigureAwait(false);
 
-        foreach (var tag in tags.Where(t => !string.IsNullOrWhiteSpace(t.NodeId)))
+        foreach (var tag in tagList)
         {
             cancellationToken.ThrowIfCancellationRequested();
             try
@@ -494,20 +510,31 @@ public class OpcUaService : IOpcUaService
 
                 _subscription.AddItem(monitoredItem);
                 _monitoredItems[tag.NodeId] = monitoredItem;
-                _subscribedTagNames.Add(tag.Name);
+                _subscribedTagNames[tag.Name] = 0;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Warning(ex, "OPC UA 订阅 Tag 失败，Tag={TagName}, NodeId={NodeId}", tag.Name, tag.NodeId);
                 continue;
             }
         }
 
-        await _subscription.ApplyChangesAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await _subscription.ApplyChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            ClearSubscriptionState();
+            throw;
+        }
     }
 
     public async Task UnsubscribeAllAsync(CancellationToken cancellationToken = default)
     {
-        if (_subscription is not null && _session is not null)
+        try
+        {
+            if (_subscription is not null && _session is not null)
         {
             try
             {
@@ -519,12 +546,22 @@ public class OpcUaService : IOpcUaService
             {
                 throw;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Debug(ex, "OPC UA 清理订阅失败，继续释放本地状态");
                 // Ignore cleanup errors.
             }
         }
 
+        }
+        finally
+        {
+            ClearSubscriptionState();
+        }
+    }
+
+    private void ClearSubscriptionState()
+    {
         _monitoredItems.Clear();
         _subscription = null;
         _subscribedTagNames.Clear();
@@ -613,8 +650,9 @@ public class OpcUaService : IOpcUaService
             _resolvedNodeIds[nodeIdText] = parsed;
             return parsed;
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Debug(ex, "OPC UA NodeId 直接解析失败，继续尝试符号路径候选：{NodeId}", nodeIdText);
             // Continue to symbol path candidates.
         }
 
@@ -624,7 +662,7 @@ public class OpcUaService : IOpcUaService
         }
 
         Exception? lastException = null;
-        foreach (var candidateText in BuildCandidateNodeIdTexts(nodeIdText).Take(MaxNodeIdProbeCandidates))
+        foreach (var candidateText in BuildCandidateNodeIdTexts(nodeIdText).Take(_runtimeOptions.MaxNodeIdProbeCandidates))
         {
             try
             {
@@ -644,11 +682,12 @@ public class OpcUaService : IOpcUaService
             catch (Exception ex)
             {
                 lastException = ex;
+                Log.Debug(ex, "OPC UA NodeId 候选探测失败，Raw={RawNodeId}, Candidate={CandidateNodeId}", nodeIdText, candidateText);
             }
         }
 
         _unresolvedNodeIds.TryAdd(nodeIdText, 0);
-        TraceOpcPerf($"ResolveFail raw={nodeIdText} candidates={Math.Min(MaxNodeIdProbeCandidates, 48)} endpoint={_activeEndpointKey}");
+        TraceOpcPerf($"ResolveFail raw={nodeIdText} candidates={_runtimeOptions.MaxNodeIdProbeCandidates} endpoint={_activeEndpointKey}");
         throw new InvalidOperationException($"未能解析 OPC UA NodeId：{nodeIdText}", lastException);
     }
 
@@ -673,20 +712,13 @@ public class OpcUaService : IOpcUaService
             return false;
         }
 
-        int? namespaceIndex;
-        string? symbolPrefix;
-        lock (_preferredApplicationSymbolLock)
-        {
-            namespaceIndex = _preferredApplicationNamespaceIndex;
-            symbolPrefix = _preferredApplicationSymbolPrefix;
-        }
-
-        if (!namespaceIndex.HasValue || string.IsNullOrWhiteSpace(symbolPrefix))
+        var template = _preferredApplicationSymbolTemplate;
+        if (template is null)
         {
             return false;
         }
 
-        nodeId = new NodeId($"{symbolPrefix}{rawNodeIdText}", (ushort)Math.Max(0, namespaceIndex.Value));
+        nodeId = new NodeId($"{template.SymbolPrefix}{rawNodeIdText}", template.NamespaceIndex);
         return true;
     }
 
@@ -714,11 +746,9 @@ public class OpcUaService : IOpcUaService
             return;
         }
 
-        lock (_preferredApplicationSymbolLock)
-        {
-            _preferredApplicationNamespaceIndex = candidateNodeId.NamespaceIndex;
-            _preferredApplicationSymbolPrefix = prefix;
-        }
+        _preferredApplicationSymbolTemplate = new PreferredApplicationSymbolTemplate(
+            candidateNodeId.NamespaceIndex,
+            prefix);
 
         // 首次学到模板后清掉 Application 失败缓存，避免早期失败项长期阻塞后续刷新。
         foreach (var unresolvedKey in _unresolvedNodeIds.Keys)
@@ -732,11 +762,7 @@ public class OpcUaService : IOpcUaService
 
     private void ClearPreferredApplicationSymbolTemplate()
     {
-        lock (_preferredApplicationSymbolLock)
-        {
-            _preferredApplicationNamespaceIndex = null;
-            _preferredApplicationSymbolPrefix = null;
-        }
+        _preferredApplicationSymbolTemplate = null;
     }
 
     private IEnumerable<string> BuildCandidateNodeIdTexts(string rawText)
@@ -823,153 +849,6 @@ public class OpcUaService : IOpcUaService
         }
     }
 
-    private static async Task<ApplicationConfiguration> BuildConfigurationAsync()
-    {
-        var appRoot = ResolveApplicationRoot();
-        var pkiRoot = Path.Combine(appRoot, "config", "pki");
-        var ownStore = Path.Combine(pkiRoot, "own");
-        var trustedStore = Path.Combine(pkiRoot, "trusted");
-        var issuerStore = Path.Combine(pkiRoot, "issuer");
-        var rejectedStore = Path.Combine(pkiRoot, "rejected");
-
-        Directory.CreateDirectory(ownStore);
-        Directory.CreateDirectory(trustedStore);
-        Directory.CreateDirectory(issuerStore);
-        Directory.CreateDirectory(rejectedStore);
-
-        var configuration = new ApplicationConfiguration
-        {
-            ApplicationName = "ApexHMI",
-            ApplicationUri = $"urn:{Utils.GetHostName()}:ApexHMI",
-            ApplicationType = ApplicationType.Client,
-            SecurityConfiguration = new SecurityConfiguration
-            {
-                ApplicationCertificate = new CertificateIdentifier
-                {
-                    StoreType = CertificateStoreType.Directory,
-                    StorePath = ownStore,
-                    SubjectName = "CN=ApexHMI, O=OpenAI, C=CN"
-                },
-                TrustedPeerCertificates = new CertificateTrustList
-                {
-                    StoreType = CertificateStoreType.Directory,
-                    StorePath = trustedStore
-                },
-                TrustedIssuerCertificates = new CertificateTrustList
-                {
-                    StoreType = CertificateStoreType.Directory,
-                    StorePath = issuerStore
-                },
-                RejectedCertificateStore = new CertificateTrustList
-                {
-                    StoreType = CertificateStoreType.Directory,
-                    StorePath = rejectedStore
-                },
-                AutoAcceptUntrustedCertificates = true,
-                RejectSHA1SignedCertificates = false,
-                MinimumCertificateKeySize = 1024
-            },
-            TransportConfigurations = new TransportConfigurationCollection(),
-            TransportQuotas = new TransportQuotas { OperationTimeout = 10000 },
-            ClientConfiguration = new ClientConfiguration { DefaultSessionTimeout = 60000 },
-            TraceConfiguration = new Opc.Ua.TraceConfiguration()
-        };
-
-        await configuration.ValidateAsync(ApplicationType.Client);
-        configuration.CertificateValidator.CertificateValidation += (_, e) => { e.Accept = true; };
-        return configuration;
-    }
-
-    private static string ResolveApplicationRoot()
-    {
-        var currentDirectory = Environment.CurrentDirectory;
-        if (File.Exists(Path.Combine(currentDirectory, "ApexHMI.csproj")))
-        {
-            return currentDirectory;
-        }
-
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "ApexHMI.csproj")))
-            {
-                return directory.FullName;
-            }
-
-            directory = directory.Parent;
-        }
-
-        return AppContext.BaseDirectory;
-    }
-
-    private static async Task<Session> CreateSessionAsync(
-        ApplicationConfiguration configuration,
-        string endpointUrl,
-        bool useSecurity,
-        OpcUaConnectionOptions options,
-        CancellationToken cancellationToken)
-    {
-        var selectedEndpoint = await CoreClientUtils.SelectEndpointAsync(
-            configuration,
-            endpointUrl,
-            useSecurity,
-            15000,
-            null!,
-            cancellationToken).ConfigureAwait(false);
-
-        var endpoint = new ConfiguredEndpoint(null, selectedEndpoint, EndpointConfiguration.Create(configuration));
-        IUserIdentity userIdentity = options.UseAnonymous
-            ? new UserIdentity(new AnonymousIdentityToken())
-            : new UserIdentity(options.Username, Encoding.UTF8.GetBytes(options.Password));
-
-        var sessionFactory = new DefaultSessionFactory(null!);
-        return (Session)await sessionFactory.CreateAsync(
-            configuration,
-            endpoint,
-            false,
-            false,
-            "ApexHMI",
-            60000,
-            userIdentity,
-            null,
-            cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task<Session> CreateDirectSessionAsync(
-        ApplicationConfiguration configuration,
-        string endpointUrl,
-        OpcUaConnectionOptions options,
-        CancellationToken cancellationToken)
-    {
-        var endpointDescription = new EndpointDescription
-        {
-            EndpointUrl = endpointUrl,
-            SecurityMode = MessageSecurityMode.None,
-            SecurityPolicyUri = SecurityPolicies.None
-        };
-
-        var configuredEndpoint = new ConfiguredEndpoint(
-            null,
-            endpointDescription,
-            EndpointConfiguration.Create(configuration));
-
-        IUserIdentity userIdentity = options.UseAnonymous
-            ? new UserIdentity(new AnonymousIdentityToken())
-            : new UserIdentity(options.Username, Encoding.UTF8.GetBytes(options.Password));
-
-        var sessionFactory = new DefaultSessionFactory(null!);
-        return (Session)await sessionFactory.CreateAsync(
-            configuration,
-            configuredEndpoint,
-            false,
-            false,
-            "ApexHMI",
-            60000,
-            userIdentity,
-            null,
-            cancellationToken).ConfigureAwait(false);
-    }
-
     private static IReadOnlyList<(string EndpointUrl, bool UseSecurity)> BuildConnectionAttempts(OpcUaConnectionOptions options)
     {
         var attempts = new List<(string EndpointUrl, bool UseSecurity)>();
@@ -995,133 +874,18 @@ public class OpcUaService : IOpcUaService
         return attempts;
     }
 
-    private static string NormalizeEndpointKey(string endpointUrl) =>
-        (endpointUrl ?? string.Empty).Trim().ToLowerInvariant();
-
-    private static string GetResolvedNodeCachePath() =>
-        Path.Combine(ResolveApplicationRoot(), "config", "opc-resolved-node-cache.json");
-
-    private async Task LoadResolvedNodeCacheAsync(string endpointKey, CancellationToken cancellationToken)
+    private async Task MergeResolvedNodeCacheAsync(CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(endpointKey))
+        var cachedNodeIds = await _resolvedNodeCacheStore.LoadAsync(_activeEndpointKey, cancellationToken).ConfigureAwait(false);
+        foreach (var pair in cachedNodeIds)
         {
-            return;
+            _resolvedNodeIds[pair.Key] = pair.Value;
         }
-
-        var path = GetResolvedNodeCachePath();
-        if (!File.Exists(path))
-        {
-            return;
-        }
-
-        await _cacheIoLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var json = await Compat.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return;
-            }
-
-            var cache = JsonSerializer.Deserialize<ResolvedNodeCacheFile>(json);
-            if (cache?.Endpoints is null
-                || !cache.Endpoints.TryGetValue(endpointKey, out var map)
-                || map is null)
-            {
-                return;
-            }
-
-            foreach (var pair in map)
-            {
-                if (string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    _resolvedNodeIds[pair.Key] = NodeId.Parse(pair.Value);
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-        }
-        catch
-        {
-            // 缓存读取失败不影响主流程，按原逻辑动态解析。
-        }
-        finally
-        {
-            _cacheIoLock.Release();
-        }
-    }
-
-    private async Task SaveResolvedNodeCacheAsync(string endpointKey, CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(endpointKey))
-        {
-            return;
-        }
-
-        var path = GetResolvedNodeCachePath();
-        var directory = Path.GetDirectoryName(path);
-        if (!string.IsNullOrWhiteSpace(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-
-        await _cacheIoLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            ResolvedNodeCacheFile file;
-            if (File.Exists(path))
-            {
-                try
-                {
-                    var existingJson = await Compat.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-                    file = JsonSerializer.Deserialize<ResolvedNodeCacheFile>(existingJson) ?? new ResolvedNodeCacheFile();
-                }
-                catch
-                {
-                    file = new ResolvedNodeCacheFile();
-                }
-            }
-            else
-            {
-                file = new ResolvedNodeCacheFile();
-            }
-
-            var map = _resolvedNodeIds
-                .Where(pair => !string.IsNullOrWhiteSpace(pair.Key))
-                .ToDictionary(
-                    pair => pair.Key,
-                    pair => pair.Value.ToString(),
-                    StringComparer.OrdinalIgnoreCase);
-
-            file.Endpoints[endpointKey] = map;
-            var json = JsonSerializer.Serialize(file, new JsonSerializerOptions { WriteIndented = true });
-            await Compat.WriteAllTextAsync(path, json, cancellationToken).ConfigureAwait(false);
-        }
-        catch
-        {
-            // 缓存写入失败不影响主流程。
-        }
-        finally
-        {
-            _cacheIoLock.Release();
-        }
-    }
-
-    private sealed class ResolvedNodeCacheFile
-    {
-        public Dictionary<string, Dictionary<string, string>> Endpoints { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 
     private void TraceOpcPerf(string message)
     {
-        if (!EnableOpcPerfTrace)
+        if (!_runtimeOptions.EnablePerformanceTrace)
         {
             return;
         }
@@ -1130,14 +894,14 @@ public class OpcUaService : IOpcUaService
         {
             var path = Path.Combine(AppContext.BaseDirectory, "opc-perf.log");
             var line = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}{Environment.NewLine}";
-            lock (_perfLogLock)
-            {
-                File.AppendAllText(path, line, Encoding.UTF8);
-            }
+            File.AppendAllText(path, line, Encoding.UTF8);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Debug(ex, "写入 OPC UA 性能追踪失败");
             // ignore trace failure
         }
     }
+
+    private sealed record PreferredApplicationSymbolTemplate(ushort NamespaceIndex, string SymbolPrefix);
 }
