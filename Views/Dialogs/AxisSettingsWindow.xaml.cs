@@ -38,5 +38,8 @@ public partial class AxisSettingsWindow : Window
     private void AxisSettingsWindow_Closed(object? sender, EventArgs e)
     {
         _refreshTimer.Stop();
+        _refreshTimer.Tick -= RefreshTimer_Tick;
+        Loaded -= AxisSettingsWindow_Loaded;
+        Closed -= AxisSettingsWindow_Closed;
     }
 }

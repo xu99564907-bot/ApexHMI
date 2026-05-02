@@ -37,5 +37,8 @@ public partial class CylinderSettingsWindow : Window
     private void CylinderSettingsWindow_Closed(object? sender, EventArgs e)
     {
         _refreshTimer.Stop();
+        _refreshTimer.Tick -= RefreshTimer_Tick;
+        Loaded -= CylinderSettingsWindow_Loaded;
+        Closed -= CylinderSettingsWindow_Closed;
     }
 }

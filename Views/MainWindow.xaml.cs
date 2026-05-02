@@ -9,7 +9,7 @@ using System.Windows.Media;
 using ApexHMI.Models;
 using ApexHMI.ViewModels;
 using ApexHMI.ViewModels.Shell;
-
+using ApexHMI.Views.Common;
 using ApexHMI.Views.Dialogs;
 
 namespace ApexHMI.Views;
@@ -23,6 +23,7 @@ public partial class MainWindow : Window
         PreviewKeyDown += MainWindow_PreviewKeyDown;
         Loaded += MainWindow_Loaded;
         StateChanged += MainWindow_StateChanged;
+        Closed += MainWindow_Closed;
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -48,6 +49,18 @@ public partial class MainWindow : Window
     {
         UpdateWindowBoundsForState();
         UpdateMaxRestoreButtonIcon();
+    }
+
+    private void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        if (DataContext is MainViewModel vm)
+        {
+            vm.PopupRequested -= Vm_PopupRequested;
+            vm.ConfirmationRequested -= Vm_ConfirmationRequested;
+            vm.SectionJumpRequested -= Vm_SectionJumpRequested;
+            vm.HighlightRequested -= Vm_HighlightRequested;
+            vm.Dispose();
+        }
     }
 
     private void UpdateWindowBoundsForState()
@@ -330,37 +343,6 @@ public partial class MainWindow : Window
         MessageBox.Show(this, message, "关于", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
-    private void OpenCommunicationConfigButton_Click(object sender, RoutedEventArgs e)
-    {
-        var window = new CommunicationConfigWindow
-        {
-            Owner = this,
-            DataContext = DataContext
-        };
-        window.ShowDialog();
-    }
-
-    private async void ConnectButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not MainViewModel vm)
-        {
-            return;
-        }
-
-        await vm.ConnectCommand.ExecuteAsync(null);
-        return;
-    }
-
-    private async void DisconnectButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not MainViewModel vm)
-        {
-            return;
-        }
-
-        await vm.DisconnectCommand.ExecuteAsync(null);
-    }
-
     private void OpcUaBrowserTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
         if (DataContext is MainViewModel vm && e.NewValue is OpcUaBrowseNode node && !node.IsPlaceholder)
@@ -371,15 +353,18 @@ public partial class MainWindow : Window
 
     private async void OpcUaBrowserTreeViewItem_Expanded(object sender, RoutedEventArgs e)
     {
-        if (DataContext is not MainViewModel vm || sender is not TreeViewItem treeViewItem)
+        await AsyncEventHandler.RunSafe(async () =>
         {
-            return;
-        }
+            if (DataContext is not MainViewModel vm || sender is not TreeViewItem treeViewItem)
+            {
+                return;
+            }
 
-        if (treeViewItem.DataContext is OpcUaBrowseNode node && !node.IsPlaceholder)
-        {
-            await vm.ExpandOpcUaBrowserNodeCommand.ExecuteAsync(node);
-        }
+            if (treeViewItem.DataContext is OpcUaBrowseNode node && !node.IsPlaceholder)
+            {
+                await vm.ExpandOpcUaBrowserNodeCommand.ExecuteAsync(node);
+            }
+        }, nameof(OpcUaBrowserTreeViewItem_Expanded));
     }
 
     private static string? ResolveReadmePath()

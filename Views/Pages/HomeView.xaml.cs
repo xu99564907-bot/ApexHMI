@@ -19,6 +19,7 @@ public partial class HomeView : UserControl
     public HomeView()
     {
         InitializeComponent();
+        Unloaded += HomeView_Unloaded;
         _startPressTimer.Tick += StartPressTimer_Tick;
     }
 
@@ -66,6 +67,14 @@ public partial class HomeView : UserControl
         _startHoldTicks = 0;
         var vm = GetShell();
         vm?.UpdateStartHoldProgress(0);
+    }
+
+    private void HomeView_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _startPressTimer.Stop();
+        _startHoldTicks = 0;
+        _startHandled = false;
+        GetShell()?.UpdateStartHoldProgress(0);
     }
 
     private void PageScrollViewer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
