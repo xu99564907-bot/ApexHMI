@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:model="clr-namespace:ApexHMI.Models">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
-                    <Grid Margin="12" DataContext="{Binding ShellViewModel}">
+                    <Grid Margin="12">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource CardBorderStyle}" Padding="16" Visibility="{Binding IsMonitorProductionPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel>

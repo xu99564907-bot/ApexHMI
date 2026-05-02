@@ -19,6 +19,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using ApexHMI.Models;
 using ApexHMI.Services;
+using Serilog;
 
 namespace ApexHMI.ViewModels;
 
@@ -349,7 +350,7 @@ public partial class MainViewModel
         }
     }
 
-    private async void UpdateAutoRefreshState()
+    private async Task UpdateAutoRefreshStateAsync()
     {
         try
         {
@@ -436,38 +437,45 @@ public partial class MainViewModel
 
     private async void OpcUaService_TagValueChanged(string tagNameOrNodeId, string value)
     {
-        await RunOnUiThreadAsync(() =>
+        try
         {
-            var tag = FindTagByNodeId(tagNameOrNodeId) ?? FindTagByNameOrNodeId(tagNameOrNodeId);
-            if (tag is not null)
+            await RunOnUiThreadAsync(() =>
             {
-                OnPlcReadAppliedToTag(tag, value);
-            }
-            else if (!string.IsNullOrWhiteSpace(tagNameOrNodeId))
-            {
-                RecordOpcBindingString(tagNameOrNodeId.Trim(), value);
-            }
+                var tag = FindTagByNodeId(tagNameOrNodeId) ?? FindTagByNameOrNodeId(tagNameOrNodeId);
+                if (tag is not null)
+                {
+                    OnPlcReadAppliedToTag(tag, value);
+                }
+                else if (!string.IsNullOrWhiteSpace(tagNameOrNodeId))
+                {
+                    RecordOpcBindingString(tagNameOrNodeId.Trim(), value);
+                }
 
-            if (tag is null)
-            {
-                return;
-            }
+                if (tag is null)
+                {
+                    return;
+                }
 
-            if (tag.IsAlarm)
-            {
-                EvaluateTagState(tag);
-            }
+                if (tag.IsAlarm)
+                {
+                    EvaluateTagState(tag);
+                }
 
-            if (HasEventBindingForTag(tag.Name))
-            {
-                EvaluateEvents(tag);
-            }
-            UpdateRuntimeVisuals();
-            RefreshCylinderBindingProperties();
-            RefreshCylinderMaskStates();
-            RefreshMonitorView();
-            RefreshAlarmStatistics();
-        });
+                if (HasEventBindingForTag(tag.Name))
+                {
+                    EvaluateEvents(tag);
+                }
+                UpdateRuntimeVisuals();
+                RefreshCylinderBindingProperties();
+                RefreshCylinderMaskStates();
+                RefreshMonitorView();
+                RefreshAlarmStatistics();
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "OpcUaService_TagValueChanged 异常 tag={Tag}", tagNameOrNodeId);
+        }
     }
 
     [RelayCommand]

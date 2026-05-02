@@ -34,7 +34,7 @@
                                    Foreground="#64748B"
                                    Margin="0,10,0,0"/>
                         <Button Content="打开 PLC 通讯配置"
-                                Click="OpenCommunicationConfigButton_Click"
+                                Command="{Binding OpenCommunicationConfigCommand}"
                                 Background="Transparent"
                                 Foreground="#2563EB"
                                 BorderBrush="{x:Null}"
@@ -50,7 +50,7 @@
                                 VerticalAlignment="Center"
                                 HorizontalAlignment="Right">
                         <Button Content="连接"
-                                Click="ConnectButton_Click"
+                                Command="{Binding ConnectCommand}"
                                 Background="#2563EB"
                                 Foreground="White"
                                 BorderBrush="#2563EB"
@@ -58,7 +58,7 @@
                                 Height="36"
                                 Margin="0,0,8,0"/>
                         <Button Content="断开"
-                                Click="DisconnectButton_Click"
+                                Command="{Binding DisconnectCommand}"
                                 Background="#DC2626"
                                 Foreground="White"
                                 BorderBrush="#DC2626"
@@ -66,7 +66,7 @@
                                 Height="36"
                                 Margin="0,0,8,0"/>
                         <Button Content="加载参数"
-                                Command="{Binding ShellViewModel.LoadParametersCommand}"
+                                Command="{Binding LoadParametersCommand}"
                                 Background="#374151"
                                 Foreground="White"
                                 BorderBrush="#374151"
@@ -74,7 +74,7 @@
                                 Height="36"
                                 Margin="0,0,8,0"/>
                         <Button Content="保存参数"
-                                Command="{Binding ShellViewModel.SaveParametersCommand}"
+                                Command="{Binding SaveParametersCommand}"
                                 Background="#0F766E"
                                 Foreground="White"
                                 BorderBrush="#0F766E"

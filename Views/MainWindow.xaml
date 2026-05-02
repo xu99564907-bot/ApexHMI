@@ -12,6 +12,7 @@
         xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:l="clr-namespace:ApexHMI.Converters"
         mc:Ignorable="d"
         Title="PLC OPC UA HMI Designer" Height="1080" Width="1880" WindowStartupLocation="CenterScreen" Background="#F3F6FB" WindowStyle="None" ResizeMode="CanResize"
         PreviewMouseWheel="MainWindow_PreviewMouseWheel">
@@ -101,6 +102,11 @@
             <Setter Property="HorizontalGridLinesBrush" Value="#E2E8F0"/>
             <Setter Property="VerticalGridLinesBrush" Value="#E2E8F0"/>
             <Setter Property="BorderBrush" Value="#D7DFEA"/>
+            <Setter Property="EnableRowVirtualization" Value="True"/>
+            <Setter Property="EnableColumnVirtualization" Value="True"/>
+            <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
         </Style>
         <Style TargetType="DataGridColumnHeader">
             <Setter Property="Background" Value="#EFF3F8"/>
@@ -346,32 +352,32 @@
                         <TextBlock Text="PLC OPC UA HMI Designer" Foreground="#334155" VerticalAlignment="Center" FontSize="13" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
                     </StackPanel>
                     <Menu Grid.Column="1" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                        <MenuItem Header="文件">
-                            <MenuItem Header="导入 XML 变量" Command="{Binding ImportXmlTagsCommand}"/>
-                            <MenuItem Header="导入 CSV 变量" Command="{Binding ImportTagsCommand}"/>
-                            <MenuItem Header="导入 IO 表" Command="{Binding ImportIoTableCommand}"/>
-                        <MenuItem Header="生成手动程序" Command="{Binding GenerateIoProgramsCommand}"/>
-                            <MenuItem Header="导入流程 CSV" Command="{Binding ImportFlowCsvCommand}"/>
+                        <MenuItem Header="{l:Loc Menu_File}">
+                            <MenuItem Header="{l:Loc Menu_ImportXmlTag}" Command="{Binding ImportXmlTagsCommand}"/>
+                            <MenuItem Header="{l:Loc Menu_ImportCsvTag}" Command="{Binding ImportTagsCommand}"/>
+                            <MenuItem Header="{l:Loc Menu_ImportIoTable}" Command="{Binding ImportIoTableCommand}"/>
+                        <MenuItem Header="{l:Loc Menu_GenerateManualProgram}" Command="{Binding GenerateIoProgramsCommand}"/>
+                            <MenuItem Header="{l:Loc Menu_ImportFlowCsv}" Command="{Binding ImportFlowCsvCommand}"/>
                             <Separator/>
-                            <MenuItem Header="打开 IO 生成目录" Command="{Binding OpenGeneratedIoFolderCommand}"/>
+                            <MenuItem Header="{l:Loc Menu_OpenIoGenDir}" Command="{Binding OpenGeneratedIoFolderCommand}"/>
                             <Separator/>
-                            <MenuItem Header="退出" Click="ExitMenuItem_Click"/>
+                            <MenuItem Header="{l:Loc Menu_Exit}" Click="ExitMenuItem_Click"/>
                         </MenuItem>
-                        <MenuItem Header="编辑">
-                            <MenuItem Header="导出报表" Command="{Binding ExportProductionReportCommand}"/>
+                        <MenuItem Header="{l:Loc Menu_Edit}">
+                            <MenuItem Header="{l:Loc Menu_ExportReport}" Command="{Binding ExportProductionReportCommand}"/>
                         </MenuItem>
-                        <MenuItem Header="窗口">
-                            <MenuItem Header="切换运行/设计态" Command="{Binding ToggleRuntimeModeCommand}"/>
+                        <MenuItem Header="{l:Loc Menu_Window}">
+                            <MenuItem Header="{l:Loc Menu_ToggleRuntime}" Command="{Binding ToggleRuntimeModeCommand}"/>
                             <Separator/>
-                            <MenuItem Header="窗口最大化" Click="MaximizeWindowMenuItem_Click"/>
-                            <MenuItem Header="窗口还原" Click="RestoreWindowMenuItem_Click"/>
-                            <MenuItem Header="窗口置顶" IsCheckable="True" Click="ToggleTopmostMenuItem_Click"/>
+                            <MenuItem Header="{l:Loc Menu_Maximize}" Click="MaximizeWindowMenuItem_Click"/>
+                            <MenuItem Header="{l:Loc Menu_Restore}" Click="RestoreWindowMenuItem_Click"/>
+                            <MenuItem Header="{l:Loc Menu_Topmost}" IsCheckable="True" Click="ToggleTopmostMenuItem_Click"/>
                         </MenuItem>
-                        <MenuItem Header="帮助">
-                            <MenuItem Header="使用说明" Click="ShowUsageHelpMenuItem_Click"/>
-                            <MenuItem Header="打开 README" Click="OpenReadmeMenuItem_Click"/>
+                        <MenuItem Header="{l:Loc Menu_Help}">
+                            <MenuItem Header="{l:Loc Menu_UsageHelp}" Click="ShowUsageHelpMenuItem_Click"/>
+                            <MenuItem Header="{l:Loc Menu_OpenReadme}" Click="OpenReadmeMenuItem_Click"/>
                             <Separator/>
-                            <MenuItem Header="关于" Click="ShowAboutMenuItem_Click"/>
+                            <MenuItem Header="{l:Loc Menu_About}" Click="ShowAboutMenuItem_Click"/>
                         </MenuItem>
                     </Menu>
                     <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
@@ -465,7 +471,7 @@
                         </Button>
                         <Border Grid.Column="4" Margin="12,8" CornerRadius="14" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="当前界面" Foreground="#64748B" FontSize="12" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{l:Loc Nav_CurrentSection}" Foreground="#64748B" FontSize="12" HorizontalAlignment="Center"/>
                                 <TextBlock Text="{Binding CurrentSection}" Foreground="#0F172A" FontSize="22" FontWeight="Bold" Margin="0,6,0,0" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
@@ -502,7 +508,7 @@
                 </Style>
             </Border.Style>
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="子页面导航" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="4,0,0,12"/>
+                <TextBlock DockPanel.Dock="Top" Text="{l:Loc Nav_SubNav}" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="4,0,0,12"/>
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <ItemsControl ItemsSource="{Binding NavigationItems}">
                         <ItemsControl.ItemTemplate>
@@ -550,42 +556,42 @@
                         <ContentPresenter ContentSource="SelectedContent"/>
                     </ControlTemplate>
                 </TabControl.Template>
-                <TabItem Header="运行总览">
+                <TabItem Header="{l:Loc Tab_Home}">
                     <pages:HomeView DataContext="{Binding Home}"/>
                 </TabItem>
 
-                <TabItem Header="监视画面">
+                <TabItem Header="{l:Loc Tab_Monitor}">
                     <pages:MonitorView DataContext="{Binding Monitor}"/>
                 </TabItem>
-                <TabItem Header="配方管理">
+                <TabItem Header="{l:Loc Tab_Recipe}">
                     <pages:RecipeView DataContext="{Binding Recipe}"/>
                 </TabItem>
 
-                <TabItem Header="手动画面">
+                <TabItem Header="{l:Loc Tab_Manual}">
                     <pages:ManualView DataContext="{Binding Manual}"/>
                 </TabItem>
 
-                <TabItem Header="参数设定">
+                <TabItem Header="{l:Loc Tab_Parameter}">
                     <pages:ParameterView DataContext="{Binding ParametersModule}"/>
                 </TabItem>
 
-                <TabItem Header="报警画面">
+                <TabItem Header="{l:Loc Tab_Alarm}">
                     <pages:AlarmView DataContext="{Binding Alarm}"/>
                 </TabItem>
 
-                <TabItem Header="登录权限">
+                <TabItem Header="{l:Loc Tab_Login}">
                     <pages:LoginView DataContext="{Binding Login}"/>
                 </TabItem>
 
-                <TabItem Header="操作审计">
+                <TabItem Header="{l:Loc Tab_Audit}">
                     <pages:AuditView DataContext="{Binding Audit}"/>
                 </TabItem>
 
-                <TabItem Header="设计器">
+                <TabItem Header="{l:Loc Tab_Designer}">
                     <pages:DesignerView DataContext="{Binding Designer}"/>
                 </TabItem>
 
-                <TabItem Header="运行页面">
+                <TabItem Header="{l:Loc Tab_Runtime}">
                     <pages:RuntimeDesignerView DataContext="{Binding Designer}"/>
                 </TabItem>
             </TabControl>
@@ -602,13 +608,13 @@
                     </Border>
                     <Border Background="#DBEAFE" BorderBrush="#93C5FD" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="PLC：" Foreground="#1D4ED8" VerticalAlignment="Center"/>
+                            <TextBlock Text="{l:Loc StatusBar_PlcPrefix}" Foreground="#1D4ED8" VerticalAlignment="Center"/>
                             <TextBlock Text="{Binding CommunicationStatus}" Foreground="#1D4ED8" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <TextBlock Text="{Binding SystemMessage}" Foreground="#0F172A" VerticalAlignment="Center"/>
                 </WrapPanel>
-                    <TextBlock DockPanel.Dock="Right" Text="C# / WPF / OPC UA / HMI Designer" Foreground="#64748B" VerticalAlignment="Center"/>
+                    <TextBlock DockPanel.Dock="Right" Text="{l:Loc StatusBar_AppTagline}" Foreground="#64748B" VerticalAlignment="Center"/>
             </DockPanel>
         </Border>
         </Grid>

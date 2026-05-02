@@ -202,7 +202,18 @@ public partial class MainViewModel
         RefreshAlarmStatistics();
     }
 
-    private void RefreshAlarmStatistics()
+    public void ClearActiveAlarmMap()
+    {
+        _activeAlarmMap.Clear();
+    }
+
+    public void NotifyAlarmStateChanged()
+    {
+        OnPropertyChanged(nameof(AlarmCount));
+        UpdateRuntimeVisuals();
+    }
+
+    public void RefreshAlarmStatistics()
     {
         var merged = AlarmHistory
             .Concat(CurrentAlarms)

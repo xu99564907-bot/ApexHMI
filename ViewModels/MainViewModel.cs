@@ -22,7 +22,7 @@ using ApexHMI.Services;
 
 namespace ApexHMI.ViewModels;
 
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ObservableObject, IDisposable
 {
     private static readonly Regex OperationNumberPattern = new(@"\bOP\s*0*(\d{1,3})\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex DbNumberPattern = new(@"\bDB\s*0*(\d{3,5})\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -493,7 +493,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         OnPropertyChanged(nameof(IsRuntimeDashboardVisible));
         OnPropertyChanged(nameof(RuntimeHeaderText));
         SystemMessage = value ? "已切换到运行态" : "已切换到设计态";
-        UpdateAutoRefreshState();
+        _ = UpdateAutoRefreshStateAsync();
     }
 
     partial void OnCurrentUserRoleChanged(UserRole value)
@@ -973,9 +973,15 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
     }
     partial void OnSelectedGeneratedIoProgramChanged(GeneratedProgramArtifact? value) => OnPropertyChanged(nameof(SelectedGeneratedIoProgramContent));
     partial void OnSelectedGeneratedAutoProgramChanged(GeneratedProgramArtifact? value) => OnPropertyChanged(nameof(SelectedGeneratedAutoProgramContent));
-    partial void OnAutoRefreshEnabledChanged(bool value) => UpdateAutoRefreshState();
-    partial void OnUseOpcSubscriptionChanged(bool value) => UpdateAutoRefreshState();
-    partial void OnSelectedRecipeNameChanged(string value) => RefreshActiveRecipeParameters();
+    partial void OnAutoRefreshEnabledChanged(bool value) => _ = UpdateAutoRefreshStateAsync();
+    partial void OnUseOpcSubscriptionChanged(bool value) => _ = UpdateAutoRefreshStateAsync();
+    partial void OnSelectedRecipeNameChanged(string value)
+    {
+        if (this is Shell.MainWindowViewModel shell)
+        {
+            shell.Recipe.RefreshActiveRecipeParameters();
+        }
+    }
 
     partial void OnRefreshIntervalMsChanged(int value)
     {
@@ -985,7 +991,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
             return;
         }
         _subscriptionTimer.Interval = TimeSpan.FromMilliseconds(RefreshIntervalMs);
-        UpdateAutoRefreshState();
+        _ = UpdateAutoRefreshStateAsync();
     }
 
     partial void OnSelectedDesignerPageChanged(DesignerPage? value)
@@ -1252,7 +1258,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         OnPropertyChanged(nameof(AlarmCount));
     }
 
-    private void UpdateRuntimeVisuals()
+    public void UpdateRuntimeVisuals()
     {
         RefreshManualCylinderBlockStates();
         RefreshManualAxisBlockStates();
@@ -1351,7 +1357,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         OnPropertyChanged(nameof(FocusAlarmHint));
     }
 
-    private bool CanEditParameter(ParameterItem parameter) => CurrentUserRole >= parameter.MinRole;
+    public bool CanEditParameter(ParameterItem parameter) => CurrentUserRole >= parameter.MinRole;
     private bool GetBoolTag(string tagName) => TryParseTagBool(GetTagValue(tagName), out var value) && value;
     private bool GetCylinderBool(string configuredTagName, string primarySuffix = "", string? secondarySuffix = null, string fallbackTagName = "", bool fallbackValue = false)
     {
@@ -1462,7 +1468,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         return "--";
     }
 
-    private void SetTagValue(string tagName, string value)
+    public void SetTagValue(string tagName, string value)
     {
         var tag = FindTagByNameOrNodeId(tagName);
         if (tag is not null)
@@ -1632,7 +1638,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         return "M " + string.Join(" L ", coordinates);
     }
 
-    private void AddLog(string source, string message, string level)
+    public void AddLog(string source, string message, string level)
     {
         if (System.Windows.Application.Current?.Dispatcher is { } dispatcher && !dispatcher.CheckAccess())
         {
@@ -1644,7 +1650,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         OnPropertyChanged(nameof(FocusAlarmHint));
     }
 
-    private void AddAudit(string action, string target, string result, string detail)
+    public void AddAudit(string action, string target, string result, string detail)
     {
         OperationAudits.Insert(0, new OperationAuditRecord
         {
@@ -1657,7 +1663,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         });
     }
 
-    private void ShowPopup(string title, string message, string level = "Info")
+    public void ShowPopup(string title, string message, string level = "Info")
     {
         SystemMessage = message;
         AddLog("弹窗", $"{title}: {message}", level == "Error" ? "Error" : "Warning");
@@ -1670,7 +1676,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         StartHoldProgress = progress;
     }
 
-    private bool RequestConfirmation(string title, string message)
+    public bool RequestConfirmation(string title, string message)
     {
         var result = ConfirmationRequested?.Invoke(title, message) ?? true;
         AddAudit("确认框", title, result ? "确认" : "取消", message);
@@ -1722,6 +1728,6 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         return AppContext.BaseDirectory;
     }
 
-    private string GetProjectRoot() => GetApplicationRoot();
+    public string GetProjectRoot() => GetApplicationRoot();
     private double Snap(double value) => EnableGridSnap ? Math.Round(value / GridSize) * GridSize : value;
 }

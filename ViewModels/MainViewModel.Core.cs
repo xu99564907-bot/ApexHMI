@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using ApexHMI.Services;
+using Serilog;
 
 namespace ApexHMI.ViewModels;
 
@@ -74,10 +75,10 @@ public partial class MainViewModel
         ManualCylinderBlocksView.SortDescriptions.Add(new SortDescription(nameof(ManualCylinderBlockItem.CylinderIndex), ListSortDirection.Ascending));
         _subscriptionTimer = new DispatcherTimer();
         _subscriptionTimer.Interval = TimeSpan.FromMilliseconds(200);
-        _subscriptionTimer.Tick += async (_, _) => await AutoRefreshTickAsync();
+        _subscriptionTimer.Tick += SubscriptionTimer_Tick;
         _opcUaBrowserRefreshTimer = new DispatcherTimer();
         _opcUaBrowserRefreshTimer.Interval = TimeSpan.FromMilliseconds(1000);
-        _opcUaBrowserRefreshTimer.Tick += async (_, _) => await AutoRefreshSelectedOpcUaNodeTickAsync();
+        _opcUaBrowserRefreshTimer.Tick += OpcUaBrowserRefreshTimer_Tick;
         _opcUaService.TagValueChanged += OpcUaService_TagValueChanged;
         SeedDemoData();
         SeedDesignerData();
@@ -97,6 +98,30 @@ public partial class MainViewModel
         SeedAutoProgramFlow();
         InitializeRobotControl();
         _ = InitializeAsync();
+    }
+
+    private async void SubscriptionTimer_Tick(object? sender, EventArgs e)
+    {
+        try
+        {
+            await AutoRefreshTickAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "SubscriptionTimer_Tick 异常");
+        }
+    }
+
+    private async void OpcUaBrowserRefreshTimer_Tick(object? sender, EventArgs e)
+    {
+        try
+        {
+            await AutoRefreshSelectedOpcUaNodeTickAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "OpcUaBrowserRefreshTimer_Tick 异常");
+        }
     }
 
     private void InitializeRobotControl()

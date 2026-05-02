@@ -18,6 +18,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using ApexHMI.Models;
 using ApexHMI.Services;
+using Serilog;
 
 namespace ApexHMI.ViewModels;
 
@@ -631,7 +632,10 @@ public partial class MainViewModel
                         await Task.Delay(refreshDelayMs + 200);
                         await RefreshCylinderBlockStatusAsync(block);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex, "气缸状态二次刷新失败 block={Block}", block?.DisplayName);
+                    }
                 });
             }
             catch (Exception ex)
@@ -1009,7 +1013,7 @@ public partial class MainViewModel
         RefreshManualCylinderBlockStates();
     }
 
-    private async Task PersistConfigAsync(bool updateStatus)
+    internal async Task PersistConfigAsync(bool updateStatus)
     {
         var path = Path.Combine(GetProjectRoot(), "config", "appsettings.json");
         await _configurationService.SaveAsync(path, BuildAppConfig());

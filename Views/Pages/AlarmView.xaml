@@ -15,20 +15,20 @@
                     Margin="0,0,0,12">
                 <DockPanel>
                     <StackPanel>
-                        <TextBlock Text="{Binding ShellViewModel.CurrentAlarmTitle}" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{Binding CurrentAlarmTitle}" FontSize="20" FontWeight="Bold" Foreground="White"/>
                         <TextBlock Text="报警父页面已按左侧子导航切换显示。" Foreground="#94A3B8" Margin="0,8,0,0"/>
                     </StackPanel>
                     <WrapPanel DockPanel.Dock="Right">
-                        <Button Content="确认全部报警" Command="{Binding ShellViewModel.AcknowledgeAllAlarmsCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
-                        <Button Content="复位全部报警" Command="{Binding ShellViewModel.ResetAllAlarmsCommand}" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C" Padding="14,8" Margin="0,0,8,0"/>
-                        <Button Content="保存报警历史" Command="{Binding ShellViewModel.SaveAlarmHistoryCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="14,8" Margin="0,0,8,0"/>
-                        <Button Content="加载报警历史" Command="{Binding ShellViewModel.LoadAlarmHistoryCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="14,8"/>
+                        <Button Content="确认全部报警" Command="{Binding AcknowledgeAllAlarmsCommand}" Style="{StaticResource PrimaryButtonStyle}"/>
+                        <Button Content="复位全部报警" Command="{Binding ResetAllAlarmsCommand}" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C" Padding="14,8" Margin="0,0,8,0"/>
+                        <Button Content="保存报警历史" Command="{Binding SaveAlarmHistoryCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="14,8" Margin="0,0,8,0"/>
+                        <Button Content="加载报警历史" Command="{Binding LoadAlarmHistoryCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="14,8"/>
                     </WrapPanel>
                 </DockPanel>
             </Border>
 
             <Grid Grid.Row="1">
-                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding ShellViewModel.IsAlarmCurrentPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding IsAlarmCurrentPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Text="当前报警" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
                         <DataGrid ItemsSource="{Binding CurrentAlarms}" AutoGenerateColumns="False" Background="#111827" Foreground="White" BorderBrush="#1F2937" RowStyle="{StaticResource HighlightRowStyle}">
@@ -45,7 +45,7 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding ShellViewModel.IsAlarmHistoryPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding IsAlarmHistoryPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Text="历史报警" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
                         <DataGrid ItemsSource="{Binding AlarmHistory}" AutoGenerateColumns="False" Background="#111827" Foreground="White" BorderBrush="#1F2937" RowStyle="{StaticResource HighlightRowStyle}">
@@ -61,10 +61,10 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding ShellViewModel.IsAlarmLogPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding IsAlarmLogPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Text="日志" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
-                        <DataGrid ItemsSource="{Binding ShellViewModel.Logs}" AutoGenerateColumns="False" Background="#111827" Foreground="White" BorderBrush="#1F2937">
+                        <DataGrid ItemsSource="{Binding Logs}" AutoGenerateColumns="False" Background="#111827" Foreground="White" BorderBrush="#1F2937">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="时间" Binding="{Binding Time}" Width="*"/>
                                 <DataGridTextColumn Header="级别" Binding="{Binding Level}" Width="*"/>
@@ -76,22 +76,22 @@
                     </StackPanel>
                 </Border>
 
-                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding ShellViewModel.IsAlarmStatisticsPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Border Style="{StaticResource CardBorderStyle}" Padding="12" Visibility="{Binding IsAlarmStatisticsPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Text="报警统计" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
                         <WrapPanel Margin="0,0,0,10">
                             <TextBlock Text="级别：" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <ComboBox Width="120" ItemsSource="{Binding ShellViewModel.AlarmLevelOptions}" SelectedItem="{Binding ShellViewModel.SelectedAlarmLevel}" Margin="0,0,12,0"/>
+                            <ComboBox Width="120" ItemsSource="{Binding AlarmLevelOptions}" SelectedItem="{Binding SelectedAlarmLevel}" Margin="0,0,12,0"/>
                             <TextBlock Text="时间：" Foreground="#CBD5E1" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <ComboBox Width="120" ItemsSource="{Binding ShellViewModel.AlarmTimeRangeOptions}" SelectedItem="{Binding ShellViewModel.SelectedAlarmTimeRange}" Margin="0,0,12,0"/>
-                            <CheckBox Content="只看重点报警" IsChecked="{Binding ShellViewModel.ShowOnlyFocusAlarms}" Foreground="White" VerticalAlignment="Center"/>
+                            <ComboBox Width="120" ItemsSource="{Binding AlarmTimeRangeOptions}" SelectedItem="{Binding SelectedAlarmTimeRange}" Margin="0,0,12,0"/>
+                            <CheckBox Content="只看重点报警" IsChecked="{Binding ShowOnlyFocusAlarms}" Foreground="White" VerticalAlignment="Center"/>
                         </WrapPanel>
                         <Border Style="{StaticResource CardBorderStyle}" Background="#0B1324" Padding="12" Margin="0,0,0,12">
                             <StackPanel>
                                 <TextBlock Text="重点处理建议" FontSize="16" FontWeight="Bold" Foreground="White"/>
-                                <TextBlock Text="{Binding ShellViewModel.FocusAlarmHint}" Foreground="#FCA5A5" Margin="0,8,0,0" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding ShellViewModel.EstimatedDowntimeMinutes, StringFormat=预计停机：{0:F1} min}" Foreground="#FCD34D" Margin="0,8,0,0"/>
-                                <TextBlock Text="{Binding ShellViewModel.EstimatedProductionLoss, StringFormat=预计影响产量：{0}}" Foreground="#FCA5A5" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding FocusAlarmHint}" Foreground="#FCA5A5" Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding EstimatedDowntimeMinutes, StringFormat=预计停机：{0:F1} min}" Foreground="#FCD34D" Margin="0,8,0,0"/>
+                                <TextBlock Text="{Binding EstimatedProductionLoss, StringFormat=预计影响产量：{0}}" Foreground="#FCA5A5" Margin="0,4,0,0"/>
                             </StackPanel>
                         </Border>
                         <DataGrid ItemsSource="{Binding AlarmStatisticsView}" AutoGenerateColumns="False" Background="#111827" Foreground="White" BorderBrush="#1F2937">
@@ -103,7 +103,7 @@
                                 <DataGridTemplateColumn Header="联动" Width="*">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="看流程" Command="{Binding DataContext.ShellViewModel.JumpToFlowByAlarmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Source}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="8,4"/>
+                                            <Button Content="看流程" Command="{Binding DataContext.JumpToFlowByAlarmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Source}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="8,4"/>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

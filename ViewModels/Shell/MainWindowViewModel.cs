@@ -44,12 +44,17 @@ public sealed class MainWindowViewModel : MainViewModel
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
         Manual = new ManualViewModel(this);
-        ParametersModule = new ParameterViewModel(this);
-        Alarm = new AlarmViewModel(this);
-        Recipe = new RecipeViewModel(this);
+        ParametersModule = new ParameterViewModel(this, parameterService);
+        Alarm = new AlarmViewModel(this, alarmService);
+        Recipe = new RecipeViewModel(this, recipeService);
         Designer = new DesignerViewModel(this);
+        GitPull = new GitPullViewModel(this, gitPullService, generatedArtifactSyncService);
         Login = new LoginViewModel(this);
         Audit = new AuditViewModel(this);
+
+        SetGitPullViewModel(GitPull);
+
+        Recipe.SeedRecipes();
     }
 
     public HomeViewModel Home { get; }
@@ -59,6 +64,7 @@ public sealed class MainWindowViewModel : MainViewModel
     public AlarmViewModel Alarm { get; }
     public RecipeViewModel Recipe { get; }
     public DesignerViewModel Designer { get; }
+    public GitPullViewModel GitPull { get; }
     public LoginViewModel Login { get; }
     public AuditViewModel Audit { get; }
 }

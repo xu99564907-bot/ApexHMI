@@ -8,6 +8,7 @@ public abstract class ModuleViewModelBase : ObservableObject
     {
         Shell = shell;
         ModuleName = moduleName;
+        Shell.PropertyChanged += (_, args) => OnPropertyChanged(args.PropertyName);
     }
 
     protected MainViewModel Shell { get; }

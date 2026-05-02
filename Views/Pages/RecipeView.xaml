@@ -23,25 +23,25 @@
                               Margin="0,6,0,12"/>
                     <WrapPanel>
                         <Button Content="加载到参数"
-                                Command="{Binding ShellViewModel.ApplyRecipeCommand}"
+                                Command="{Binding ApplyRecipeCommand}"
                                 CommandParameter="{Binding SelectedRecipeName}"
                                 Style="{StaticResource PrimaryButtonStyle}"/>
                         <Button Content="新建配方"
-                                Command="{Binding ShellViewModel.CreateRecipeCommand}"
+                                Command="{Binding CreateRecipeCommand}"
                                 Background="#374151"
                                 Foreground="White"
                                 BorderBrush="#374151"
                                 Padding="12,8"
                                 Margin="0,0,8,8"/>
                         <Button Content="复制当前"
-                                Command="{Binding ShellViewModel.DuplicateRecipeCommand}"
+                                Command="{Binding DuplicateRecipeCommand}"
                                 Background="#374151"
                                 Foreground="White"
                                 BorderBrush="#374151"
                                 Padding="12,8"
                                 Margin="0,0,8,8"/>
                         <Button Content="删除当前"
-                                Command="{Binding ShellViewModel.DeleteRecipeCommand}"
+                                Command="{Binding DeleteRecipeCommand}"
                                 Background="#B91C1C"
                                 Foreground="White"
                                 BorderBrush="#B91C1C"
@@ -50,21 +50,21 @@
                     </WrapPanel>
                     <WrapPanel>
                         <Button Content="用当前参数覆盖配方"
-                                Command="{Binding ShellViewModel.CaptureCurrentParametersToRecipeCommand}"
+                                Command="{Binding CaptureCurrentParametersToRecipeCommand}"
                                 Background="#0F766E"
                                 Foreground="White"
                                 BorderBrush="#0F766E"
                                 Padding="12,8"
                                 Margin="0,0,8,8"/>
                         <Button Content="加载配方文件"
-                                Command="{Binding ShellViewModel.LoadRecipesCommand}"
+                                Command="{Binding LoadRecipesCommand}"
                                 Background="#374151"
                                 Foreground="White"
                                 BorderBrush="#374151"
                                 Padding="12,8"
                                 Margin="0,0,8,8"/>
                         <Button Content="保存配方文件"
-                                Command="{Binding ShellViewModel.SaveRecipesCommand}"
+                                Command="{Binding SaveRecipesCommand}"
                                 Background="#0F766E"
                                 Foreground="White"
                                 BorderBrush="#0F766E"

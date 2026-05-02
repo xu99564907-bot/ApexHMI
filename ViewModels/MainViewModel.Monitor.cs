@@ -55,7 +55,7 @@ public partial class MainViewModel
             await AutoRefreshTickAsync();
             await LoadAlarmHistoryAsync();
             InitializeIoMonitorItems();
-            UpdateAutoRefreshState();
+            await UpdateAutoRefreshStateAsync();
             AddLog("通讯", SystemMessage, "Info");
         }
         catch (Exception ex)

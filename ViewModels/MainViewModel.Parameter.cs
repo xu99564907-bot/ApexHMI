@@ -1,59 +1,29 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Windows.Data;
-using System.Windows.Threading;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using ApexHMI.Models;
-using ApexHMI.Services;
+using CommunityToolkit.Mvvm.Input;
 
 namespace ApexHMI.ViewModels;
 
 public partial class MainViewModel
 {
-    // ========== 参数设定 ==========
-
     [RelayCommand]
     private async Task SaveParametersAsync()
     {
-        if (!CanEditParameters) { SystemMessage = "当前权限不足，无法修改参数"; return; }
-        var illegal = Parameters.FirstOrDefault(p => !CanEditParameter(p));
-        if (illegal is not null) { SystemMessage = $"存在超权限参数：{illegal.Name}"; return; }
-        var path = Path.Combine(GetProjectRoot(), "config", "parameters.json");
-        await _parameterService.SaveAsync(path, Parameters);
-        SystemMessage = $"参数已保存：{path}";
-        AddLog("参数", SystemMessage, "Info");
+        if (this is Shell.MainWindowViewModel shell)
+        {
+            await shell.ParametersModule.SaveParametersAsync();
+        }
     }
 
     [RelayCommand]
     private async Task LoadParametersAsync()
     {
-        var path = Path.Combine(GetProjectRoot(), "config", "parameters.json");
-        var items = await _parameterService.LoadAsync(path);
-        if (items.Count == 0)
+        if (this is Shell.MainWindowViewModel shell)
         {
-            RefreshParameterPermissions();
-            SystemMessage = "未找到参数文件，已保留当前示例参数";
-            return;
+            await shell.ParametersModule.LoadParametersAsync();
         }
-
-        Parameters.Clear();
-        foreach (var item in items) Parameters.Add(item);
-        RefreshParameterPermissions();
-        SystemMessage = "参数加载完成";
-        AddLog("参数", SystemMessage, "Info");
     }
 
     private bool FilterParameterItem(object item)
@@ -87,7 +57,7 @@ public partial class MainViewModel
         Parameters.Add(new ParameterItem { Category = "联锁规则", Name = "轴报警时允许运动", Value = "false", Unit = "bool", Description = "决定轴报警状态下是否允许 Jog/定位/回零", MinRole = UserRole.Administrator });
     }
 
-    private void RefreshParameterPermissions()
+    public void RefreshParameterPermissions()
     {
         foreach (var parameter in Parameters)
         {
@@ -101,8 +71,12 @@ public partial class MainViewModel
     {
         if (e.NewItems is not null)
         {
-            foreach (var item in e.NewItems.OfType<ParameterItem>()) item.PropertyChanged += (_, _) => RefreshParameterPermissions();
+            foreach (var item in e.NewItems.OfType<ParameterItem>())
+            {
+                item.PropertyChanged += (_, _) => RefreshParameterPermissions();
+            }
         }
+
         RefreshParameterPermissions();
         ParametersView.Refresh();
     }
