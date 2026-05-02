@@ -1,0 +1,11 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.TextWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <Border Background="{Binding Background}" CornerRadius="4" Padding="4">
+        <TextBlock Text="{Binding Text}" FontSize="{Binding FontSize}"
+                   Foreground="{Binding Foreground}" FontWeight="{Binding FontWeight}"
+                   TextAlignment="{Binding TextAlignment}"
+                   VerticalAlignment="Center" TextWrapping="Wrap"/>
+    </Border>
+</UserControl>
