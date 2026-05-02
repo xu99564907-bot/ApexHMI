@@ -1,11 +1,20 @@
 bin/
 obj/
 .vs/
+.vscode/
+.idea/
 *.user
 *.suo
 *.cache
 *.pdb
 *.pre_redecode
+
+# Tooling local state
+.claude/
+.claire/
+TestResults/
+*.coverage
+*.coveragexml
 
 backup/
 backup_*/
