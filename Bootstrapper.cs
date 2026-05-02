@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using ApexHMI.Services;
+using ApexHMI.Services.DataBinding;
+using ApexHMI.Services.RuntimeUi;
 using ApexHMI.ViewModels.Shell;
 using ApexHMI.Views;
 using Microsoft.Extensions.Options;
@@ -63,6 +65,12 @@ public static class Bootstrapper
         services.AddSingleton(sp => (FlowLogCsvService)sp.GetRequiredService<IFlowLogCsvService>());
         services.AddSingleton<ITrendHistoryService, TrendHistoryService>();
         services.AddSingleton(sp => (TrendHistoryService)sp.GetRequiredService<ITrendHistoryService>());
+
+        // 开放平台 — 动态页面运行时
+        services.AddSingleton<IDataPointCatalog, DataPointCatalog>();
+        services.AddSingleton<IWidgetViewFactory, WidgetRegistry>();
+        services.AddSingleton<RuntimeProjectService>();
+        services.AddSingleton<RuntimeDataBindingService>();
 
         services.AddSingleton<RefreshCoordinator>();
 
