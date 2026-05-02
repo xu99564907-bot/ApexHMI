@@ -5,11 +5,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
 
 namespace ApexHMI.Services;
 
-public class FlowLogCsvService
+public class FlowLogCsvService : IFlowLogCsvService
 {
     public async Task AppendAsync(string filePath, FlowStepRecord step)
     {
@@ -53,8 +54,8 @@ public class FlowLogCsvService
             return result;
         }
 
-        var lines = await Compat.ReadAllLinesAsync(filePath, Encoding.UTF8);
-        foreach (var line in lines.Skip(1))
+        var records = await ReadCsvRecordsAsync(filePath).ConfigureAwait(false);
+        foreach (var line in records.Skip(1))
         {
             var parts = ParseCsvLine(line);
             if (parts.Count < 15) continue;
@@ -78,6 +79,58 @@ public class FlowLogCsvService
             });
         }
         return result;
+    }
+
+    private static async Task<List<string>> ReadCsvRecordsAsync(string filePath)
+    {
+        var content = await Compat.ReadAllTextAsync(filePath, Encoding.UTF8).ConfigureAwait(false);
+        var records = new List<string>();
+        var sb = new StringBuilder();
+        var inQuotes = false;
+
+        for (var i = 0; i < content.Length; i++)
+        {
+            var c = content[i];
+            if (c == '"')
+            {
+                if (inQuotes && i + 1 < content.Length && content[i + 1] == '"')
+                {
+                    sb.Append(c);
+                    sb.Append(content[i + 1]);
+                    i++;
+                    continue;
+                }
+
+                inQuotes = !inQuotes;
+                sb.Append(c);
+                continue;
+            }
+
+            if ((c == '\r' || c == '\n') && !inQuotes)
+            {
+                if (c == '\r' && i + 1 < content.Length && content[i + 1] == '\n')
+                {
+                    i++;
+                }
+
+                if (sb.Length > 0)
+                {
+                    records.Add(sb.ToString());
+                    sb.Clear();
+                }
+
+                continue;
+            }
+
+            sb.Append(c);
+        }
+
+        if (sb.Length > 0)
+        {
+            records.Add(sb.ToString());
+        }
+
+        return records;
     }
 
     private static string Escape(string value)

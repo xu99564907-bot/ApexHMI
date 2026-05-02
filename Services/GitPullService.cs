@@ -4,7 +4,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using Serilog;
 
 namespace ApexHMI.Services;
 
@@ -12,7 +14,7 @@ namespace ApexHMI.Services;
 /// 通过系统已安装的 git.exe 实现仓库克隆与拉取。
 /// 保留简单的 clone / pull 策略，便于在 IO 生成页面快速同步代码。
 /// </summary>
-public class GitPullService
+public class GitPullService : IGitPullService
 {
     public async Task<GitPullResult> PullAsync(GitPullSettings settings, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
@@ -138,6 +140,7 @@ public class GitPullService
                     catch (Exception ex)
                     {
                         // 推送失败不影响拉取结果：权限不够/空提交/只读令牌等情况常见，继续走流程。
+                        Log.Warning(ex, "推送项目分支 {Branch} 到远端失败", workingBranch);
                         log.AppendLine($"[警告] 推送 {workingBranch} 到远端失败：{ex.Message}");
                         progress?.Report($"[警告] 推送失败：{ex.Message}");
                     }
@@ -152,6 +155,7 @@ public class GitPullService
                     }
                     catch (Exception ex)
                     {
+                        Log.Warning(ex, "设置项目分支 {Branch} 上游失败", workingBranch);
                         log.AppendLine($"[警告] 设置上游失败：{ex.Message}");
                     }
                 }
@@ -190,6 +194,7 @@ public class GitPullService
                 }
                 catch (Exception ex)
                 {
+                    Log.Warning(ex, "自动恢复 Git 工作区缺失文件失败");
                     log.AppendLine($"[警告] 自动恢复失败：{ex.Message}");
                     progress?.Report($"[警告] 自动恢复失败：{ex.Message}");
                 }
@@ -237,6 +242,7 @@ public class GitPullService
             }
             catch (Exception ex)
             {
+                Log.Debug(ex, "关闭 Git sparse-checkout 限制失败，继续执行");
                 log.AppendLine($"[提示] sparse-checkout disable 跳过：{ex.Message}");
             }
 
@@ -472,6 +478,7 @@ public class GitPullService
         catch (Exception ex)
         {
             // push 失败保留 commit，提示用户手动处理（可能权限/冲突）。
+            Log.Warning(ex, "Git 提交后 push 失败，保留本地 commit");
             log.AppendLine($"[警告] push 失败：{ex.Message}");
             progress?.Report($"[警告] push 失败：{ex.Message}");
         }
@@ -549,6 +556,7 @@ public class GitPullService
         }
         catch (Exception ex)
         {
+            Log.Error(ex, "检测 git 命令失败");
             throw new InvalidOperationException("未检测到 git 命令。请先安装 Git for Windows 并确保 git.exe 已加入 PATH。", ex);
         }
     }
@@ -608,8 +616,9 @@ public class GitPullService
                     File.Delete(messageFile);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Debug(ex, "删除临时 Git 提交消息文件失败：{MessageFile}", messageFile);
                 // 临时提交消息文件清理失败不影响提交结果。
             }
         }
@@ -699,8 +708,9 @@ public class GitPullService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Debug(ex, "解析 origin 默认分支 symbolic-ref 失败，改用 remote show origin 回退");
             // 某些仓库没设 HEAD 符号链接，尝试用 remote show origin 回退。
             try
             {
@@ -716,8 +726,9 @@ public class GitPullService
                     }
                 }
             }
-            catch
+            catch (Exception fallbackEx)
             {
+                Log.Debug(fallbackEx, "通过 remote show origin 解析默认分支失败");
                 // 忽略，交给上层走 pull --ff-only 的默认行为。
             }
         }
@@ -735,8 +746,9 @@ public class GitPullService
             await RunGitAsync("rev-parse --abbrev-ref HEAD", targetFolder, log, progress, cancellationToken);
             await RunGitAsync("status -sb", targetFolder, log, progress, cancellationToken);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Debug(ex, "读取 Git 分支状态诊断信息失败");
             // 纯诊断信息，失败忽略。
         }
     }
@@ -759,8 +771,9 @@ public class GitPullService
             }
             return (commit, subject);
         }
-        catch
+        catch (Exception ex)
         {
+            Log.Debug(ex, "读取 Git HEAD 信息失败");
             return (string.Empty, string.Empty);
         }
     }

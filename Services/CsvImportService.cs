@@ -1,11 +1,12 @@
 using System.Globalization;
 using System.IO;
 using CsvHelper;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
 
 namespace ApexHMI.Services;
 
-public class CsvImportService
+public class CsvImportService : ICsvImportService
 {
     public async Task<List<TagItem>> ImportTagsAsync(string csvFilePath)
     {

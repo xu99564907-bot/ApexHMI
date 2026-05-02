@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
 
 namespace ApexHMI.Services;
@@ -26,7 +27,7 @@ namespace ApexHMI.Services;
 /// 如果目标文件存在：保留现有内容与编码，按变量地址或实例调用头替换重复块，新增块追加。
 /// 如果目标文件不存在：按 UTF-8 无 BOM 创建并写入。
 /// </summary>
-public class GeneratedArtifactSyncService
+public class GeneratedArtifactSyncService : IGeneratedArtifactSyncService
 {
     private static readonly Regex DbIoPattern = new(@"^DB\d+_IO$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex InstanceStartPattern = new(@"(?m)^[ \t]*(?<key>FB_[A-Za-z0-9_]+_instance\[\d+\])\s*\(", RegexOptions.Compiled);

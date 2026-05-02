@@ -1,10 +1,11 @@
 using System.IO;
 using System.Xml.Linq;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
 
 namespace ApexHMI.Services;
 
-public class XmlImportService
+public class XmlImportService : IXmlImportService
 {
     private sealed record UserDefElementInfo(string Name, string TypeName);
     private sealed record ArrayTypeInfo(int MinRange, int MaxRange, string BaseTypeName);

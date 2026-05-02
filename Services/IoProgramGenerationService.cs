@@ -2,12 +2,21 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using Microsoft.Extensions.Options;
 
 namespace ApexHMI.Services;
 
-public class IoProgramGenerationService
+public class IoProgramGenerationService : IIoProgramGenerationService
 {
+    private readonly IoProgramGenerationOptions _options;
+
+    public IoProgramGenerationService(IOptions<IoProgramGenerationOptions>? options = null)
+    {
+        _options = options?.Value ?? new IoProgramGenerationOptions();
+    }
+
     public async Task<IoGenerationResult> GenerateAsync(
         IEnumerable<IoTableRow> rows,
         IoGenerationSettings settings,
@@ -42,7 +51,7 @@ public class IoProgramGenerationService
             CreateArtifact(outputDirectory, "DO_ACT_Comment", BuildCommentProgram(outputSignals, false, templateDirectory))
         };
 
-        artifacts.AddRange(BuildObjectProgramArtifacts(inputSignals, outputSignals, templateDirectory, outputDirectory, controlDb, driveDb, NormalizeOperationNumber(settings.OperationNumber)));
+        artifacts.AddRange(BuildObjectProgramArtifacts(inputSignals, outputSignals, templateDirectory, outputDirectory, controlDb, driveDb, _options));
 
         foreach (var artifact in artifacts)
         {
@@ -102,7 +111,7 @@ public class IoProgramGenerationService
         string outputDirectory,
         string controlDb,
         string driveDb,
-        string operationNumber)
+        IoProgramGenerationOptions options)
     {
         var artifacts = new List<GeneratedProgramArtifact>();
 
@@ -112,8 +121,8 @@ public class IoProgramGenerationService
         AddArtifactIfAny(artifacts, outputDirectory, "ACT_Motor", BuildMotorProgram(inputs, outputs, templateDirectory, controlDb, driveDb));
         AddArtifactIfAny(artifacts, outputDirectory, "ACT_Axis", BuildAxisProgram(inputs, outputs, templateDirectory, controlDb, driveDb));
         AddArtifactIfAny(artifacts, outputDirectory, "ACT_Rotdisk", BuildRotdiskProgram(inputs, outputs, templateDirectory, controlDb, driveDb));
-        AddArtifactIfAny(artifacts, outputDirectory, "ACT_Epson", BuildEpsonProgram(inputs, outputs, templateDirectory, controlDb, driveDb));
-        AddArtifactIfAny(artifacts, outputDirectory, "ACT_Kuka", BuildKukaProgram(inputs, outputs, templateDirectory, controlDb, driveDb));
+        AddArtifactIfAny(artifacts, outputDirectory, "ACT_Epson", BuildEpsonProgram(inputs, outputs, templateDirectory, controlDb, driveDb, options));
+        AddArtifactIfAny(artifacts, outputDirectory, "ACT_Kuka", BuildKukaProgram(inputs, outputs, templateDirectory, controlDb, driveDb, options));
         return artifacts;
     }
 
@@ -292,7 +301,7 @@ public class IoProgramGenerationService
             }));
     }
 
-    private static string BuildEpsonProgram(IReadOnlyList<IoSignal> inputs, IReadOnlyList<IoSignal> outputs, string templateDirectory, string controlDb, string driveDb)
+    private static string BuildEpsonProgram(IReadOnlyList<IoSignal> inputs, IReadOnlyList<IoSignal> outputs, string templateDirectory, string controlDb, string driveDb, IoProgramGenerationOptions options)
     {
         var template = ReadTemplate(templateDirectory, "EpsonRobProgram.txt");
         return BuildObjectProgram(
@@ -303,12 +312,12 @@ public class IoProgramGenerationService
                 ["DriveDb"] = driveDb,
                 ["ControlDb"] = controlDb,
                 ["Name"] = Quote(item.Name),
-                ["IP"] = "192.168.0.10",
-                ["Port"] = "5000"
+                ["IP"] = options.EpsonRobotIp,
+                ["Port"] = options.EpsonRobotPort.ToString()
             }));
     }
 
-    private static string BuildKukaProgram(IReadOnlyList<IoSignal> inputs, IReadOnlyList<IoSignal> outputs, string templateDirectory, string controlDb, string driveDb)
+    private static string BuildKukaProgram(IReadOnlyList<IoSignal> inputs, IReadOnlyList<IoSignal> outputs, string templateDirectory, string controlDb, string driveDb, IoProgramGenerationOptions options)
     {
         var template = ReadTemplate(templateDirectory, "KukaRobProgram.txt");
         return BuildObjectProgram(
@@ -319,8 +328,8 @@ public class IoProgramGenerationService
                 ["DriveDb"] = driveDb,
                 ["ControlDb"] = controlDb,
                 ["Name"] = Quote(item.Name),
-                ["IP"] = "192.168.0.20",
-                ["Port"] = "7000"
+                ["IP"] = options.KukaRobotIp,
+                ["Port"] = options.KukaRobotPort.ToString()
             }));
     }
 

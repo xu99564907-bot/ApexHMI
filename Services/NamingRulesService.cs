@@ -1,10 +1,11 @@
 using System.IO;
 using System.Text.Json;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
 
 namespace ApexHMI.Services;
 
-public class NamingRulesService
+public class NamingRulesService : INamingRulesService
 {
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
@@ -17,8 +18,12 @@ public class NamingRulesService
             return defaultConfig;
         }
 
-        using var stream = File.OpenRead(filePath);
-        var config = await JsonSerializer.DeserializeAsync<NamingRulesConfig>(stream, _jsonOptions);
+        NamingRulesConfig? config;
+        using (var stream = File.OpenRead(filePath))
+        {
+            config = await JsonSerializer.DeserializeAsync<NamingRulesConfig>(stream, _jsonOptions);
+        }
+
         if (config is not null)
         {
             Normalize(config);

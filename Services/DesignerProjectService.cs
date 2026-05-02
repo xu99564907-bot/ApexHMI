@@ -1,10 +1,11 @@
 using System.IO;
 using System.Text.Json;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
 
 namespace ApexHMI.Services;
 
-public class DesignerProjectService
+public class DesignerProjectService : IDesignerProjectService
 {
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 

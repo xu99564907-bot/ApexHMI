@@ -3,11 +3,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
 
 namespace ApexHMI.Services;
 
-public class TrendHistoryService
+public class TrendHistoryService : ITrendHistoryService
 {
     public async Task AppendAsync(string path, IEnumerable<TrendSample> samples)
     {
