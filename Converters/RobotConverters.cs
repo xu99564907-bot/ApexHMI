@@ -19,7 +19,7 @@ public class BoolToIndicatorBrushConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 /// <summary>
@@ -35,7 +35,7 @@ public class BoolToIndicatorBorderConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 /// <summary>
@@ -51,7 +51,7 @@ public class BoolToIndicatorTextConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 #endregion
@@ -68,7 +68,7 @@ public class BoolToBlueBrushConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToBlueBorderConverter : IValueConverter
@@ -81,7 +81,7 @@ public class BoolToBlueBorderConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToBlueTextConverter : IValueConverter
@@ -94,7 +94,7 @@ public class BoolToBlueTextConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 #endregion
@@ -111,7 +111,7 @@ public class BoolToYellowBrushConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToYellowBorderConverter : IValueConverter
@@ -124,7 +124,7 @@ public class BoolToYellowBorderConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToYellowTextConverter : IValueConverter
@@ -137,7 +137,7 @@ public class BoolToYellowTextConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 #endregion
@@ -154,7 +154,7 @@ public class BoolToErrorBrushConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToErrorBorderConverter : IValueConverter
@@ -167,7 +167,7 @@ public class BoolToErrorBorderConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToErrorTextConverter : IValueConverter
@@ -180,7 +180,7 @@ public class BoolToErrorTextConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 #endregion
@@ -197,7 +197,7 @@ public class BoolToErrorBackgroundConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToErrorValueConverter : IValueConverter
@@ -210,7 +210,7 @@ public class BoolToErrorValueConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToStatusTitleConverter : IValueConverter
@@ -221,7 +221,7 @@ public class BoolToStatusTitleConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToStatusTitleColorConverter : IValueConverter
@@ -234,7 +234,7 @@ public class BoolToStatusTitleColorConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToStatusMessageConverter : IValueConverter
@@ -247,7 +247,7 @@ public class BoolToStatusMessageConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 public class BoolToStatusMessageColorConverter : IValueConverter
@@ -260,7 +260,7 @@ public class BoolToStatusMessageColorConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 #endregion
@@ -277,7 +277,7 @@ public class BoolToErrorBorderBrushConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 #endregion
@@ -294,7 +294,7 @@ public class ErrorToTextColorConverter : IValueConverter
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        => throw new NotImplementedException();
+        => Binding.DoNothing;
 }
 
 #endregion

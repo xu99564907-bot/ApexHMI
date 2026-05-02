@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using ApexHMI.Services.Security;
 
 namespace ApexHMI.Services;
 
@@ -12,71 +13,56 @@ public class ConfigurationService : IConfigurationService
     private const string TagsFile = "tags.json";
     private const string DesignDataFile = "design-data.json";
     private const string GitPullFile = "git-pull.json";
-    private const string LegacyFile = "appsettings.json";
 
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
-    /// <summary>
-    /// 保存配置到拆分文件。filePath 参数用于定位 config 目录（向后兼容调用签名）。
-    /// </summary>
     public async Task SaveAsync(string filePath, AppConfig config)
     {
         var configDir = Path.GetDirectoryName(filePath)!;
         Directory.CreateDirectory(configDir);
 
-        await SavePartitionAsync(configDir, ConnectionFile,
-            new ConnectionConfig { Connection = config.Connection });
-
-        await SavePartitionAsync(configDir, IoGenerationFile,
-            new IoGenerationConfig { IoGeneration = config.IoGeneration });
-
-        await SavePartitionAsync(configDir, TagsFile,
-            new TagsConfig { Tags = config.Tags, EventBindings = config.EventBindings });
-
-        await SavePartitionAsync(configDir, DesignDataFile,
-            new DesignDataConfig
-            {
-                IoTableRows = config.IoTableRows,
-                ManualCylinderBlocks = config.ManualCylinderBlocks,
-                AxisConfigEntries = config.AxisConfigEntries
-            });
-
-        await SavePartitionAsync(configDir, GitPullFile,
-            new GitPullConfig { GitPull = config.GitPull ?? new GitPullSettings() });
+        var originals = SnapshotAndEncryptSecrets(config);
+        try
+        {
+            using var stream = File.Create(filePath);
+            await JsonSerializer.SerializeAsync(stream, config, _jsonOptions);
+        }
+        finally
+        {
+            RestoreSecrets(config, originals);
+        }
     }
 
-    /// <summary>
-    /// 从拆分文件加载配置。若拆分文件不存在但旧文件存在，自动迁移。
-    /// filePath 参数用于定位 config 目录（向后兼容调用签名）。
-    /// </summary>
     public async Task<AppConfig?> LoadAsync(string filePath)
     {
-        var configDir = Path.GetDirectoryName(filePath)!;
-        var connectionPath = Path.Combine(configDir, ConnectionFile);
-        var legacyPath = Path.Combine(configDir, LegacyFile);
-
-        // 迁移：旧文件存在且新拆分文件不存在
-        if (File.Exists(legacyPath) && !File.Exists(connectionPath))
+        if (File.Exists(filePath))
         {
-            var legacy = await LoadLegacyAsync(legacyPath);
-            if (legacy is null) return null;
+            using var stream = File.OpenRead(filePath);
+            var config = await JsonSerializer.DeserializeAsync<AppConfig>(stream, _jsonOptions);
+            if (config is null)
+            {
+                return null;
+            }
 
-            // 写入拆分文件
-            await SaveAsync(filePath, legacy);
-            // 备份旧文件
-            var backupPath = legacyPath + ".backup";
-            if (File.Exists(backupPath)) File.Delete(backupPath);
-            File.Move(legacyPath, backupPath);
-            return legacy;
+            DecryptSecrets(config);
+            return config;
         }
 
-        // 拆分文件也不存在
+        var configDir = Path.GetDirectoryName(filePath)!;
+        var connectionPath = Path.Combine(configDir, ConnectionFile);
         if (!File.Exists(connectionPath))
         {
             return null;
         }
 
-        // 从拆分文件加载
+        var migrated = await LoadSplitFilesAsync(configDir);
+        DecryptSecrets(migrated);
+        await SaveAsync(filePath, migrated);
+        return migrated;
+    }
+
+    private async Task<AppConfig> LoadSplitFilesAsync(string configDir)
+    {
         var config = new AppConfig();
 
         var conn = await LoadPartitionAsync<ConnectionConfig>(configDir, ConnectionFile);
@@ -109,15 +95,6 @@ public class ConfigurationService : IConfigurationService
         return config;
     }
 
-    // ---- 内部辅助方法 ----
-
-    private async Task SavePartitionAsync<T>(string configDir, string fileName, T data)
-    {
-        var path = Path.Combine(configDir, fileName);
-        using var stream = File.Create(path);
-        await JsonSerializer.SerializeAsync(stream, data, _jsonOptions);
-    }
-
     private async Task<T?> LoadPartitionAsync<T>(string configDir, string fileName) where T : class
     {
         var path = Path.Combine(configDir, fileName);
@@ -126,11 +103,49 @@ public class ConfigurationService : IConfigurationService
         return await JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions);
     }
 
-    /// <summary>读取旧版单文件格式</summary>
-    private async Task<AppConfig?> LoadLegacyAsync(string filePath)
+    private static (string? Password, string? AccessToken) SnapshotAndEncryptSecrets(AppConfig config)
     {
-        if (!File.Exists(filePath)) return null;
-        using var stream = File.OpenRead(filePath);
-        return await JsonSerializer.DeserializeAsync<AppConfig>(stream, _jsonOptions);
+        string? originalPassword = null;
+        string? originalToken = null;
+
+        if (config.Connection != null && !string.IsNullOrEmpty(config.Connection.Password))
+        {
+            originalPassword = config.Connection.Password;
+            config.Connection.Password = SecretProtector.Protect(originalPassword) ?? string.Empty;
+        }
+
+        if (config.GitPull != null && !string.IsNullOrEmpty(config.GitPull.AccessToken))
+        {
+            originalToken = config.GitPull.AccessToken;
+            config.GitPull.AccessToken = SecretProtector.Protect(originalToken) ?? string.Empty;
+        }
+
+        return (originalPassword, originalToken);
+    }
+
+    private static void RestoreSecrets(AppConfig config, (string? Password, string? AccessToken) originals)
+    {
+        if (originals.Password != null && config.Connection != null)
+        {
+            config.Connection.Password = originals.Password;
+        }
+
+        if (originals.AccessToken != null && config.GitPull != null)
+        {
+            config.GitPull.AccessToken = originals.AccessToken;
+        }
+    }
+
+    private static void DecryptSecrets(AppConfig config)
+    {
+        if (config.Connection != null && !string.IsNullOrEmpty(config.Connection.Password))
+        {
+            config.Connection.Password = SecretProtector.Unprotect(config.Connection.Password) ?? string.Empty;
+        }
+
+        if (config.GitPull != null && !string.IsNullOrEmpty(config.GitPull.AccessToken))
+        {
+            config.GitPull.AccessToken = SecretProtector.Unprotect(config.GitPull.AccessToken) ?? string.Empty;
+        }
     }
 }
