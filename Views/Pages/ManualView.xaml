@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:model="clr-namespace:ApexHMI.Models"
              xmlns:controls="clr-namespace:ApexHMI.Views.Controls"
+             xmlns:runtime="clr-namespace:ApexHMI.Views.Runtime"
              xmlns:conv="clr-namespace:ApexHMI.Converters">
     <UserControl.Resources>
         <conv:ViewportToCylinderItemWidthConverter x:Key="ViewportToCylinderItemWidthConverter"/>
@@ -40,7 +41,33 @@
                     <Grid x:Name="ManualRootGrid" Margin="12" DataContext="{Binding ShellViewModel}">
                         <Border Style="{StaticResource CardBorderStyle}" Padding="16">
                             <StackPanel>
-                                <TextBlock Text="{Binding CurrentManualTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                                <DockPanel Margin="0,0,0,12">
+                                    <TextBlock Text="{Binding CurrentManualTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                    <CheckBox DockPanel.Dock="Right" Content="🎨 使用设计器布局"
+                                              IsChecked="{Binding UseDesignerManualLayout}"
+                                              Foreground="#0F172A" FontWeight="SemiBold"
+                                              VerticalAlignment="Center" Margin="20,0,0,0"
+                                              ToolTip="启用后,本页直接显示设计器中编辑的 manual.* 页面;关闭则恢复原硬编码 UI。"/>
+                                </DockPanel>
+                                <!-- 路径B：设计器布局视图 -->
+                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF"
+                                        Padding="6" Margin="0,0,0,12"
+                                        Visibility="{Binding UseDesignerManualLayout, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <runtime:DynamicPageHost DataContext="{Binding ManualPage}"
+                                                              MinHeight="540"/>
+                                </Border>
+                                <!-- 旧硬编码 UI（设计器布局开启时整体隐藏） -->
+                                <StackPanel>
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding UseDesignerManualLayout}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
                                 <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="0,0,0,12" Visibility="{Binding IsManualCylinderPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <StackPanel>
                                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" MinHeight="420" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
@@ -549,6 +576,7 @@
                                     </Border>
                                 </UniformGrid>
                                 <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Visibility="{Binding IsManualStopperPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}"><StackPanel><TextBlock Text="挡停单元" FontSize="16" FontWeight="Bold" Foreground="#0F172A"/><WrapPanel Margin="0,8,0,0"><Button Content="挡停 升降" Command="{Binding ToggleDeviceCommand}" CommandParameter="Stopper_Up" Style="{StaticResource PrimaryButtonStyle}"/></WrapPanel></StackPanel></Border>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </Grid>

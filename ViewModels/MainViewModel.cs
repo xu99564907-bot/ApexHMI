@@ -576,6 +576,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         {
             _ = RefreshRobotStatusAsync();
         }
+        // 路径B：若启用了设计器布局，按子页签加载对应 manual.* 页
+        if (this is ApexHMI.ViewModels.Shell.MainWindowViewModel mvm)
+        {
+            _ = mvm.LoadManualPageForCurrentSubSectionAsync();
+        }
         // 子页面切换后立即刷新
         if (AutoRefreshEnabled && _opcUaService.IsConnected)
         {
