@@ -56,6 +56,9 @@ public partial class WidgetPropertyItem : ObservableObject
     /// <summary>是否颜色类属性（值以 # 开头），用于决定是否显示色板预览。</summary>
     public bool IsColorProperty => !string.IsNullOrEmpty(Value) && Value.StartsWith("#", System.StringComparison.Ordinal);
 
+    /// <summary>是否设备名属性，用于决定是否显示设备下拉框。</summary>
+    public bool IsDeviceNameProp => string.Equals(Key, "deviceName", System.StringComparison.OrdinalIgnoreCase);
+
     partial void OnValueChanged(string value)
     {
         OnPropertyChanged(nameof(IsColorProperty));

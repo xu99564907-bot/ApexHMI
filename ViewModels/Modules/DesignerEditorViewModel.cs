@@ -154,6 +154,32 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>可用 Tag 列表，用于绑定选择器下拉框。</summary>
     public IEnumerable<TagItem> AvailableTags => Shell.Tags;
 
+    /// <summary>
+    /// 当前选中 widget 的可用设备名列表（按 TypeId 自动从 Shell 取真实设备）。
+    /// 用于属性面板 deviceName 下拉框。
+    /// </summary>
+    public IEnumerable<string> AvailableDeviceNames
+    {
+        get
+        {
+            if (SelectedWidget?.TypeId is null) return Enumerable.Empty<string>();
+            return SelectedWidget.TypeId.ToLowerInvariant() switch
+            {
+                "cylinder" or "manual-cylinder-block" =>
+                    Shell.ManualCylinderBlockCards.Select(c =>
+                        string.IsNullOrWhiteSpace(c.DisplayName) ? $"Cyl{c.CylinderIndex}" : c.DisplayName),
+                "axis" or "manual-axis-block" =>
+                    Shell.ManualAxisBlockCards.Select(a =>
+                        string.IsNullOrWhiteSpace(a.DisplayName) ? $"Axis{a.AxisIndex}" : a.DisplayName),
+                "stopper" or "manual-stopper-block" =>
+                    Shell.Tags
+                        .Where(t => t.Name?.IndexOf("stopper", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Select(t => t.Name),
+                _ => Enumerable.Empty<string>(),
+            };
+        }
+    }
+
     // ========== 选中页切换 ==========
 
     partial void OnSelectedPageChanged(PageDefinition? value)
@@ -187,6 +213,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }
 
         OnPropertyChanged(nameof(CurrentBindingTagId));
+        OnPropertyChanged(nameof(AvailableDeviceNames));
     }
 
     private void OnWidgetPropertyItemChanged(object? sender, PropertyChangedEventArgs e)

@@ -335,9 +335,39 @@
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0"
                                                        ToolTip="{Binding Key}"/>
+                                            <!-- 普通属性：TextBox -->
                                             <TextBox Grid.Column="1"
                                                      Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                                     VerticalAlignment="Center"/>
+                                                     VerticalAlignment="Center">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsDeviceNameProp}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                            <!-- deviceName 属性：下拉框（自动列出真实设备） -->
+                                            <ComboBox Grid.Column="1"
+                                                      ItemsSource="{Binding DataContext.AvailableDeviceNames, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                      Text="{Binding Value, UpdateSourceTrigger=LostFocus}"
+                                                      IsEditable="True" IsTextSearchEnabled="True"
+                                                      VerticalAlignment="Center"
+                                                      ToolTip="选择设备；列表为空时可手动输入设备名">
+                                                <ComboBox.Style>
+                                                    <Style TargetType="ComboBox">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsDeviceNameProp}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ComboBox.Style>
+                                            </ComboBox>
                                             <!-- 颜色属性显示色板预览 -->
                                             <Border Grid.Column="2"
                                                     Width="22" Height="22" CornerRadius="4"
