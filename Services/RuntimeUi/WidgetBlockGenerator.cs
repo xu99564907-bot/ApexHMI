@@ -39,9 +39,9 @@ public class WidgetBlockGenerator
     {
         ["cylinder"] = 240,
         ["motor"]    = 200,
-        ["axis"]     = 240,
-        ["robot"]    = 220,
-        ["stopper"]  = 200,
+        ["axis"]     = 260,
+        ["robot"]    = 360,
+        ["stopper"]  = 180,
     };
 
     /// <summary>每个功能块的高度（px）。</summary>
@@ -49,9 +49,9 @@ public class WidgetBlockGenerator
     {
         ["cylinder"] = 250,
         ["motor"]    = 190,
-        ["axis"]     = 170,
-        ["robot"]    = 190,
-        ["stopper"]  = 160,
+        ["axis"]     = 230,
+        ["robot"]    = 340,
+        ["stopper"]  = 130,
     };
 
     /// <summary>
@@ -172,49 +172,34 @@ public class WidgetBlockGenerator
     }
 
     // ---- 轴功能块 ----
+    // 升级为单个 manual-axis-block widget，复用 Tab 3 真实卡片
     private IReadOnlyList<WidgetInstance> BuildAxisBlock(PageDefinition page, string name, double x, double y)
     {
-        return new List<WidgetInstance>
-        {
-            MakeText(page, name, x, y, 220, 28, "#1E40AF", "14", "SemiBold"),
-            MakeNumeric(page, $"{name}_Pos", $"{name} 位置", "mm", x, y + 36, 220, 48),
-            MakeBoolLamp(page, $"{name}_Alarm", $"{name} 报警", x, y + 92, 220, 28, "#EF4444"),
-            MakeButton(page, "使能", x, y + 128, 100, 32, "#2563EB",
-                "write-bool", $"{name}_Enable|True"),
-            MakeButton(page, "复位", x + 112, y + 128, 100, 32, "#64748B",
-                "write-bool", $"{name}_AlarmReset|True"),
-        };
+        var w = _widgetEditor.AddWidget(page, "manual-axis-block", x, y);
+        _widgetEditor.ResizeWidget(w, 260, 230);
+        _widgetEditor.UpdateProperty(w, "deviceName", name);
+        return new List<WidgetInstance> { w };
     }
 
     // ---- 机械手功能块 ----
+    // 升级为单个 manual-robot-block widget，复用 RobotControl
     private IReadOnlyList<WidgetInstance> BuildRobotBlock(PageDefinition page, string name, double x, double y)
     {
-        return new List<WidgetInstance>
-        {
-            MakeText(page, name, x, y, 200, 28, "#1E40AF", "14", "SemiBold"),
-            MakeBoolLamp(page, $"{name}_Run", $"{name} 运行", x, y + 36, 200, 30, "#22C55E"),
-            MakeBoolLamp(page, $"{name}_Pause", $"{name} 暂停", x, y + 74, 200, 30, "#F59E0B"),
-            MakeBoolLamp(page, $"{name}_Fault", $"{name} 故障", x, y + 112, 200, 28, "#EF4444"),
-            MakeButton(page, "暂停", x, y + 148, 92, 34, "#F59E0B",
-                "write-bool", $"{name}_PauseCmd|True"),
-            MakeButton(page, "复位", x + 104, y + 148, 92, 34, "#64748B",
-                "write-bool", $"{name}_ResetCmd|True"),
-        };
+        var w = _widgetEditor.AddWidget(page, "manual-robot-block", x, y);
+        _widgetEditor.ResizeWidget(w, 360, 340);
+        _widgetEditor.UpdateProperty(w, "deviceName", name);
+        return new List<WidgetInstance> { w };
     }
 
     // ---- 挡停功能块 ----
+    // 升级为单个 manual-stopper-block widget
     private IReadOnlyList<WidgetInstance> BuildStopperBlock(PageDefinition page, string name, double x, double y)
     {
-        return new List<WidgetInstance>
-        {
-            MakeText(page, name, x, y, 180, 28, "#1E40AF", "14", "SemiBold"),
-            MakeBoolLamp(page, $"{name}_Up", $"{name} 升起", x, y + 36, 180, 30, "#EF4444"),
-            MakeBoolLamp(page, $"{name}_Down", $"{name} 落下", x, y + 74, 180, 30, "#22C55E"),
-            MakeButton(page, "升起", x, y + 112, 82, 34, "#EF4444",
-                "write-bool", $"{name}_UpCmd|True"),
-            MakeButton(page, "落下", x + 94, y + 112, 82, 34, "#22C55E",
-                "write-bool", $"{name}_DownCmd|True"),
-        };
+        var w = _widgetEditor.AddWidget(page, "manual-stopper-block", x, y);
+        _widgetEditor.ResizeWidget(w, 180, 130);
+        _widgetEditor.UpdateProperty(w, "deviceName", name);
+        _widgetEditor.UpdateProperty(w, "displayName", name);
+        return new List<WidgetInstance> { w };
     }
 
     // ---- 辅助方法 ----

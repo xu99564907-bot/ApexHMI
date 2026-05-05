@@ -567,6 +567,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         {
             "cylinder" => Shell.ManualCylinderBlockCards.Select(c =>
                 string.IsNullOrWhiteSpace(c.DisplayName) ? $"Cyl{c.CylinderIndex}" : c.DisplayName).ToList(),
+            "axis"     => Shell.ManualAxisBlockCards.Select(a =>
+                string.IsNullOrWhiteSpace(a.DisplayName) ? $"Axis{a.AxisIndex}" : a.DisplayName).ToList(),
             _ => new List<string>()
         };
 

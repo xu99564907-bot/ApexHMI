@@ -25,14 +25,18 @@ public class WidgetRegistry : IWidgetViewFactory
 
         // 业务复合控件：复用 Tab 3 手动页的真实卡片 UI/数据
         Register("manual-cylinder-block", (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
-        // 兼容：旧"cylinder" typeId 自动升级到 manual-cylinder-block
-        Register("cylinder",              (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
+        Register("manual-axis-block",     (m, ctx) => CreateView(new ManualAxisBlockWidgetViewModel(m, ctx),     new ManualAxisBlockWidget()));
+        Register("manual-robot-block",    (m, ctx) => CreateView(new ManualRobotBlockWidgetViewModel(m, ctx),    new ManualRobotBlockWidget()));
+        Register("manual-stopper-block",  (m, ctx) => CreateView(new ManualStopperBlockWidgetViewModel(m, ctx),  new ManualStopperBlockWidget()));
 
-        // 其它工业状态控件（仍用通用 StatusWidget，后续按需升级为业务 widget）
+        // 兼容旧 typeId：自动升级到 manual-* 业务控件
+        Register("cylinder", (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
+        Register("axis",     (m, ctx) => CreateView(new ManualAxisBlockWidgetViewModel(m, ctx),     new ManualAxisBlockWidget()));
+        Register("robot",    (m, ctx) => CreateView(new ManualRobotBlockWidgetViewModel(m, ctx),    new ManualRobotBlockWidget()));
+        Register("stopper",  (m, ctx) => CreateView(new ManualStopperBlockWidgetViewModel(m, ctx),  new ManualStopperBlockWidget()));
+
+        // 暂未升级的工业控件（继续用通用 StatusWidget）
         Register("motor",        (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
-        Register("axis",         (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
-        Register("robot",        (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
-        Register("stopper",      (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
         Register("alarm-banner", (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
 
         // page-button 复用 ButtonWidget
