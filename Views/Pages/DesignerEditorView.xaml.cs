@@ -15,7 +15,7 @@ public partial class DesignerEditorView : UserControl
     public DesignerEditorView()
     {
         InitializeComponent();
-        ToolboxItemsControl.ItemsSource = DesignerEditorViewModel.ToolboxTypes;
+        ToolboxItemsControl.ItemsSource = DesignerEditorViewModel.ToolboxGroups;
         Focusable = true;
         Loaded += (_, _) => Focus();
         PreviewKeyDown += DesignerEditorView_PreviewKeyDown;

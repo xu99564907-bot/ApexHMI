@@ -232,6 +232,15 @@ public sealed partial class MainWindowViewModel : MainViewModel
             case "write-bool":
                 _ = HandleWriteBoolAsync(actionParam);
                 break;
+            case "write-int":
+                _ = HandleWriteIntAsync(actionParam);
+                break;
+            case "write-float":
+                _ = HandleWriteFloatAsync(actionParam);
+                break;
+            case "show-dialog":
+                System.Windows.MessageBox.Show(actionParam, "提示");
+                break;
         }
     }
 
@@ -242,6 +251,23 @@ public sealed partial class MainWindowViewModel : MainViewModel
         {
             await _dataBindingService.WriteAsync(parts[0], boolValue);
         }
+    }
+
+    private async Task HandleWriteIntAsync(string actionParam)
+    {
+        var parts = actionParam.Split('|');
+        if (parts.Length >= 2 && int.TryParse(parts[1], out var v))
+            await _dataBindingService.WriteAsync(parts[0], v);
+    }
+
+    private async Task HandleWriteFloatAsync(string actionParam)
+    {
+        var parts = actionParam.Split('|');
+        if (parts.Length >= 2 && double.TryParse(parts[1],
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var v))
+            await _dataBindingService.WriteAsync(parts[0], v);
     }
 
     internal async Task NavigateToRuntimePageAsync(string routeKey)

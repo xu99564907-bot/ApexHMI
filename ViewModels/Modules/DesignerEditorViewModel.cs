@@ -291,6 +291,22 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         "motor", "alarm-banner"
     };
 
+    /// <summary>工具箱分组定义（绑到 DesignerEditorView 的折叠分组列表）。</summary>
+    public static readonly IReadOnlyList<ToolboxGroup> ToolboxGroups = new[]
+    {
+        new ToolboxGroup("基础控件",       new[] { "text", "bool-lamp", "numeric-readonly", "button", "page-button" }),
+        new ToolboxGroup("手动操作",       new[] { "manual-cylinder-block", "manual-axis-block", "manual-robot-block", "manual-stopper-block" }),
+        new ToolboxGroup("数据 / 报警",    new[] { "alarm-list", "opc-tag-value" }),
+        new ToolboxGroup("通用工业控件",   new[] { "motor", "alarm-banner" }),
+    };
+
+    public sealed class ToolboxGroup
+    {
+        public ToolboxGroup(string title, IReadOnlyList<string> types) { Title = title; Types = types; }
+        public string Title { get; }
+        public IReadOnlyList<string> Types { get; }
+    }
+
     public DesignerEditorViewModel(
         MainViewModel shell,
         IProjectEditorService projectEditor,
@@ -460,6 +476,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
         OnPropertyChanged(nameof(CurrentBindingTagId));
         OnPropertyChanged(nameof(AvailableDeviceNames));
+        RefreshAnimationsList();
     }
 
     private void OnWidgetPropertyItemChanged(object? sender, PropertyChangedEventArgs e)
@@ -632,6 +649,56 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     {
         get => SelectedWidget?.Binding?.TagId;
         set => UpdateWidgetBinding(value);
+    }
+
+    /// <summary>打开 Tag 浏览器对话框，选中后写入当前控件绑定。</summary>
+    // ========== P2.5 状态动画 编辑命令 ==========
+
+    public ObservableCollection<WidgetAnimation> CurrentAnimations { get; } = new();
+
+    private void RefreshAnimationsList()
+    {
+        CurrentAnimations.Clear();
+        if (SelectedWidget is null) return;
+        foreach (var a in SelectedWidget.Animations) CurrentAnimations.Add(a);
+    }
+
+    [RelayCommand]
+    private void AddAnimation()
+    {
+        if (SelectedWidget is null) return;
+        var a = new WidgetAnimation { TagId = "", Op = "true", TargetProperty = "background", TargetValue = "#EF4444" };
+        SelectedWidget.Animations.Add(a);
+        CurrentAnimations.Add(a);
+        MarkPageEdited();
+        // 重建 view 让动画注册生效
+        var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, SelectedWidget));
+        if (item is not null) item.View = BuildWidgetView(SelectedWidget);
+    }
+
+    [RelayCommand]
+    private void RemoveAnimation(WidgetAnimation? anim)
+    {
+        if (anim is null || SelectedWidget is null) return;
+        SelectedWidget.Animations.Remove(anim);
+        CurrentAnimations.Remove(anim);
+        MarkPageEdited();
+        var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, SelectedWidget));
+        if (item is not null) item.View = BuildWidgetView(SelectedWidget);
+    }
+
+    [RelayCommand]
+    private void OpenTagBrowser()
+    {
+        if (SelectedWidget is null) return;
+        var dlg = new ApexHMI.Views.Dialogs.TagBrowserDialog(Shell.Tags)
+        {
+            Owner = System.Windows.Application.Current.MainWindow
+        };
+        if (dlg.ShowDialog() == true && !string.IsNullOrWhiteSpace(dlg.SelectedTagName))
+        {
+            CurrentBindingTagId = dlg.SelectedTagName;
+        }
     }
 
     /// <summary>修改当前选中控件的 OPC UA 绑定。</summary>
