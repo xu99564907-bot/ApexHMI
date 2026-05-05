@@ -85,8 +85,16 @@
                     <StackPanel>
                         <!-- 工程名称 -->
                         <TextBlock Text="工程名称" Foreground="#475569"/>
-                        <TextBox Text="{Binding Document.ProjectName, UpdateSourceTrigger=PropertyChanged}" 
-                                 Margin="0,4,0,10"/>
+                        <TextBox Text="{Binding Document.ProjectName, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,4,0,8"/>
+
+                        <!-- P3.1 模板页 RouteKey -->
+                        <TextBlock Text="模板页 RouteKey (页眉/页脚共享)" Foreground="#475569" FontSize="11"/>
+                        <ComboBox ItemsSource="{Binding Document.Pages}"
+                                  DisplayMemberPath="Title" SelectedValuePath="RouteKey"
+                                  SelectedValue="{Binding Document.TemplatePageRouteKey}"
+                                  IsEditable="True" Margin="0,4,0,10" FontSize="12"
+                                  ToolTip="选一个页面作为全局模板;留空 = 无模板"/>
 
                         <!-- 页面列表 -->
                         <TextBlock Text="页面列表" FontSize="14" FontWeight="SemiBold" 

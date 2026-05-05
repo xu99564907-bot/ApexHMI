@@ -68,7 +68,21 @@ public abstract partial class WidgetViewModelBase : ObservableObject
 
     protected virtual void OnTagValueChanged(string rawValue) { }
 
-    /// <summary>便捷：从 Properties 取值，无则返回 fallback。</summary>
-    protected string Prop(string key, string fallback = "") =>
-        Model.Properties.TryGetValue(key, out var v) ? v : fallback;
+    /// <summary>便捷：从 Properties 取值，无则返回 fallback。
+    /// P3.2 i18n: 如果值是 ${KEY} 形式，自动解析为本地化资源。</summary>
+    protected string Prop(string key, string fallback = "")
+    {
+        var raw = Model.Properties.TryGetValue(key, out var v) ? v : fallback;
+        return ResolveLocalized(raw);
+    }
+
+    /// <summary>解析 ${KEY} 引用为本地化文本（不匹配时原样返回）。</summary>
+    protected static string ResolveLocalized(string raw)
+    {
+        if (string.IsNullOrEmpty(raw) || !raw.StartsWith("${") || !raw.EndsWith("}"))
+            return raw;
+        var key = raw.Substring(2, raw.Length - 3);
+        var loc = ApexHMI.Converters.LocExtension.LocalizationService;
+        return loc?.GetString(key) ?? raw;
+    }
 }

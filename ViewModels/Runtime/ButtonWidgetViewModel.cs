@@ -17,6 +17,19 @@ public partial class ButtonWidgetViewModel : WidgetViewModelBase
     [RelayCommand]
     private void Click()
     {
+        // P3.3 控件级权限：RequiredRole 不为空时按 Shell.CurrentUserRole 校验
+        if (!string.IsNullOrWhiteSpace(Model.RequiredRole) &&
+            _dataContext.Shell is ApexHMI.ViewModels.MainViewModel shell)
+        {
+            if (!System.Enum.TryParse<ApexHMI.Models.UserRole>(Model.RequiredRole, true, out var required))
+                required = ApexHMI.Models.UserRole.Operator;
+            if (shell.CurrentUserRole < required)
+            {
+                shell.SystemMessage = $"权限不足：操作需要 {required} 角色";
+                return;
+            }
+        }
+
         if (!string.IsNullOrEmpty(Model.ActionType))
         {
             _dataContext.ExecuteAction(Model.ActionType, Model.ActionParam ?? string.Empty);

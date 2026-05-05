@@ -129,6 +129,13 @@ public sealed partial class MainWindowViewModel : MainViewModel
     /// <summary>编辑器/发布触发后调用：刷新顶栏用户页按钮。</summary>
     internal void RefreshTopNavUserPages() => OnPropertyChanged(nameof(TopNavUserPages));
 
+    /// <summary>P3.4 运行时全屏：true 时主窗口隐藏导航/状态栏，仅显示 DynamicPageHost。</summary>
+    [ObservableProperty]
+    private bool _isRuntimeFullScreen;
+
+    [RelayCommand]
+    private void ToggleRuntimeFullScreen() => IsRuntimeFullScreen = !IsRuntimeFullScreen;
+
     /// <summary>
     /// Tab 3 「手动操作」是否使用设计器布局（路径 B）。
     /// true：显示 ManualPage DynamicPageHost，按子页签加载 manual.* 页面，
@@ -288,9 +295,16 @@ public sealed partial class MainWindowViewModel : MainViewModel
                 string.Equals(p.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
             if (page is null) return;
 
+            // 注入模板页（P3.1）
+            if (!string.IsNullOrWhiteSpace(project.TemplatePageRouteKey))
+            {
+                RuntimePage.TemplatePage = project.Pages.FirstOrDefault(p =>
+                    string.Equals(p.RouteKey, project.TemplatePageRouteKey, StringComparison.OrdinalIgnoreCase));
+            }
             RuntimePage.LoadPage(page);
             // 同步顶部页签可用列表（按角色过滤）
-            var visiblePages = RoleBasedAccessGuard.FilterAccessible(CurrentUserRole, project.Pages);
+            var visiblePages = RoleBasedAccessGuard.FilterAccessible(CurrentUserRole, project.Pages)
+                .Where(p => !string.Equals(p.RouteKey, project.TemplatePageRouteKey, StringComparison.OrdinalIgnoreCase));
             RuntimePage.SetAvailablePages(visiblePages);
             await _dataBindingService.AttachAsync(RuntimePage);
         }

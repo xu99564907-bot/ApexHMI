@@ -68,12 +68,25 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
         WidgetElements.Clear();
         CurrentPage = page;
 
+        // P3.1 模板：先渲染模板页控件作为底层
+        if (TemplatePage is not null && !ReferenceEquals(TemplatePage, page))
+        {
+            foreach (var widget in TemplatePage.Widgets)
+            {
+                var view = _widgetFactory.Create(widget, this);
+                WidgetElements.Add(new PositionedWidget(view, widget.X, widget.Y));
+            }
+        }
+
         foreach (var widget in page.Widgets)
         {
             var view = _widgetFactory.Create(widget, this);
             WidgetElements.Add(new PositionedWidget(view, widget.X, widget.Y));
         }
     }
+
+    /// <summary>P3.1 模板页：由外部（Shell）注入，每次 LoadPage 时叠加渲染。</summary>
+    public PageDefinition? TemplatePage { get; set; }
 
     /// <summary>将某 Tag 最新值推送给所有关注它的 Widget。</summary>
     public void PushTagValue(string tagId, string value)

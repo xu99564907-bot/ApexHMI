@@ -17,6 +17,9 @@ public class LocExtension : MarkupExtension
     private static ILocalizationService? _localizationService;
     private static readonly HashSet<LocWatcher> ActiveWatchers = new();
 
+    /// <summary>暴露给业务 widget 用于运行时本地化解析（P3.2）。</summary>
+    public static ILocalizationService? LocalizationService => _localizationService;
+
     /// <summary>
     /// Initializes the shared <see cref="ILocalizationService"/> instance.
     /// Must be called once at startup (e.g., from Bootstrapper or App).

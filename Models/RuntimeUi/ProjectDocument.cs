@@ -16,5 +16,8 @@ public class ProjectDocument
     /// <summary>启动时默认显示的页面 RouteKey；null 时显示第一页。</summary>
     public string? DefaultPageRouteKey { get; set; }
 
+    /// <summary>P3.1 模板页 RouteKey：所有页面运行时叠加显示其控件（页眉/页脚/Logo 等）。</summary>
+    public string? TemplatePageRouteKey { get; set; }
+
     public List<PageDefinition> Pages { get; set; } = new();
 }

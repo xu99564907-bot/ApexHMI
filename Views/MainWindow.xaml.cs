@@ -155,6 +155,22 @@ public partial class MainWindow : Window
             }
         }
 
+        // P3.4 全屏切换 (F11) / ESC 退出全屏
+        if (vm is ApexHMI.ViewModels.Shell.MainWindowViewModel mvm)
+        {
+            if (e.Key == Key.F11)
+            {
+                mvm.ToggleRuntimeFullScreenCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
+            if (e.Key == Key.Escape && mvm.IsRuntimeFullScreen)
+            {
+                mvm.IsRuntimeFullScreen = false;
+                e.Handled = true;
+                return;
+            }
+        }
     }
 
     private void MainWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
