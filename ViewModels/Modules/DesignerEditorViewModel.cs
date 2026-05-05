@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ApexHMI.Models;
@@ -81,8 +82,35 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>当前选中页面的控件列表，绑定到画布 ItemsControl。</summary>
     public ObservableCollection<WidgetInstance> CurrentWidgets { get; } = new();
 
+    /// <summary>设计器画布渲染项：模型 + 预创建的真容视图（避免 XAML 中即时调用工厂引发卡死）。</summary>
+    public ObservableCollection<DesignerWidgetItem> CurrentWidgetItems { get; } = new();
+
     /// <summary>当前选中控件的属性列表，绑定到属性编辑器 ItemsControl。</summary>
     public ObservableCollection<WidgetPropertyItem> CurrentWidgetProperties { get; } = new();
+
+    private FrameworkElement BuildWidgetView(WidgetInstance widget) =>
+        WidgetViewFactory.Create(widget, DesignModeContext);
+
+    private void RefreshCurrentWidgetItems()
+    {
+        CurrentWidgetItems.Clear();
+        if (SelectedPage is null) return;
+        foreach (var w in SelectedPage.Widgets)
+        {
+            CurrentWidgetItems.Add(new DesignerWidgetItem(w, BuildWidgetView(w)));
+        }
+    }
+
+    private void AddWidgetItem(WidgetInstance widget)
+    {
+        CurrentWidgetItems.Add(new DesignerWidgetItem(widget, BuildWidgetView(widget)));
+    }
+
+    private void RemoveWidgetItem(WidgetInstance widget)
+    {
+        var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+        if (item is not null) CurrentWidgetItems.Remove(item);
+    }
 
     // ========== B-07: Tag 数据源 ==========
 
@@ -100,6 +128,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
                 CurrentWidgets.Add(w);
         }
 
+        RefreshCurrentWidgetItems();
         SelectedWidget = null;
     }
 
@@ -171,6 +200,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
         var widget = _widgetEditor.AddWidget(SelectedPage, typeId, 40, 40);
         CurrentWidgets.Add(widget);
+        AddWidgetItem(widget);
         SelectedWidget = widget;
 
         _editStack.Execute(new AddWidgetEdit(_widgetEditor, SelectedPage, widget));
@@ -191,6 +221,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
         var widget = _widgetEditor.AddWidget(SelectedPage, typeId, x, y);
         CurrentWidgets.Add(widget);
+        AddWidgetItem(widget);
         SelectedWidget = widget;
         Log.Information("DesignerEditor: 拖拽添加控件 typeId={TypeId} x={X} y={Y}", typeId, x, y);
     }
@@ -206,6 +237,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
         _widgetEditor.RemoveWidget(SelectedPage, SelectedWidget.Id);
         CurrentWidgets.Remove(SelectedWidget);
+        RemoveWidgetItem(SelectedWidget);
         SelectedWidget = null;
         OnPropertyChanged(nameof(CanUndo));
     }
@@ -365,6 +397,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
                 CurrentWidgets.Clear();
                 foreach (var w in SelectedPage.Widgets)
                     CurrentWidgets.Add(w);
+                RefreshCurrentWidgetItems();
             }
 
             // 刷新属性网格
@@ -481,7 +514,10 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             BatchLayoutHorizontal);
 
         foreach (var w in generated)
+        {
             CurrentWidgets.Add(w);
+            AddWidgetItem(w);
+        }
 
         if (generated.Count > 0)
             SelectedWidget = generated[0];

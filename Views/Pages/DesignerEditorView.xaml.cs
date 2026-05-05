@@ -55,7 +55,16 @@ public partial class DesignerEditorView : UserControl
 
     private void Widget_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (sender is not FrameworkElement element || element.DataContext is not WidgetInstance widget) return;
+        if (sender is not FrameworkElement element) return;
+
+        // DataContext 可能是 DesignerWidgetItem (新 WYSIWYG 模式) 或直接 WidgetInstance (兼容旧)
+        var widget = element.DataContext switch
+        {
+            DesignerWidgetItem item => item.Model,
+            WidgetInstance w => w,
+            _ => null
+        };
+        if (widget is null) return;
 
         GetViewModel()?.SelectWidgetCommand.Execute(widget);
 

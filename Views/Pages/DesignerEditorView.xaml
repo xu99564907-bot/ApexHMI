@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ApexHMI.ViewModels.Modules"
              xmlns:model="clr-namespace:ApexHMI.Models.RuntimeUi"
-             xmlns:local="clr-namespace:ApexHMI.Views.Pages"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -217,8 +216,7 @@
                                 AllowDrop="True"
                                 DragOver="DesignerCanvas_DragOver"
                                 Drop="DesignerCanvas_Drop">
-                            <ListBox ItemsSource="{Binding CurrentWidgets}"
-                                     SelectedItem="{Binding SelectedWidget}"
+                            <ListBox ItemsSource="{Binding CurrentWidgetItems}"
                                      Background="Transparent"
                                      BorderThickness="0"
                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -237,8 +235,8 @@
                                 </ListBox.ItemsPanel>
                                 <ListBox.ItemContainerStyle>
                                     <Style TargetType="ListBoxItem">
-                                        <Setter Property="Canvas.Left" Value="{Binding X}"/>
-                                        <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                                        <Setter Property="Canvas.Left" Value="{Binding Model.X}"/>
+                                        <Setter Property="Canvas.Top" Value="{Binding Model.Y}"/>
                                         <Setter Property="Padding" Value="0"/>
                                         <Setter Property="Template">
                                             <Setter.Value>
@@ -250,32 +248,18 @@
                                     </Style>
                                 </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type model:WidgetInstance}">
-                                        <!-- 选中层 Border：捕获鼠标 + 显示选中边框，内部为真实 widget 渲染 -->
-                                        <Border Width="{Binding Width}"
-                                                Height="{Binding Height}"
+                                    <DataTemplate DataType="{x:Type model:DesignerWidgetItem}">
+                                        <!-- 选中层 Border：捕获鼠标 + 显示选中边框，内部为预创建的真容视图 -->
+                                        <Border Width="{Binding Model.Width}"
+                                                Height="{Binding Model.Height}"
                                                 Cursor="Hand"
                                                 Background="Transparent"
+                                                BorderBrush="Transparent"
+                                                BorderThickness="2"
                                                 MouseLeftButtonDown="Widget_MouseLeftButtonDown"
                                                 MouseMove="Widget_MouseMove"
                                                 MouseLeftButtonUp="Widget_MouseLeftButtonUp">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="BorderBrush" Value="Transparent"/>
-                                                    <Setter Property="BorderThickness" Value="2"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                                            <Setter Property="BorderBrush" Value="#F59E0B"/>
-                                                            <Setter Property="BorderThickness" Value="2"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <!-- 真容渲染：通过 WidgetViewHost 附加属性调用 IWidgetViewFactory -->
-                                            <ContentPresenter
-                                                local:WidgetViewHost.Factory="{Binding DataContext.WidgetViewFactory, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                local:WidgetViewHost.DataContext="{Binding DataContext.DesignModeContext, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                local:WidgetViewHost.Model="{Binding}"/>
+                                            <ContentPresenter Content="{Binding View}"/>
                                         </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
