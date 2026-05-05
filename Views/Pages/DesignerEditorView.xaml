@@ -120,6 +120,16 @@
                                      Margin="6,0,0,0"/>
                         </UniformGrid>
 
+                        <!-- 主导航 -->
+                        <CheckBox Content="挂到主导航顶栏" IsChecked="{Binding SelectedPage.ShowInTopNav}"
+                                  Margin="0,0,0,6" FontWeight="SemiBold" Foreground="#0F172A"/>
+                        <TextBlock Text="导航图标 (MaterialDesign Kind, 如 ViewDashboard)" Foreground="#475569" FontSize="11"/>
+                        <TextBox Text="{Binding SelectedPage.NavIcon, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,4,0,6" FontSize="12"/>
+                        <TextBlock Text="导航排序 (数字越小越靠前)" Foreground="#475569" FontSize="11"/>
+                        <TextBox Text="{Binding SelectedPage.NavOrder, UpdateSourceTrigger=PropertyChanged}"
+                                 Margin="0,4,0,10" FontSize="12"/>
+
                         <!-- 工具箱 -->
                         <TextBlock Text="工具箱" FontSize="14" FontWeight="SemiBold"
                                    Foreground="#0F172A" Margin="0,0,0,8"/>

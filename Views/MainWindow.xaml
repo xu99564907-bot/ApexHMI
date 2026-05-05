@@ -439,6 +439,7 @@
                             <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="100"/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="主界面" ToolTip="主界面">
@@ -487,7 +488,34 @@
                             <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="登录"/></MultiBinding></Button.Background>
                             <materialDesign:PackIcon Kind="AccountMultipleOutline" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="登录"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
-                        <Button Grid.Column="8" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="设计器" ToolTip="设计器" Visibility="{Binding IsDesignMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <!-- 用户挂载到主导航的页面（ShowInTopNav=True 的设计页） -->
+                        <ItemsControl Grid.Column="8" ItemsSource="{Binding TopNavUserPages}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource TopNavigationIconButtonStyle}"
+                                            Command="{Binding DataContext.NavigateToUserPageCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding RouteKey}"
+                                            ToolTip="{Binding Title}">
+                                        <StackPanel Orientation="Vertical">
+                                            <materialDesign:PackIcon Kind="{Binding NavIcon, FallbackValue=ViewDashboard, TargetNullValue=ViewDashboard}"
+                                                                     Width="48" Height="48"
+                                                                     Foreground="#334155"
+                                                                     HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Title}" FontSize="11"
+                                                       Foreground="#334155" HorizontalAlignment="Center"
+                                                       Margin="0,2,0,0" TextTrimming="CharacterEllipsis"
+                                                       MaxWidth="80"/>
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <Button Grid.Column="9" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="设计器" ToolTip="设计器" Visibility="{Binding IsDesignMode, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="设计器"/></MultiBinding></Button.Background>
                             <materialDesign:PackIcon Kind="PencilRuler" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="设计器"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>

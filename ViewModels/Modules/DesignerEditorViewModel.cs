@@ -620,6 +620,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         {
             _runtimeProjectService.Save(Document);
             SaveStatus = $"已保存  {DateTime.Now:HH:mm:ss}";
+            (Shell as MainWindowViewModel)?.RefreshTopNavUserPages();
             Log.Information("DesignerEditor: 工程已保存");
         }
         catch (Exception ex)

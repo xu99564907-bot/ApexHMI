@@ -101,6 +101,34 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
     public ProjectDocument? RuntimeProject => _runtimeProjectService.Current;
 
+    /// <summary>
+    /// 用户挂载到主导航的页面列表（按 NavOrder 排序）。
+    /// MainWindow.xaml 顶栏会动态渲染按钮，点击后切换到运行页 + 加载该页面。
+    /// </summary>
+    public IEnumerable<PageDefinition> TopNavUserPages
+    {
+        get
+        {
+            var project = _runtimeProjectService.Current;
+            if (project is null) return System.Linq.Enumerable.Empty<PageDefinition>();
+            return project.Pages
+                .Where(p => p.ShowInTopNav)
+                .OrderBy(p => p.NavOrder)
+                .ThenBy(p => p.Title);
+        }
+    }
+
+    /// <summary>编辑器/发布触发后调用：刷新顶栏用户页按钮。</summary>
+    internal void RefreshTopNavUserPages() => OnPropertyChanged(nameof(TopNavUserPages));
+
+    [RelayCommand]
+    private async Task NavigateToUserPage(string? routeKey)
+    {
+        if (string.IsNullOrWhiteSpace(routeKey)) return;
+        await NavigateToRuntimePageAsync(routeKey);
+        NavigateCommand.Execute("运行页面");
+    }
+
     private void InitializeDynamicRuntime()
     {
         RuntimePage = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
@@ -190,5 +218,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
         if (defaultPage is not null)
             await NavigateToRuntimePageAsync(defaultPage.RouteKey);
+
+        RefreshTopNavUserPages();
     }
 }
