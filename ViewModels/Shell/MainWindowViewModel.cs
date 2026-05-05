@@ -103,7 +103,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
     private void InitializeDynamicRuntime()
     {
-        RuntimePage = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction);
+        RuntimePage = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
         var project = _runtimeProjectService.LoadDefault();
         var defaultPage = project.Pages.FirstOrDefault(p =>
             string.Equals(p.RouteKey, project.DefaultPageRouteKey, StringComparison.OrdinalIgnoreCase))

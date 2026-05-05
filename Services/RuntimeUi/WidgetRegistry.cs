@@ -23,9 +23,13 @@ public class WidgetRegistry : IWidgetViewFactory
         Register("numeric-readonly",(m, ctx) => CreateView(new NumericReadonlyWidgetViewModel(m, ctx), new NumericReadonlyWidget()));
         Register("button",          (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),          new ButtonWidget()));
 
-        // 工业状态控件（motor/cylinder/axis/robot/stopper/alarm-banner 共用 StatusWidget）
+        // 业务复合控件：复用 Tab 3 手动页的真实卡片 UI/数据
+        Register("manual-cylinder-block", (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
+        // 兼容：旧"cylinder" typeId 自动升级到 manual-cylinder-block
+        Register("cylinder",              (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
+
+        // 其它工业状态控件（仍用通用 StatusWidget，后续按需升级为业务 widget）
         Register("motor",        (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
-        Register("cylinder",     (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
         Register("axis",         (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
         Register("robot",        (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
         Register("stopper",      (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));

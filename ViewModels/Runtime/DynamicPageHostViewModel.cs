@@ -22,11 +22,18 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
     [ObservableProperty]
     private PageDefinition? _currentPage;
 
-    public DynamicPageHostViewModel(IWidgetViewFactory widgetFactory, Action<string, string> executeActionHandler)
+    public DynamicPageHostViewModel(
+        IWidgetViewFactory widgetFactory,
+        Action<string, string> executeActionHandler,
+        object? shell = null)
     {
         _widgetFactory = widgetFactory;
         _executeActionHandler = executeActionHandler;
+        Shell = shell;
     }
+
+    /// <summary>暴露 Shell 给业务 widget（如 manual-cylinder-block 需要查 ManualCylinderBlockCards）。</summary>
+    public object? Shell { get; }
 
     /// <summary>当前页面下渲染的所有控件元素（位置信息已在 Create 前设置）。</summary>
     public ObservableCollection<PositionedWidget> WidgetElements { get; } = new();

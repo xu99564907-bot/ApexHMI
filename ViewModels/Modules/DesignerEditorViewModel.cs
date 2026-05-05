@@ -31,11 +31,11 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private readonly EditStack _editStack = new();
     private bool _suppressEditRecording;
 
-    /// <summary>设计模式 widget 渲染所需的工厂（XAML 通过 WidgetViewHost 附加属性绑定）。</summary>
+    /// <summary>设计模式 widget 渲染所需的工厂。</summary>
     public IWidgetViewFactory WidgetViewFactory { get; }
 
-    /// <summary>设计模式数据上下文（无 OPC UA 数据/不响应动作）。</summary>
-    public IWidgetDataContext DesignModeContext { get; } = new DesignModeWidgetDataContext();
+    /// <summary>设计模式数据上下文（无 OPC UA 推送，但暴露 Shell 供业务 widget 取真实数据）。</summary>
+    public IWidgetDataContext DesignModeContext { get; }
 
     /// <summary>工具箱控件类型列表（与 WidgetEditorService.DefaultProperties 对齐）。</summary>
     public static readonly IReadOnlyList<string> ToolboxTypes = new[]
@@ -59,6 +59,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         _runtimeProjectService = runtimeProjectService;
         _blockGenerator = blockGenerator;
         WidgetViewFactory = widgetViewFactory;
+        DesignModeContext = new DesignModeWidgetDataContext(shell);
         InitDocument();
     }
 
@@ -497,18 +498,13 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(BatchNamePrefix))
-        {
-            Log.Warning("DesignerEditor: 批量生成失败，命名前缀为空");
-            return;
-        }
+        var count = Math.Max(1, Math.Min(BatchCount, 50));
+        var deviceNames = ResolveBatchDeviceNames(BatchBlockType, count);
 
-        var count = Math.Max(1, Math.Min(BatchCount, 20));
-        var generated = _blockGenerator.Generate(
+        var generated = _blockGenerator.GenerateForDevices(
             SelectedPage,
             BatchBlockType,
-            BatchNamePrefix,
-            count,
+            deviceNames,
             BatchStartX,
             BatchStartY,
             BatchLayoutHorizontal);
@@ -523,6 +519,31 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             SelectedWidget = generated[0];
 
         Log.Information("DesignerEditor: 批量生成 {Count} 个 {BlockType} 功能块", generated.Count, BatchBlockType);
+    }
+
+    /// <summary>
+    /// 解析批量生成时使用的设备名列表。
+    /// 优先从 Shell 取真实设备（IO 已导入时），否则用 前缀+序号 占位名。
+    /// </summary>
+    private IReadOnlyList<string> ResolveBatchDeviceNames(string blockType, int desiredCount)
+    {
+        var fromShell = blockType.ToLowerInvariant() switch
+        {
+            "cylinder" => Shell.ManualCylinderBlockCards.Select(c =>
+                string.IsNullOrWhiteSpace(c.DisplayName) ? $"Cyl{c.CylinderIndex}" : c.DisplayName).ToList(),
+            _ => new List<string>()
+        };
+
+        if (fromShell.Count > 0)
+        {
+            return fromShell.Take(desiredCount).ToList();
+        }
+
+        // 占位命名
+        var prefix = string.IsNullOrWhiteSpace(BatchNamePrefix) ? "DEV" : BatchNamePrefix;
+        var list = new List<string>();
+        for (int i = 0; i < desiredCount; i++) list.Add($"{prefix}{i + 1}");
+        return list;
     }
 
     // ========== 保存 / 发布 ==========

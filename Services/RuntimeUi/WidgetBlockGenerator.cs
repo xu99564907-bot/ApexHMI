@@ -37,7 +37,7 @@ public class WidgetBlockGenerator
     /// <summary>每个功能块在水平布局下的宽度（px）。</summary>
     private static readonly Dictionary<string, double> BlockWidth = new()
     {
-        ["cylinder"] = 220,
+        ["cylinder"] = 240,
         ["motor"]    = 200,
         ["axis"]     = 240,
         ["robot"]    = 220,
@@ -47,7 +47,7 @@ public class WidgetBlockGenerator
     /// <summary>每个功能块的高度（px）。</summary>
     private static readonly Dictionary<string, double> BlockHeight = new()
     {
-        ["cylinder"] = 210,
+        ["cylinder"] = 250,
         ["motor"]    = 190,
         ["axis"]     = 170,
         ["robot"]    = 190,
@@ -105,22 +105,55 @@ public class WidgetBlockGenerator
         return all;
     }
 
+    /// <summary>
+    /// 按设备名列表批量生成（优先用此重载：deviceNames 来自真实 IO 导入）。
+    /// </summary>
+    public IReadOnlyList<WidgetInstance> GenerateForDevices(
+        PageDefinition page,
+        string blockType,
+        IReadOnlyList<string> deviceNames,
+        double startX,
+        double startY,
+        bool horizontal = true,
+        double gapPx = 16)
+    {
+        if (deviceNames.Count == 0) return Array.Empty<WidgetInstance>();
+
+        var all = new List<WidgetInstance>();
+        var bw = BlockWidth.TryGetValue(blockType, out var bwv) ? bwv : 200;
+        var bh = BlockHeight.TryGetValue(blockType, out var bhv) ? bhv : 200;
+
+        for (int i = 0; i < deviceNames.Count; i++)
+        {
+            var name = deviceNames[i];
+            var ox = startX + (horizontal ? i * (bw + gapPx) : 0);
+            var oy = startY + (horizontal ? 0 : i * (bh + gapPx));
+
+            var widgets = blockType.ToLowerInvariant() switch
+            {
+                "cylinder" => BuildCylinderBlock(page, name, ox, oy),
+                "motor"    => BuildMotorBlock(page, name, ox, oy),
+                "axis"     => BuildAxisBlock(page, name, ox, oy),
+                "robot"    => BuildRobotBlock(page, name, ox, oy),
+                "stopper"  => BuildStopperBlock(page, name, ox, oy),
+                _          => Array.Empty<WidgetInstance>(),
+            };
+            all.AddRange(widgets);
+        }
+
+        Log.Information("WidgetBlockGenerator: 按设备名批量生成 blockType={BlockType} count={Count}",
+            blockType, deviceNames.Count);
+        return all;
+    }
+
     // ---- 气缸功能块 ----
-    // 布局：标题 / 前限位 / 后限位 / [前进] [退回]
+    // 升级为单个 manual-cylinder-block widget，复用 Tab 3 真实卡片 UI 与数据
     private IReadOnlyList<WidgetInstance> BuildCylinderBlock(PageDefinition page, string name, double x, double y)
     {
-        var widgets = new List<WidgetInstance>
-        {
-            MakeText(page, name, x, y, 200, 28, "#1E40AF", "14", "SemiBold"),
-            MakeBoolLamp(page, $"{name}_FwdSensor", $"{name} 前进到位", x, y + 36, 200, 30, "#22C55E"),
-            MakeBoolLamp(page, $"{name}_BwdSensor", $"{name} 退回到位", x, y + 74, 200, 30, "#F59E0B"),
-            MakeButton(page, $"{name} 前进", x, y + 116, 92, 36, "#2563EB",
-                "write-bool", $"{name}_FwdCmd|True"),
-            MakeButton(page, $"{name} 退回", x + 104, y + 116, 92, 36, "#64748B",
-                "write-bool", $"{name}_FwdCmd|False"),
-            MakeBoolLamp(page, $"{name}_Alarm", $"{name} 报警", x, y + 166, 200, 28, "#EF4444"),
-        };
-        return widgets;
+        var w = _widgetEditor.AddWidget(page, "manual-cylinder-block", x, y);
+        _widgetEditor.ResizeWidget(w, 240, 250);
+        _widgetEditor.UpdateProperty(w, "deviceName", name);
+        return new List<WidgetInstance> { w };
     }
 
     // ---- 电机功能块 ----
