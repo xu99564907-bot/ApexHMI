@@ -39,16 +39,30 @@
                             Background="#3B82F6" Foreground="White" BorderBrush="#3B82F6"
                             Padding="10,6" Margin="0,0,6,0"/>
                     <Separator Style="{x:Null}" Width="1" Background="#D7DFEA" Margin="6,4"/>
-                    <Button Content="保存" Command="{Binding SaveCommand}"
+                    <Button Content="💾 保存" Command="{Binding SaveCommand}"
                             Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
-                            Padding="10,6" Margin="0,0,6,0"
+                            Padding="14,6" Margin="0,0,6,0" FontWeight="SemiBold"
                             ToolTip="保存工程到 project.json（不刷新运行时）"/>
-                    <Button Content="发布到运行时" Command="{Binding PublishCommand}"
+                    <Button Content="🚀 发布到运行时" Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
-                            Padding="10,6" Margin="0,0,10,0"
+                            Padding="14,6" Margin="0,0,10,0" FontWeight="SemiBold"
                             ToolTip="保存并立即刷新运行时页面"/>
-                    <TextBlock Text="{Binding SaveStatus}" Foreground="#64748B"
-                               VerticalAlignment="Center" Margin="0,0,12,0" FontSize="12"/>
+                    <!-- 保存状态徽章：有内容时显示绿底白字，没内容时不可见 -->
+                    <Border Background="#10B981" CornerRadius="12" Padding="10,4"
+                            VerticalAlignment="Center" Margin="0,0,12,0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SaveStatus}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding SaveStatus}" Foreground="White"
+                                   FontWeight="SemiBold" FontSize="12"/>
+                    </Border>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -205,10 +219,19 @@
                             <ListBox ItemsSource="{Binding CurrentWidgets}"
                                      SelectedItem="{Binding SelectedWidget}"
                                      Background="Transparent"
-                                     BorderThickness="0">
+                                     BorderThickness="0"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                     Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
+                                     Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}">
+                                <ListBox.Template>
+                                    <ControlTemplate TargetType="ListBox">
+                                        <ItemsPresenter/>
+                                    </ControlTemplate>
+                                </ListBox.Template>
                                 <ListBox.ItemsPanel>
                                     <ItemsPanelTemplate>
-                                        <Canvas/>
+                                        <Canvas IsItemsHost="True"/>
                                     </ItemsPanelTemplate>
                                 </ListBox.ItemsPanel>
                                 <ListBox.ItemContainerStyle>
@@ -329,17 +352,25 @@
                                     <DataTemplate>
                                         <Grid Margin="0,0,0,8">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" MinWidth="100"/>
+                                                <ColumnDefinition Width="Auto" MinWidth="92"/>
                                                 <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" 
-                                                       Text="{Binding Key}" 
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding DisplayName}"
                                                        Foreground="#475569"
                                                        VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"/>
-                                            <TextBox Grid.Column="1" 
+                                                       Margin="0,0,8,0"
+                                                       ToolTip="{Binding Key}"/>
+                                            <TextBox Grid.Column="1"
                                                      Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalAlignment="Center"/>
+                                            <!-- 颜色属性显示色板预览 -->
+                                            <Border Grid.Column="2"
+                                                    Width="22" Height="22" CornerRadius="4"
+                                                    Margin="6,0,0,0" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                    Visibility="{Binding IsColorProperty, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                    Background="{Binding Value, Converter={StaticResource StringToBrushConverter}}"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
