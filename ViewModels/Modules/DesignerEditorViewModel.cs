@@ -40,9 +40,14 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>工具箱控件类型列表（与 WidgetEditorService.DefaultProperties 对齐）。</summary>
     public static readonly IReadOnlyList<string> ToolboxTypes = new[]
     {
-        "text", "bool-lamp", "numeric-readonly", "button",
-        "motor", "cylinder", "axis", "robot",
-        "stopper", "alarm-banner", "page-button"
+        // 基础控件
+        "text", "bool-lamp", "numeric-readonly", "button", "page-button",
+        // 业务复合控件（手动操作）
+        "manual-cylinder-block", "manual-axis-block", "manual-robot-block", "manual-stopper-block",
+        // 业务控件（数据/报警）
+        "alarm-list", "opc-tag-value",
+        // 旧通用工业控件
+        "motor", "alarm-banner"
     };
 
     public DesignerEditorViewModel(

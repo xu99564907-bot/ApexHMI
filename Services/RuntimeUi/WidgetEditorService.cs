@@ -25,6 +25,8 @@ public sealed class WidgetEditorService : IWidgetEditorService
         ["manual-stopper-block"] = new() { ["deviceName"] = "Stopper_Up", ["displayName"] = "挡停" },
         ["alarm-banner"] = new() { ["label"] = "报警条", ["activeColor"] = "#EF4444", ["inactiveColor"] = "#64748B" },
         ["page-button"] = new() { ["text"] = "页面跳转", ["background"] = "#6366F1", ["foreground"] = "#FFFFFF" },
+        ["alarm-list"] = new() { ["filterLevel"] = "", ["filterSource"] = "", ["maxRows"] = "20", ["onlyActive"] = "true" },
+        ["opc-tag-value"] = new() { ["tagName"] = "", ["label"] = "", ["unit"] = "", ["format"] = "" },
     };
 
     public WidgetInstance AddWidget(PageDefinition page, string typeId, double x, double y)
@@ -109,12 +111,16 @@ public sealed class WidgetEditorService : IWidgetEditorService
         "stopper" or "manual-stopper-block" => 180,
         "alarm-banner" => 280,
         "page-button" => 140,
+        "alarm-list" => 360,
+        "opc-tag-value" => 160,
         _ => 120,
     };
 
     private static double GetDefaultHeight(string typeId) => typeId.ToLowerInvariant() switch
     {
         "alarm-banner" => 60,
+        "alarm-list" => 220,
+        "opc-tag-value" => 80,
         "motor" => 100,
         "cylinder" or "manual-cylinder-block" => 250,
         "axis" or "manual-axis-block" => 230,

@@ -39,6 +39,10 @@ public class WidgetRegistry : IWidgetViewFactory
         Register("motor",        (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
         Register("alarm-banner", (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
 
+        // 业务控件第二批：报警列表 / 通用 Tag 值
+        Register("alarm-list",     (m, ctx) => CreateView(new AlarmListWidgetViewModel(m, ctx),    new AlarmListWidget()));
+        Register("opc-tag-value",  (m, ctx) => CreateView(new OpcTagValueWidgetViewModel(m, ctx),  new OpcTagValueWidget()));
+
         // page-button 复用 ButtonWidget
         Register("page-button",  (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx), new ButtonWidget()));
     }
