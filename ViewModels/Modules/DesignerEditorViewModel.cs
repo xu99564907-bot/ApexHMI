@@ -30,6 +30,12 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private readonly EditStack _editStack = new();
     private bool _suppressEditRecording;
 
+    /// <summary>设计模式 widget 渲染所需的工厂（XAML 通过 WidgetViewHost 附加属性绑定）。</summary>
+    public IWidgetViewFactory WidgetViewFactory { get; }
+
+    /// <summary>设计模式数据上下文（无 OPC UA 数据/不响应动作）。</summary>
+    public IWidgetDataContext DesignModeContext { get; } = new DesignModeWidgetDataContext();
+
     /// <summary>工具箱控件类型列表（与 WidgetEditorService.DefaultProperties 对齐）。</summary>
     public static readonly IReadOnlyList<string> ToolboxTypes = new[]
     {
@@ -43,13 +49,15 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         IProjectEditorService projectEditor,
         IWidgetEditorService widgetEditor,
         RuntimeProjectService runtimeProjectService,
-        WidgetBlockGenerator blockGenerator)
+        WidgetBlockGenerator blockGenerator,
+        IWidgetViewFactory widgetViewFactory)
         : base(shell, "画布设计")
     {
         _projectEditor = projectEditor;
         _widgetEditor = widgetEditor;
         _runtimeProjectService = runtimeProjectService;
         _blockGenerator = blockGenerator;
+        WidgetViewFactory = widgetViewFactory;
         InitDocument();
     }
 

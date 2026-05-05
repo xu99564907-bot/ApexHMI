@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ApexHMI.ViewModels.Modules"
              xmlns:model="clr-namespace:ApexHMI.Models.RuntimeUi"
+             xmlns:local="clr-namespace:ApexHMI.Views.Pages"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              mc:Ignorable="d"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -211,7 +212,7 @@
                         <Canvas x:Name="DesignerCanvas"
                                 Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
                                 Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}"
-                                Background="#0F172A"
+                                Background="#E2E8F0"
                                 ClipToBounds="True"
                                 AllowDrop="True"
                                 DragOver="DesignerCanvas_DragOver"
@@ -250,43 +251,31 @@
                                 </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate DataType="{x:Type model:WidgetInstance}">
+                                        <!-- 选中层 Border：捕获鼠标 + 显示选中边框，内部为真实 widget 渲染 -->
                                         <Border Width="{Binding Width}"
                                                 Height="{Binding Height}"
-                                                CornerRadius="6"
                                                 Cursor="Hand"
+                                                Background="Transparent"
                                                 MouseLeftButtonDown="Widget_MouseLeftButtonDown"
                                                 MouseMove="Widget_MouseMove"
                                                 MouseLeftButtonUp="Widget_MouseLeftButtonUp">
                                             <Border.Style>
                                                 <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="#3B82F6"/>
-                                                    <Setter Property="BorderBrush" Value="#2563EB"/>
+                                                    <Setter Property="BorderBrush" Value="Transparent"/>
                                                     <Setter Property="BorderThickness" Value="2"/>
                                                     <Style.Triggers>
                                                         <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                                                             <Setter Property="BorderBrush" Value="#F59E0B"/>
-                                                            <Setter Property="BorderThickness" Value="3"/>
+                                                            <Setter Property="BorderThickness" Value="2"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
-                                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <TextBlock Text="{Binding TypeId}" FontSize="9"
-                                                           Foreground="#93C5FD"
-                                                           HorizontalAlignment="Center"/>
-                                                <TextBlock FontSize="11" FontWeight="SemiBold"
-                                                           Foreground="#FFFFFF"
-                                                           HorizontalAlignment="Center"
-                                                           TextWrapping="Wrap"
-                                                           Margin="4,2,4,0">
-                                                    <TextBlock.Text>
-                                                        <PriorityBinding FallbackValue="">
-                                                            <Binding Path="Properties[text]"/>
-                                                            <Binding Path="Properties[label]"/>
-                                                        </PriorityBinding>
-                                                    </TextBlock.Text>
-                                                </TextBlock>
-                                            </StackPanel>
+                                            <!-- 真容渲染：通过 WidgetViewHost 附加属性调用 IWidgetViewFactory -->
+                                            <ContentPresenter
+                                                local:WidgetViewHost.Factory="{Binding DataContext.WidgetViewFactory, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                local:WidgetViewHost.DataContext="{Binding DataContext.DesignModeContext, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                local:WidgetViewHost.Model="{Binding}"/>
                                         </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>

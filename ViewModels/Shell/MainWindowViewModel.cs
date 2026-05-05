@@ -81,7 +81,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
         // 先初始化运行时（LoadDefault 设置 Current），再让编辑器共享同一 ProjectDocument
         InitializeDynamicRuntime();
-        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetBlockGenerator);
+        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetBlockGenerator, _widgetFactory);
         Designer = new DesignerViewModel(this);
     }
 

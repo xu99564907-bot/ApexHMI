@@ -18,6 +18,9 @@ public abstract partial class WidgetViewModelBase : ObservableObject
         {
             dataContext.RegisterValueCallback(binding.TagId, OnTagValueChanged);
         }
+
+        // 监听 Model 变化（含尺寸/Properties），让计算属性 Prop("...") 即时刷新
+        Model.PropertyChanged += (_, __) => OnPropertyChanged(string.Empty);
     }
 
     public WidgetInstance Model { get; }
