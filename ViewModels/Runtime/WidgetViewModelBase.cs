@@ -19,8 +19,9 @@ public abstract partial class WidgetViewModelBase : ObservableObject
             dataContext.RegisterValueCallback(binding.TagId, OnTagValueChanged);
         }
 
-        // 监听 Model 变化（含尺寸/Properties），让计算属性 Prop("...") 即时刷新
-        Model.PropertyChanged += (_, __) => OnPropertyChanged(string.Empty);
+        // 注：不在这里监听 Model.PropertyChanged 触发 OnPropertyChanged(string.Empty)，
+        // 实测会导致设计模式下大量重复刷新引起界面卡死。属性即时预览将在后续以更
+        // 精细的方式实现（按需重建 view，或运行时 Properties 字典 INotify 化）。
     }
 
     public WidgetInstance Model { get; }
