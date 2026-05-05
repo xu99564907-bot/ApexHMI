@@ -1,44 +1,10 @@
-# Default: detect text files automatically, normalize to CRLF on checkout (Windows project)
 * text=auto eol=crlf
-
-# Source code
-*.cs       text eol=crlf
-*.xaml     text eol=crlf
-*.xml      text eol=crlf
-*.csproj   text eol=crlf
-*.sln      text eol=crlf
-*.props    text eol=crlf
-*.targets  text eol=crlf
-
-# Config / data
-*.json     text eol=crlf
-*.yaml     text eol=crlf
-*.yml      text eol=crlf
-*.config   text eol=crlf
-*.editorconfig text eol=crlf
-
-# Docs
-*.md       text eol=crlf
-*.txt      text eol=crlf
-
-# Shell scripts must keep LF (will fail on git-bash / WSL otherwise)
-*.sh       text eol=lf
-*.bash     text eol=lf
-
-# PowerShell / batch are Windows native
-*.ps1      text eol=crlf
-*.cmd      text eol=crlf
-*.bat      text eol=crlf
-
-# Binary assets
-*.png      binary
-*.jpg      binary
-*.jpeg     binary
-*.gif      binary
-*.ico      binary
-*.bmp      binary
-*.pdf      binary
-*.dll      binary
-*.exe      binary
-*.snk      binary
-*.zip      binary
+*.cs text eol=crlf
+*.xaml text eol=crlf
+*.csproj text eol=crlf
+*.json text eol=crlf
+*.md text eol=crlf
+*.sh text eol=lf
+*.png binary
+*.jpg binary
+*.ico binary

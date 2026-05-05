@@ -1052,7 +1052,52 @@ public partial class MainViewModel
                 .Select(CloneManualCylinderBlockForConfig)
                 .ToList(),
             AxisConfigEntries = _axisConfigEntries,
-            GitPull = BuildGitPullSettingsForConfig()
+            GitPull = BuildGitPullSettingsForConfig(),
+            SfcPrograms = BuildSfcProgramsForConfig(),
+            SfcInitProgram = BuildSfcInitProgramForConfig()
+        };
+    }
+
+    private List<SfcProgramConfig> BuildSfcProgramsForConfig()
+    {
+        // 先把当前工位刷入字典，再序列化全部工位
+        FlushCurrentSfcToDict(SfcStationNo);
+        return _sfcProgramsByStation.Values.ToList();
+    }
+
+    private SfcProgramConfig BuildSfcInitProgramForConfig()
+    {
+        return new SfcProgramConfig
+        {
+            ProgramName = SfcInitProgramName,
+            StationNo   = SfcInitStationNo,
+            Steps = SfcInitSteps.Select(s => new SfcStepDto
+            {
+                StepNo              = s.StepNo,
+                CompletionCondition = s.CompletionCondition,
+                NextStep            = s.NextStep,
+                Actions = s.Actions.Select(a => new SfcStepActionDto
+                {
+                    DeviceType      = a.DeviceType,
+                    DeviceIndex     = a.DeviceIndex,
+                    DeviceName      = a.DeviceName,
+                    ActionType      = a.ActionType,
+                    PointIndex      = a.PointIndex,
+                    CustomCommand   = a.CustomCommand,
+                    CustomCondition = a.CustomCondition
+                }).ToList(),
+                Branches = s.Branches.Select(b => new SfcStepBranchDto
+                {
+                    Condition  = b.Condition,
+                    TargetStep = b.TargetStep
+                }).ToList(),
+                Alarms = s.AlarmEntries.Select(al => new SfcStepAlarmDto
+                {
+                    AlarmMessage   = al.AlarmMessage,
+                    AlarmCondition = al.AlarmCondition,
+                    AlarmType      = al.AlarmType
+                }).ToList()
+            }).ToList()
         };
     }
 

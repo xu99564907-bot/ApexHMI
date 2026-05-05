@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using ApexHMI.ViewModels;
 using ApexHMI.ViewModels.Modules;
+using ApexHMI.Views.Dialogs;
 
 namespace ApexHMI.Views.Pages;
 
@@ -241,6 +242,42 @@ public partial class DesignerView : UserControl
         ShowPreviewWindow(title, previewTextBox, 1100, 760);
     }
 
+    private void SfcCodePreviewHeader_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount != 2)
+        {
+            return;
+        }
+
+        var vm = GetShell();
+        if (vm is null)
+        {
+            return;
+        }
+
+        var previewTextBox = new TextBox
+        {
+            Text = vm.SfcGeneratedCode,
+            IsReadOnly = false,
+            TextWrapping = TextWrapping.NoWrap,
+            AcceptsReturn = true,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            FontFamily = new FontFamily("Consolas"),
+            Background = Brushes.White,
+            Foreground = Brushes.Black,
+            BorderBrush = Brushes.LightGray
+        };
+
+        // 编辑内容实时回写 ViewModel，关闭弹窗后主界面同步
+        previewTextBox.TextChanged += (_, _) => vm.SfcGeneratedCode = previewTextBox.Text;
+
+        var title = string.IsNullOrWhiteSpace(vm.SfcProgramName)
+            ? "SFC 代码编辑"
+            : $"SFC 代码编辑 - {vm.SfcProgramName}";
+        ShowPreviewWindow(title, previewTextBox, 1100, 760);
+    }
+
     private void CopyCurrentIoProgramButton_Click(object sender, RoutedEventArgs e)
     {
         var vm = GetShell();
@@ -260,23 +297,13 @@ public partial class DesignerView : UserControl
         MessageBox.Show("当前程序内容已复制到剪贴板。", "复制程序", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
-    private void CopyCurrentAutoProgramButton_Click(object sender, RoutedEventArgs e)
+    private void OpenAlarmTermsDialog_Click(object sender, RoutedEventArgs e)
     {
-        var vm = GetShell();
-        if (vm is null)
+        var dialog = new AlarmTermsDialog
         {
-            return;
-        }
-
-        var content = vm.SelectedGeneratedAutoProgramContent;
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            MessageBox.Show("当前没有可复制的自动程序内容。", "复制程序", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        Clipboard.SetText(content);
-        MessageBox.Show("当前自动程序内容已复制到剪贴板。", "复制程序", MessageBoxButton.OK, MessageBoxImage.Information);
+            Owner = Window.GetWindow(this)
+        };
+        dialog.ShowDialog();
     }
 
     private void ShowPreviewWindow(string title, FrameworkElement content, double width, double height)

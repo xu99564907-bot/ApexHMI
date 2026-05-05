@@ -12,7 +12,7 @@ namespace ApexHMI.Services.Logging;
 public static class LoggingBootstrapper
 {
     private const string OutputTemplate =
-        "{Timestamp:HH:mm:ss.fff} [{Level:u3}] [{SourceContext}] {Message:lj} {Exception}{NewLine}";
+        "{Timestamp:HH:mm:ss.fff} [{Level:u3}] [{CorrelationId}] [{SourceContext}] {Message:lj} {Exception}{NewLine}";
 
     private static bool _initialized;
 

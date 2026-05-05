@@ -22,8 +22,6 @@ public partial class MainViewModel
         IoProgramGenerationService ioProgramGenerationService,
         IConfigurationService configurationService,
         NamingRulesService namingRulesService,
-        DesignerLayoutService designerLayoutService,
-        DesignerProjectService designerProjectService,
         IParameterService parameterService,
         IAlarmService alarmService,
         FlowLogCsvService flowLogCsvService,
@@ -39,8 +37,6 @@ public partial class MainViewModel
         _ioProgramGenerationService = ioProgramGenerationService;
         _configurationService = configurationService;
         _namingRulesService = namingRulesService;
-        _designerLayoutService = designerLayoutService;
-        _designerProjectService = designerProjectService;
         _parameterService = parameterService;
         _alarmService = alarmService;
         _flowLogCsvService = flowLogCsvService;
@@ -54,8 +50,6 @@ public partial class MainViewModel
         BindingOperations.EnableCollectionSynchronization(GeneratedIoPrograms, _generatedIoProgramsSync);
         BindingOperations.EnableCollectionSynchronization(ManualCylinderBlocks, _manualCylinderBlocksSync);
         BindingOperations.EnableCollectionSynchronization(Logs, _logsSync);
-        DesignerElements.CollectionChanged += DesignerElements_CollectionChanged;
-        DesignerPages.CollectionChanged += DesignerPages_CollectionChanged;
         Parameters.CollectionChanged += Parameters_CollectionChanged;
         IoTableRows.CollectionChanged += (_, _) =>
         {
@@ -64,8 +58,6 @@ public partial class MainViewModel
         };
         ManualCylinderBlocks.CollectionChanged += ManualCylinderBlocks_CollectionChanged;
         GeneratedIoPrograms.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasGeneratedIoPrograms));
-        GeneratedAutoPrograms.CollectionChanged += (_, _) => OnPropertyChanged(nameof(HasGeneratedAutoPrograms));
-        AutoProgramFlowNodes.CollectionChanged += (_, _) => RefreshAutoProgramSummary();
         AlarmHistory.CollectionChanged += (_, _) => RefreshAlarmStatistics();
         CurrentAlarms.CollectionChanged += (_, _) => RefreshAlarmStatistics();
         FlowSteps.CollectionChanged += FlowSteps_CollectionChanged;
@@ -95,7 +87,6 @@ public partial class MainViewModel
         RefreshFlowView();
         RefreshFlowIssueSummaries();
         RebuildProgramMonitorTraceHistory();
-        SeedAutoProgramFlow();
         InitializeRobotControl();
         _ = InitializeAsync();
     }

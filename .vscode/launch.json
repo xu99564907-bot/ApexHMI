@@ -1,4 +1,17 @@
 {
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ApexHMI (.NET Framework)",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/bin/Debug/exe/ApexHMI.exe",
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false
+    }
+  ]
+}{
     "version": "0.2.0",
     "configurations": [
         {

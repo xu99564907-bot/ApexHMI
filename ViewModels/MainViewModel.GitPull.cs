@@ -13,11 +13,24 @@ public partial class MainViewModel
 
     private GitPullViewModel? _gitPullVm;
     private GitPullSettings? _pendingGitPullSettings;
+    private bool _gitPullForwarding;
 
     /// <summary>由 MainWindowViewModel 在构造后注入。</summary>
     internal void SetGitPullViewModel(GitPullViewModel vm)
     {
         _gitPullVm = vm;
+
+        // 将 GitPullViewModel 的属性变更单向转发给 MainViewModel，使视图中通过
+        // ShellViewModel 的 WPF 绑定能收到更新通知。
+        // 重入保护：ModuleViewModelBase 已订阅 Shell.PropertyChanged → vm.OnPropertyChanged，
+        // 若不加保护会形成双向死循环导致 StackOverflow。
+        vm.PropertyChanged += (_, e) =>
+        {
+            if (_gitPullForwarding) return;
+            _gitPullForwarding = true;
+            try { OnPropertyChanged(e.PropertyName); }
+            finally { _gitPullForwarding = false; }
+        };
 
         // 如果在 SetGitPullViewModel 之前 LoadConfigAsync 已经执行了 RestoreGitPullSettings，
         // 这里把暂存的设置应用到 ViewModel。
@@ -83,4 +96,13 @@ public partial class MainViewModel
     {
         await GitPullVm.PrepareInProShopProjectImportAsync(result);
     }
+
+    /// <summary>直接运行 InProShop 导入脚本（SFC 生成后调用，无需复制 artifacts）。</summary>
+    internal async Task RunInProShopImportAsync()
+    {
+        await GitPullVm.RunImportScriptIfAvailableAsync();
+    }
+
+    /// <summary>返回已配置工程的 _exported 目录，未配置时返回 null。</summary>
+    internal string? TryGetExportedDirectory() => GitPullVm?.TryGetExportedDirectory();
 }

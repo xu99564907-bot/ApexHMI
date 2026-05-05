@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using Serilog;
+using Serilog.Context;
 
 namespace ApexHMI.Services;
 
@@ -18,6 +19,8 @@ public class GitPullService : IGitPullService
 {
     public async Task<GitPullResult> PullAsync(GitPullSettings settings, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
+        using var _ = LogContext.PushProperty("CorrelationId", Guid.NewGuid().ToString("N"));
+        var sw = Stopwatch.StartNew();
         if (settings is null) throw new ArgumentNullException(nameof(settings));
 
         var repositoryUrl = (settings.RepositoryUrl ?? string.Empty).Trim();
@@ -210,6 +213,8 @@ public class GitPullService : IGitPullService
         await ReportBranchStatusAsync(targetFolder, log, progress, cancellationToken);
 
         var headInfo = await TryReadHeadInfoAsync(targetFolder, cancellationToken);
+
+        Log.Information("Git Pull 完成 elapsedMs={ElapsedMs} folder={Folder} freshClone={FreshClone}", sw.ElapsedMilliseconds, targetFolder, !isExistingRepo);
 
         return new GitPullResult
         {

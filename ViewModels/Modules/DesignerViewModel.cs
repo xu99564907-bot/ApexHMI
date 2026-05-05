@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ApexHMI.Models;
+using ApexHMI.Models.Sfc;
 using CommunityToolkit.Mvvm.Input;
 
 namespace ApexHMI.ViewModels.Modules;
@@ -16,11 +18,7 @@ public sealed class DesignerViewModel : ModuleViewModelBase
         ClearIoTableCommand = new RelayCommand(() => Shell.ClearIoTableCommand.Execute(null));
         SaveIoTableToSourceCommand = new AsyncRelayCommand(() => Shell.SaveIoTableToSourceCommand.ExecuteAsync(null));
         GenerateIoProgramsCommand = new AsyncRelayCommand(() => Shell.GenerateIoProgramsCommand.ExecuteAsync(null));
-        ResetAutoProgramFlowCommand = new RelayCommand(() => Shell.ResetAutoProgramFlowCommand.Execute(null));
-        AddAutoProgramStepCommand = new RelayCommand(() => Shell.AddAutoProgramStepCommand.Execute(null));
-        GenerateAutoProgramsCommand = new AsyncRelayCommand(() => Shell.GenerateAutoProgramsCommand.ExecuteAsync(null));
         OpenGeneratedIoFolderCommand = new RelayCommand(() => Shell.OpenGeneratedIoFolderCommand.Execute(null));
-        OpenGeneratedAutoFolderCommand = new RelayCommand(() => Shell.OpenGeneratedAutoFolderCommand.Execute(null));
         OpenGeneratedIoFileCommand = new RelayCommand<GeneratedProgramArtifact?>(a => Shell.OpenGeneratedIoFileCommand.Execute(a));
         ApplyRuntimeTemplateCommand = new RelayCommand<string?>(t => Shell.ApplyRuntimeTemplateCommand.Execute(t));
         AddDesignerElementCommand = new RelayCommand<string?>(e => Shell.AddDesignerElementCommand.Execute(e));
@@ -35,6 +33,38 @@ public sealed class DesignerViewModel : ModuleViewModelBase
         BrowseGitTargetFolderCommand = new RelayCommand(() => Shell.BrowseGitTargetFolderCommand.Execute(null));
         PullGitRepositoryCommand = new AsyncRelayCommand(() => Shell.PullGitRepositoryCommand.ExecuteAsync(null));
         OpenGitTargetFolderCommand = new RelayCommand(() => Shell.OpenGitTargetFolderCommand.Execute(null));
+
+        // SFC 自动程序命令
+        AddSfcStepCommand = new RelayCommand(() => Shell.AddSfcStepCommand.Execute(null));
+        DeleteSfcStepCommand = new RelayCommand(() => Shell.DeleteSfcStepCommand.Execute(null));
+        MoveSfcStepUpCommand = new RelayCommand(() => Shell.MoveSfcStepUpCommand.Execute(null));
+        MoveSfcStepDownCommand = new RelayCommand(() => Shell.MoveSfcStepDownCommand.Execute(null));
+        AddSfcActionCommand = new RelayCommand(() => Shell.AddSfcActionCommand.Execute(null));
+        DeleteSfcActionCommand = new RelayCommand<SfcStepAction?>(a => Shell.DeleteSfcActionCommand.Execute(a));
+        AddSfcBranchCommand = new RelayCommand(() => Shell.AddSfcBranchCommand.Execute(null));
+        DeleteSfcBranchCommand = new RelayCommand<SfcStepBranch?>(b => Shell.DeleteSfcBranchCommand.Execute(b));
+        AutoFillSelectedSfcStepCommand = new RelayCommand(() => Shell.AutoFillSelectedSfcStepCommand.Execute(null));
+        AddSfcAlarmCommand = new RelayCommand(() => Shell.AddSfcAlarmCommand.Execute(null));
+        DeleteSfcAlarmCommand = new RelayCommand<SfcStepAlarm?>(a => Shell.DeleteSfcAlarmCommand.Execute(a));
+        GenerateSfcCodeCommand = new AsyncRelayCommand(() => Shell.GenerateSfcCodeCommand.ExecuteAsync(null));
+        CopySfcCodeCommand = new RelayCommand(() => Shell.CopySfcCodeCommand.Execute(null));
+        SaveSfcCodeToFileCommand = new RelayCommand(() => Shell.SaveSfcCodeToFileCommand.Execute(null));
+
+        // SFC 初始化程序命令
+        AddSfcInitStepCommand = new RelayCommand(() => Shell.AddSfcInitStepCommand.Execute(null));
+        DeleteSfcInitStepCommand = new RelayCommand(() => Shell.DeleteSfcInitStepCommand.Execute(null));
+        MoveSfcInitStepUpCommand = new RelayCommand(() => Shell.MoveSfcInitStepUpCommand.Execute(null));
+        MoveSfcInitStepDownCommand = new RelayCommand(() => Shell.MoveSfcInitStepDownCommand.Execute(null));
+        AddSfcInitActionCommand = new RelayCommand(() => Shell.AddSfcInitActionCommand.Execute(null));
+        DeleteSfcInitActionCommand = new RelayCommand<SfcStepAction?>(a => Shell.DeleteSfcInitActionCommand.Execute(a));
+        AddSfcInitBranchCommand = new RelayCommand(() => Shell.AddSfcInitBranchCommand.Execute(null));
+        DeleteSfcInitBranchCommand = new RelayCommand<SfcStepBranch?>(b => Shell.DeleteSfcInitBranchCommand.Execute(b));
+        AutoFillSelectedSfcInitStepCommand = new RelayCommand(() => Shell.AutoFillSelectedSfcInitStepCommand.Execute(null));
+        AddSfcInitAlarmCommand = new RelayCommand(() => Shell.AddSfcInitAlarmCommand.Execute(null));
+        DeleteSfcInitAlarmCommand = new RelayCommand<SfcStepAlarm?>(a => Shell.DeleteSfcInitAlarmCommand.Execute(a));
+        GenerateSfcInitCodeCommand = new AsyncRelayCommand(() => Shell.GenerateSfcInitCodeCommand.ExecuteAsync(null));
+        CopySfcInitCodeCommand = new RelayCommand(() => Shell.CopySfcInitCodeCommand.Execute(null));
+        SaveSfcInitCodeToFileCommand = new RelayCommand(() => Shell.SaveSfcInitCodeToFileCommand.Execute(null));
     }
 
     // -- Designer Commands --
@@ -44,11 +74,7 @@ public sealed class DesignerViewModel : ModuleViewModelBase
     public IRelayCommand ClearIoTableCommand { get; }
     public IAsyncRelayCommand SaveIoTableToSourceCommand { get; }
     public IAsyncRelayCommand GenerateIoProgramsCommand { get; }
-    public IRelayCommand ResetAutoProgramFlowCommand { get; }
-    public IRelayCommand AddAutoProgramStepCommand { get; }
-    public IAsyncRelayCommand GenerateAutoProgramsCommand { get; }
     public IRelayCommand OpenGeneratedIoFolderCommand { get; }
-    public IRelayCommand OpenGeneratedAutoFolderCommand { get; }
     public IRelayCommand<GeneratedProgramArtifact?> OpenGeneratedIoFileCommand { get; }
     public IRelayCommand<string?> ApplyRuntimeTemplateCommand { get; }
     public IRelayCommand<string?> AddDesignerElementCommand { get; }
@@ -63,6 +89,38 @@ public sealed class DesignerViewModel : ModuleViewModelBase
     public IRelayCommand BrowseGitTargetFolderCommand { get; }
     public IAsyncRelayCommand PullGitRepositoryCommand { get; }
     public IRelayCommand OpenGitTargetFolderCommand { get; }
+
+    // -- SFC 自动程序命令 --
+    public IRelayCommand AddSfcStepCommand { get; }
+    public IRelayCommand DeleteSfcStepCommand { get; }
+    public IRelayCommand MoveSfcStepUpCommand { get; }
+    public IRelayCommand MoveSfcStepDownCommand { get; }
+    public IRelayCommand AddSfcActionCommand { get; }
+    public IRelayCommand<SfcStepAction?> DeleteSfcActionCommand { get; }
+    public IRelayCommand AddSfcBranchCommand { get; }
+    public IRelayCommand<SfcStepBranch?> DeleteSfcBranchCommand { get; }
+    public IRelayCommand AutoFillSelectedSfcStepCommand { get; }
+    public IRelayCommand AddSfcAlarmCommand { get; }
+    public IRelayCommand<SfcStepAlarm?> DeleteSfcAlarmCommand { get; }
+    public IAsyncRelayCommand GenerateSfcCodeCommand { get; }
+    public IRelayCommand CopySfcCodeCommand { get; }
+    public IRelayCommand SaveSfcCodeToFileCommand { get; }
+
+    // -- SFC 初始化程序命令 --
+    public IRelayCommand AddSfcInitStepCommand { get; }
+    public IRelayCommand DeleteSfcInitStepCommand { get; }
+    public IRelayCommand MoveSfcInitStepUpCommand { get; }
+    public IRelayCommand MoveSfcInitStepDownCommand { get; }
+    public IRelayCommand AddSfcInitActionCommand { get; }
+    public IRelayCommand<SfcStepAction?> DeleteSfcInitActionCommand { get; }
+    public IRelayCommand AddSfcInitBranchCommand { get; }
+    public IRelayCommand<SfcStepBranch?> DeleteSfcInitBranchCommand { get; }
+    public IRelayCommand AutoFillSelectedSfcInitStepCommand { get; }
+    public IRelayCommand AddSfcInitAlarmCommand { get; }
+    public IRelayCommand<SfcStepAlarm?> DeleteSfcInitAlarmCommand { get; }
+    public IAsyncRelayCommand GenerateSfcInitCodeCommand { get; }
+    public IRelayCommand CopySfcInitCodeCommand { get; }
+    public IRelayCommand SaveSfcInitCodeToFileCommand { get; }
 
     // -- Navigation/Sub-section --
     public string CurrentSubSection
@@ -82,8 +140,6 @@ public sealed class DesignerViewModel : ModuleViewModelBase
     public ObservableCollection<DesignerElement> Elements => Shell.DesignerElements;
     public ObservableCollection<IoTableRow> IoTableRows => Shell.IoTableRows;
     public ObservableCollection<GeneratedProgramArtifact> GeneratedIoPrograms => Shell.GeneratedIoPrograms;
-    public ObservableCollection<GeneratedProgramArtifact> GeneratedAutoPrograms => Shell.GeneratedAutoPrograms;
-    public ObservableCollection<AutoProgramFlowNode> AutoProgramFlowNodes => Shell.AutoProgramFlowNodes;
     public ObservableCollection<TagItem> Tags => Shell.Tags;
     public ObservableCollection<string> DesignerActionOptions => Shell.DesignerActionOptions;
 
@@ -102,11 +158,6 @@ public sealed class DesignerViewModel : ModuleViewModelBase
     {
         get => Shell.SelectedGeneratedIoProgram;
         set => Shell.SelectedGeneratedIoProgram = value;
-    }
-    public GeneratedProgramArtifact? SelectedGeneratedAutoProgram
-    {
-        get => Shell.SelectedGeneratedAutoProgram;
-        set => Shell.SelectedGeneratedAutoProgram = value;
     }
 
     // -- Selected element helpers --
@@ -162,11 +213,61 @@ public sealed class DesignerViewModel : ModuleViewModelBase
         set => Shell.SelectedRuntimeTemplate = value;
     }
 
+    // -- SFC 自动程序属性 --
+    public ObservableCollection<SfcStep> SfcSteps => Shell.SfcSteps;
+    public SfcStep? SelectedSfcStep
+    {
+        get => Shell.SelectedSfcStep;
+        set => Shell.SelectedSfcStep = value;
+    }
+    public string SfcProgramName
+    {
+        get => Shell.SfcProgramName;
+        set => Shell.SfcProgramName = value;
+    }
+    public string SfcStationNo
+    {
+        get => Shell.SfcStationNo;
+        set => Shell.SfcStationNo = value;
+    }
+    public string SfcGeneratedCode
+    {
+        get => Shell.SfcGeneratedCode;
+        set => Shell.SfcGeneratedCode = value;
+    }
+
+    // -- SFC 初始化程序属性 --
+    public ObservableCollection<SfcStep> SfcInitSteps => Shell.SfcInitSteps;
+    public SfcStep? SelectedSfcInitStep
+    {
+        get => Shell.SelectedSfcInitStep;
+        set => Shell.SelectedSfcInitStep = value;
+    }
+    public string SfcInitProgramName
+    {
+        get => Shell.SfcInitProgramName;
+        set => Shell.SfcInitProgramName = value;
+    }
+    public string SfcInitStationNo
+    {
+        get => Shell.SfcInitStationNo;
+        set => Shell.SfcInitStationNo = value;
+    }
+    public string SfcInitGeneratedCode
+    {
+        get => Shell.SfcInitGeneratedCode;
+        set => Shell.SfcInitGeneratedCode = value;
+    }
+
+    public bool IsDesignerInitProgramPageVisible => Shell.IsDesignerInitProgramPageVisible;
+    public IEnumerable<SfcDeviceOption> SfcCylinderOptions => Shell.SfcCylinderOptions;
+    public IEnumerable<SfcDeviceOption> SfcAxisOptions => Shell.SfcAxisOptions;
+    public IEnumerable<SfcDeviceOption> SfcVacuumOptions => Shell.SfcVacuumOptions;
+
     // -- IO generation --
     public bool CanSaveIoTable => Shell.CanSaveIoTable;
     public string IoImportSummary => Shell.IoImportSummary;
     public string GeneratedIoOutputDirectory => Shell.GeneratedIoOutputDirectory;
-    public string GeneratedAutoOutputDirectory => Shell.GeneratedAutoOutputDirectory;
     public string SelectedIoPlcTemplate
     {
         get => Shell.SelectedIoPlcTemplate;
@@ -178,18 +279,7 @@ public sealed class DesignerViewModel : ModuleViewModelBase
         set => Shell.IoOperationNumber = value;
     }
     public string SelectedGeneratedIoProgramContent => Shell.SelectedGeneratedIoProgramContent;
-    public string SelectedGeneratedAutoProgramContent => Shell.SelectedGeneratedAutoProgramContent;
     public bool HasGeneratedIoPrograms => Shell.HasGeneratedIoPrograms;
-    public bool HasGeneratedAutoPrograms => Shell.HasGeneratedAutoPrograms;
-
-    // -- Auto program --
-    public string AutoProgramName
-    {
-        get => Shell.AutoProgramName;
-        set => Shell.AutoProgramName = value;
-    }
-    public string AutoProgramHeadline => Shell.AutoProgramHeadline;
-    public string AutoProgramSummary => Shell.AutoProgramSummary;
 
     // -- GitPull properties --
     public string GitRepositoryUrl

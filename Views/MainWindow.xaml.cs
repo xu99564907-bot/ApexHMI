@@ -145,20 +145,6 @@ public partial class MainWindow : Window
             return;
         }
 
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.C)
-        {
-            vm.CopySelectedDesignerElementCommand.Execute(null);
-            e.Handled = true;
-            return;
-        }
-
-        if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.V)
-        {
-            vm.PasteDesignerElementCommand.Execute(null);
-            e.Handled = true;
-            return;
-        }
-
         if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.S)
         {
             if (vm.SaveIoTableToSourceCommand.CanExecute(null))
@@ -169,40 +155,6 @@ public partial class MainWindow : Window
             }
         }
 
-        if (e.Key == Key.Delete)
-        {
-            vm.RemoveSelectedDesignerElementCommand.Execute(null);
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.Left)
-        {
-            vm.MoveSelectedElementCommand.Execute("Left");
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.Right)
-        {
-            vm.MoveSelectedElementCommand.Execute("Right");
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.Up)
-        {
-            vm.MoveSelectedElementCommand.Execute("Up");
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key == Key.Down)
-        {
-            vm.MoveSelectedElementCommand.Execute("Down");
-            e.Handled = true;
-            return;
-        }
     }
 
     private void MainWindow_PreviewMouseWheel(object sender, MouseWheelEventArgs e)

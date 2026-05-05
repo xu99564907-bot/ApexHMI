@@ -19,6 +19,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using ApexHMI.Models;
+using ApexHMI.Models.Sfc;
 using ApexHMI.Services;
 
 namespace ApexHMI.ViewModels;
@@ -78,6 +79,8 @@ public partial class MainViewModel
         RebuildManualAxisBlocksFromIo();
         RebindCylinderDbByOperation();
         RestoreGitPullSettings(config.GitPull);
+        RestoreAllSfcStations(config);
+        RestoreSfcInitSteps(config.SfcInitProgram);
         RefreshIoGenerationSummary();
         OnPropertyChanged(nameof(TagCount));
         RefreshMonitorView();
@@ -430,7 +433,8 @@ public partial class MainViewModel
                     OperationNumber = IoOperationNumber,
                     ControlDbMultiplier = _controlDbMultiplier,
                     ControlDbOffset = _controlDbOffset,
-                    DriveDbOffset = _driveDbOffset
+                    DriveDbOffset = _driveDbOffset,
+                    AxisEntries = _axisConfigEntries.ToList()
                 },
                 GetApplicationRoot());
 
@@ -497,91 +501,6 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
-    private void ResetAutoProgramFlow()
-    {
-        SeedAutoProgramFlow();
-        GeneratedAutoPrograms.Clear();
-        SelectedGeneratedAutoProgram = null;
-        GeneratedAutoOutputDirectory = string.Empty;
-        SystemMessage = "自动流程已重置为标准骨架";
-    }
-
-    [RelayCommand]
-    private void AddAutoProgramStep()
-    {
-        var nextStepNo = AutoProgramFlowNodes.Count == 0 ? 10 : AutoProgramFlowNodes.Max(x => x.StepNo) + 10;
-        AutoProgramFlowNodes.Add(new AutoProgramFlowNode
-        {
-            StepNo = nextStepNo,
-            Title = $"新步骤 {nextStepNo:000}",
-            Action = "补充动作说明",
-            NextStep = "END",
-            Left = 70,
-            Top = 80 + AutoProgramFlowNodes.Count * 130,
-            Fill = "#E0F2FE"
-        });
-        RebuildAutoFlowLayout();
-        SystemMessage = $"已新增自动流程节点 STEP {nextStepNo:000}";
-    }
-
-    [RelayCommand]
-    private async Task GenerateAutoProgramsAsync()
-    {
-        try
-        {
-            var projectRoot = GetApplicationRoot();
-            var outputDirectory = Path.Combine(projectRoot, "Generated", "AutoProgram");
-            Directory.CreateDirectory(outputDirectory);
-
-            var orderedNodes = AutoProgramFlowNodes.OrderBy(x => x.StepNo).ToList();
-            var stationNo = ResolveStationNo(AutoProgramStation);
-            var controlDb = $"DB{ResolveOperationBaseNumber(IoOperationNumber)}_Control";
-            var autoTemplate = ReadGenerationTemplate("Auto.txt");
-            var initTemplate = ReadGenerationTemplate("Init.txt");
-            var autoProgram = BuildAutoTemplateProgram(autoTemplate, controlDb, stationNo, orderedNodes);
-            var initProgram = BuildInitTemplateProgram(initTemplate, controlDb, stationNo, orderedNodes);
-            var chartBuilder = new StringBuilder();
-            chartBuilder.AppendLine($"流程名称：{AutoProgramName}");
-            chartBuilder.AppendLine($"工位：{AutoProgramStation}");
-            chartBuilder.AppendLine($"生成时间：{DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-            chartBuilder.AppendLine();
-            foreach (var node in orderedNodes)
-            {
-                chartBuilder.AppendLine($"{node.StepCode}  {node.Title}");
-                chartBuilder.AppendLine($"动作：{node.Action}");
-                chartBuilder.AppendLine($"流向：{node.NextStep}");
-                chartBuilder.AppendLine();
-            }
-
-            var artifacts = new[]
-            {
-                CreateGeneratedArtifact(outputDirectory, $"{IoOperationNumber}_AutoRun_{AutoProgramStation}.txt", autoProgram),
-                CreateGeneratedArtifact(outputDirectory, $"{IoOperationNumber}_Init_{AutoProgramStation}.txt", initProgram),
-                CreateGeneratedArtifact(outputDirectory, $"{AutoProgramStation}_FlowChart.txt", chartBuilder.ToString())
-            };
-
-            GeneratedAutoPrograms.Clear();
-            foreach (var artifact in artifacts)
-            {
-                GeneratedAutoPrograms.Add(artifact);
-            }
-
-            SelectedGeneratedAutoProgram = GeneratedAutoPrograms.FirstOrDefault();
-            GeneratedAutoOutputDirectory = outputDirectory;
-            RefreshAutoProgramSummary();
-            SystemMessage = $"自动程序已生成：{outputDirectory}";
-            AddLog("自动程序", $"{AutoProgramName} 已生成 {artifacts.Length} 个文件", "Info");
-            await Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
-            SystemMessage = $"自动程序生成失败：{ex.Message}";
-            AddLog("自动程序", SystemMessage, "Error");
-            ShowPopup("生成失败", ex.Message, "Error");
-        }
-    }
-
-    [RelayCommand]
     private void OpenGeneratedIoFolder()
     {
         try
@@ -592,21 +511,6 @@ public partial class MainViewModel
         {
             SystemMessage = $"打开生成目录失败：{ex.Message}";
             AddLog("IO 生成", SystemMessage, "Error");
-            ShowPopup("打开失败", ex.Message, "Error");
-        }
-    }
-
-    [RelayCommand]
-    private void OpenGeneratedAutoFolder()
-    {
-        try
-        {
-            _ioProgramGenerationService.OpenOutputDirectory(GeneratedAutoOutputDirectory);
-        }
-        catch (Exception ex)
-        {
-            SystemMessage = $"打开自动程序目录失败：{ex.Message}";
-            AddLog("自动程序", SystemMessage, "Error");
             ShowPopup("打开失败", ex.Message, "Error");
         }
     }
@@ -632,6 +536,855 @@ public partial class MainViewModel
             SystemMessage = $"打开程序文件失败：{ex.Message}";
             AddLog("IO 生成", SystemMessage, "Error");
         }
+    }
+
+    // ========== SFC 自动程序生成 ==========
+
+    [RelayCommand]
+    private void AddSfcStep()
+    {
+        var nextNo = SfcSteps.Count == 0 ? 10 : SfcSteps.Max(s => s.StepNo) + 10;
+        var step = new SfcStep { StepNo = nextNo, NextStep = (nextNo + 10).ToString() };
+        var defaultAction = new SfcStepAction();
+        WireSfcAction(defaultAction);
+        step.Actions.Add(defaultAction);
+        SfcSteps.Add(step);
+        SelectedSfcStep = step;
+        SystemMessage = $"已添加步骤 STEP {nextNo:000}";
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    [RelayCommand]
+    private void AddSfcAction()
+    {
+        if (SelectedSfcStep is null) return;
+        var action = new SfcStepAction();
+        WireSfcAction(action);
+        SelectedSfcStep.Actions.Add(action);
+        SystemMessage = "已添加动作";
+    }
+
+    private void WireSfcAction(SfcStepAction action)
+    {
+        action.PropertyChanged += (s, e) =>
+        {
+            if (s is SfcStepAction a &&
+                e.PropertyName is nameof(SfcStepAction.DeviceType) or nameof(SfcStepAction.DeviceIndex))
+                RefreshSfcActionOptions(a);
+        };
+        RefreshSfcActionOptions(action);
+    }
+
+    private void RefreshSfcActionOptions(SfcStepAction action)
+    {
+        // 注入轴点位
+        action.AxisPointOptions.Clear();
+        if (action.DeviceType == "Axis")
+        {
+            var entry = _axisConfigEntries.FirstOrDefault(e => e.Index == action.DeviceIndex);
+            if (entry is not null)
+            {
+                foreach (var p in entry.Points)
+                    action.AxisPointOptions.Add(p);
+                action.SelectedAxisPoint = action.AxisPointOptions.FirstOrDefault(p => p.Index == action.PointIndex);
+            }
+        }
+
+        // 同步设备下拉选中（保证 ComboBox 初始高亮正确）
+        if (action.DeviceType == "Cylinder")
+        {
+            var opt = SfcCylinderOptions.FirstOrDefault(o => o.Index == action.DeviceIndex);
+            if (opt is not null && action.SelectedDeviceOption != opt)
+            {
+                action.SelectedDeviceOption = opt;
+                if (!string.IsNullOrWhiteSpace(opt.DisplayName)) action.DeviceName = opt.DisplayName;
+            }
+        }
+        else if (action.DeviceType == "Axis")
+        {
+            var opt = SfcAxisOptions.FirstOrDefault(o => o.Index == action.DeviceIndex);
+            if (opt is not null && action.SelectedDeviceOption != opt)
+            {
+                action.SelectedDeviceOption = opt;
+                if (!string.IsNullOrWhiteSpace(opt.DisplayName)) action.DeviceName = opt.DisplayName;
+            }
+        }
+        else if (action.DeviceType == "Vacuum")
+        {
+            var opt = SfcVacuumOptions.FirstOrDefault(o => o.Index == action.DeviceIndex);
+            if (opt is not null && action.SelectedDeviceOption != opt)
+            {
+                action.SelectedDeviceOption = opt;
+                if (!string.IsNullOrWhiteSpace(opt.DisplayName)) action.DeviceName = opt.DisplayName;
+            }
+        }
+    }
+
+    [RelayCommand]
+    private void DeleteSfcAction(SfcStepAction? action)
+    {
+        if (SelectedSfcStep is null || action is null) return;
+        SelectedSfcStep.Actions.Remove(action);
+        SystemMessage = "已删除动作";
+    }
+
+    [RelayCommand]
+    private void AddSfcBranch()
+    {
+        if (SelectedSfcStep is null) return;
+        SelectedSfcStep.Branches.Add(new SfcStepBranch());
+        SystemMessage = "已添加跳转分支";
+    }
+
+    [RelayCommand]
+    private void DeleteSfcBranch(SfcStepBranch? branch)
+    {
+        if (SelectedSfcStep is null || branch is null) return;
+        SelectedSfcStep.Branches.Remove(branch);
+        SystemMessage = "已删除跳转分支";
+    }
+
+    [RelayCommand]
+    private void AddSfcAlarm()
+    {
+        if (SelectedSfcStep is null) return;
+        SelectedSfcStep.AlarmEntries.Add(new SfcStepAlarm());
+    }
+
+    [RelayCommand]
+    private void DeleteSfcAlarm(SfcStepAlarm? alarm)
+    {
+        if (SelectedSfcStep is null || alarm is null) return;
+        SelectedSfcStep.AlarmEntries.Remove(alarm);
+    }
+
+    [RelayCommand]
+    private void DeleteSfcStep()
+    {
+        if (SelectedSfcStep is null) return;
+        var idx = SfcSteps.IndexOf(SelectedSfcStep);
+        SfcSteps.Remove(SelectedSfcStep);
+        SelectedSfcStep = SfcSteps.Count > 0 ? SfcSteps[Math.Max(0, idx - 1)] : null;
+        SystemMessage = "已删除步骤";
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    [RelayCommand]
+    private void MoveSfcStepUp()
+    {
+        if (SelectedSfcStep is null) return;
+        var idx = SfcSteps.IndexOf(SelectedSfcStep);
+        if (idx <= 0) return;
+        SfcSteps.Move(idx, idx - 1);
+        RenumberSfcSteps();
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    [RelayCommand]
+    private void MoveSfcStepDown()
+    {
+        if (SelectedSfcStep is null) return;
+        var idx = SfcSteps.IndexOf(SelectedSfcStep);
+        if (idx < 0 || idx >= SfcSteps.Count - 1) return;
+        SfcSteps.Move(idx, idx + 1);
+        RenumberSfcSteps();
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    private void RenumberSfcSteps()
+    {
+        // 先记录旧编号 → 新编号映射（用于更新分支 TargetStep）
+        var oldToNew = new Dictionary<int, int>();
+        for (int i = 0; i < SfcSteps.Count; i++)
+            oldToNew[SfcSteps[i].StepNo] = (i + 1) * 10;
+
+        // 更新步序编号
+        for (int i = 0; i < SfcSteps.Count; i++)
+            SfcSteps[i].StepNo = (i + 1) * 10;
+
+        // NextStep：始终改为物理下一步（顺序跳转），保证移动后步序正确衔接
+        // 最后一步 NextStep 保持不变（通常是 END/1000/循环回第一步），用旧→新映射更新
+        for (int i = 0; i < SfcSteps.Count; i++)
+        {
+            if (i < SfcSteps.Count - 1)
+            {
+                SfcSteps[i].NextStep = SfcSteps[i + 1].StepNo.ToString();
+            }
+            else
+            {
+                // 最后一步：尝试把旧跳转目标更新到新编号
+                if (TryRemapStepRef(SfcSteps[i].NextStep, oldToNew, out var remapped))
+                    SfcSteps[i].NextStep = remapped;
+            }
+        }
+
+        // 分支 TargetStep：用旧→新映射保留跳转意图
+        foreach (var step in SfcSteps)
+        {
+            foreach (var branch in step.Branches)
+            {
+                if (TryRemapStepRef(branch.TargetStep, oldToNew, out var newTarget))
+                    branch.TargetStep = newTarget;
+            }
+        }
+    }
+
+    private static bool TryRemapStepRef(string? stepRef, Dictionary<int, int> map, out string newRef)
+    {
+        newRef = stepRef ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(stepRef) || stepRef == "END") return false;
+        if (!int.TryParse(stepRef.Trim(), out var oldNo)) return false;
+        if (!map.TryGetValue(oldNo, out var newNo)) return false;
+        newRef = newNo.ToString();
+        return true;
+    }
+
+    // ========== 初始化程序步骤管理（独立步骤集合）==========
+
+    [RelayCommand]
+    private void AddSfcInitStep()
+    {
+        var nextNo = SfcInitSteps.Count == 0 ? 10 : SfcInitSteps.Max(s => s.StepNo) + 10;
+        var step = new SfcStep { StepNo = nextNo, NextStep = (nextNo + 10).ToString() };
+        var defaultAction = new SfcStepAction();
+        WireSfcAction(defaultAction);
+        step.Actions.Add(defaultAction);
+        SfcInitSteps.Add(step);
+        SelectedSfcInitStep = step;
+        SystemMessage = $"已添加初始化步骤 STEP {nextNo:000}";
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    [RelayCommand]
+    private void DeleteSfcInitStep()
+    {
+        if (SelectedSfcInitStep is null) return;
+        var idx = SfcInitSteps.IndexOf(SelectedSfcInitStep);
+        SfcInitSteps.Remove(SelectedSfcInitStep);
+        SelectedSfcInitStep = SfcInitSteps.Count > 0 ? SfcInitSteps[Math.Max(0, idx - 1)] : null;
+        SystemMessage = "已删除初始化步骤";
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    [RelayCommand]
+    private void MoveSfcInitStepUp()
+    {
+        if (SelectedSfcInitStep is null) return;
+        var idx = SfcInitSteps.IndexOf(SelectedSfcInitStep);
+        if (idx <= 0) return;
+        SfcInitSteps.Move(idx, idx - 1);
+        RenumberSfcInitSteps();
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    [RelayCommand]
+    private void MoveSfcInitStepDown()
+    {
+        if (SelectedSfcInitStep is null) return;
+        var idx = SfcInitSteps.IndexOf(SelectedSfcInitStep);
+        if (idx < 0 || idx >= SfcInitSteps.Count - 1) return;
+        SfcInitSteps.Move(idx, idx + 1);
+        RenumberSfcInitSteps();
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    private void RenumberSfcInitSteps()
+    {
+        var oldToNew = new Dictionary<int, int>();
+        for (int i = 0; i < SfcInitSteps.Count; i++)
+            oldToNew[SfcInitSteps[i].StepNo] = (i + 1) * 10;
+        for (int i = 0; i < SfcInitSteps.Count; i++)
+            SfcInitSteps[i].StepNo = (i + 1) * 10;
+        for (int i = 0; i < SfcInitSteps.Count; i++)
+        {
+            if (i < SfcInitSteps.Count - 1)
+                SfcInitSteps[i].NextStep = SfcInitSteps[i + 1].StepNo.ToString();
+            else
+                if (TryRemapStepRef(SfcInitSteps[i].NextStep, oldToNew, out var remapped))
+                    SfcInitSteps[i].NextStep = remapped;
+        }
+        foreach (var step in SfcInitSteps)
+            foreach (var branch in step.Branches)
+                if (TryRemapStepRef(branch.TargetStep, oldToNew, out var newTarget))
+                    branch.TargetStep = newTarget;
+    }
+
+    [RelayCommand]
+    private void AddSfcInitAction()
+    {
+        if (SelectedSfcInitStep is null) return;
+        var action = new SfcStepAction();
+        WireSfcAction(action);
+        SelectedSfcInitStep.Actions.Add(action);
+        SystemMessage = "已添加初始化动作";
+    }
+
+    [RelayCommand]
+    private void DeleteSfcInitAction(SfcStepAction? action)
+    {
+        if (SelectedSfcInitStep is null || action is null) return;
+        SelectedSfcInitStep.Actions.Remove(action);
+        SystemMessage = "已删除初始化动作";
+    }
+
+    [RelayCommand]
+    private void AddSfcInitBranch()
+    {
+        if (SelectedSfcInitStep is null) return;
+        SelectedSfcInitStep.Branches.Add(new SfcStepBranch());
+        SystemMessage = "已添加初始化跳转分支";
+    }
+
+    [RelayCommand]
+    private void DeleteSfcInitBranch(SfcStepBranch? branch)
+    {
+        if (SelectedSfcInitStep is null || branch is null) return;
+        SelectedSfcInitStep.Branches.Remove(branch);
+        SystemMessage = "已删除初始化跳转分支";
+    }
+
+    [RelayCommand]
+    private void AddSfcInitAlarm()
+    {
+        if (SelectedSfcInitStep is null) return;
+        SelectedSfcInitStep.AlarmEntries.Add(new SfcStepAlarm());
+    }
+
+    [RelayCommand]
+    private void DeleteSfcInitAlarm(SfcStepAlarm? alarm)
+    {
+        if (SelectedSfcInitStep is null || alarm is null) return;
+        SelectedSfcInitStep.AlarmEntries.Remove(alarm);
+    }
+
+    [RelayCommand]
+    private void AutoFillSelectedSfcInitStep()
+    {
+        if (SelectedSfcInitStep is null) return;
+        var driveDb = BuildSfcDriveDb();
+        SfcCodeGeneratorService.AutoFill(SelectedSfcInitStep, driveDb);
+        SystemMessage = "已自动填充初始化步骤完成条件";
+    }
+
+    [RelayCommand]
+    private void CopySfcInitCode()
+    {
+        if (string.IsNullOrWhiteSpace(SfcInitGeneratedCode)) return;
+        System.Windows.Clipboard.SetText(SfcInitGeneratedCode);
+        SystemMessage = "初始化程序代码已复制到剪贴板";
+    }
+
+    [RelayCommand]
+    private void SaveSfcInitCodeToFile()
+    {
+        if (string.IsNullOrWhiteSpace(SfcInitGeneratedCode)) { SystemMessage = "请先生成初始化程序代码"; return; }
+        try
+        {
+            var outputDir = Path.Combine(AppContext.BaseDirectory, "Generated", "SfcProgram");
+            Directory.CreateDirectory(outputDir);
+            var fileName = $"{IoOperationNumber}_{SfcInitProgramName}_Init_S{SfcInitStationNo}.txt";
+            var filePath = Path.Combine(outputDir, fileName);
+            File.WriteAllText(filePath, SfcInitGeneratedCode, Encoding.UTF8);
+            SystemMessage = $"已保存：{filePath}";
+        }
+        catch (Exception ex)
+        {
+            SystemMessage = $"保存失败：{ex.Message}";
+        }
+    }
+
+    private void RestoreSfcInitSteps(SfcProgramConfig? config)
+    {
+        SfcInitSteps.Clear();
+        SelectedSfcInitStep = null;
+        if (config is null) return;
+        if (!string.IsNullOrWhiteSpace(config.ProgramName)) SfcInitProgramName = config.ProgramName;
+        if (!string.IsNullOrWhiteSpace(config.StationNo))   SfcInitStationNo   = config.StationNo;
+        foreach (var dto in config.Steps ?? Enumerable.Empty<SfcStepDto>())
+        {
+            var step = new SfcStep
+            {
+                StepNo              = dto.StepNo,
+                CompletionCondition = dto.CompletionCondition ?? string.Empty,
+                NextStep            = dto.NextStep ?? "END"
+            };
+            foreach (var adto in dto.Actions ?? Enumerable.Empty<SfcStepActionDto>())
+            {
+                var action = new SfcStepAction
+                {
+                    DeviceType      = adto.DeviceType      ?? "Cylinder",
+                    DeviceIndex     = adto.DeviceIndex,
+                    DeviceName      = adto.DeviceName      ?? string.Empty,
+                    ActionType      = adto.ActionType      ?? "ToWork",
+                    PointIndex      = adto.PointIndex,
+                    CustomCommand   = adto.CustomCommand   ?? string.Empty,
+                    CustomCondition = adto.CustomCondition ?? string.Empty
+                };
+                WireSfcAction(action);
+                step.Actions.Add(action);
+            }
+            foreach (var bdto in dto.Branches ?? Enumerable.Empty<SfcStepBranchDto>())
+            {
+                step.Branches.Add(new SfcStepBranch
+                {
+                    Condition  = bdto.Condition  ?? string.Empty,
+                    TargetStep = bdto.TargetStep ?? "END"
+                });
+            }
+            foreach (var aldto in dto.Alarms ?? Enumerable.Empty<SfcStepAlarmDto>())
+            {
+                step.AlarmEntries.Add(new SfcStepAlarm
+                {
+                    AlarmMessage   = aldto.AlarmMessage   ?? string.Empty,
+                    AlarmCondition = aldto.AlarmCondition ?? string.Empty,
+                    AlarmType      = aldto.AlarmType      ?? "Stop"
+                });
+            }
+            SfcInitSteps.Add(step);
+        }
+        SelectedSfcInitStep = SfcInitSteps.FirstOrDefault();
+    }
+
+    private void RestoreSfcSteps(SfcProgramConfig? config)
+    {
+        if (config is null) return;
+        SfcSteps.Clear();
+        if (!string.IsNullOrWhiteSpace(config.ProgramName)) SfcProgramName = config.ProgramName;
+        if (!string.IsNullOrWhiteSpace(config.StationNo)) SfcStationNo = config.StationNo;
+        foreach (var dto in config.Steps ?? Enumerable.Empty<SfcStepDto>())
+        {
+            var step = new SfcStep
+            {
+                StepNo = dto.StepNo,
+                CompletionCondition = dto.CompletionCondition ?? string.Empty,
+                NextStep = dto.NextStep ?? "END"
+            };
+            foreach (var adto in dto.Actions ?? Enumerable.Empty<SfcStepActionDto>())
+            {
+                var action = new SfcStepAction
+                {
+                    DeviceType = adto.DeviceType ?? "Cylinder",
+                    DeviceIndex = adto.DeviceIndex,
+                    DeviceName = adto.DeviceName ?? string.Empty,
+                    ActionType = adto.ActionType ?? "ToWork",
+                    PointIndex = adto.PointIndex,
+                    CustomCommand = adto.CustomCommand ?? string.Empty,
+                    CustomCondition = adto.CustomCondition ?? string.Empty
+                };
+                WireSfcAction(action);
+                step.Actions.Add(action);
+            }
+            foreach (var bdto in dto.Branches ?? Enumerable.Empty<SfcStepBranchDto>())
+            {
+                step.Branches.Add(new SfcStepBranch
+                {
+                    Condition = bdto.Condition ?? string.Empty,
+                    TargetStep = bdto.TargetStep ?? "END"
+                });
+            }
+            foreach (var aldto in dto.Alarms ?? Enumerable.Empty<SfcStepAlarmDto>())
+            {
+                step.AlarmEntries.Add(new SfcStepAlarm
+                {
+                    AlarmMessage   = aldto.AlarmMessage   ?? string.Empty,
+                    AlarmCondition = aldto.AlarmCondition ?? string.Empty,
+                    AlarmType      = aldto.AlarmType      ?? "Stop"
+                });
+            }
+            SfcSteps.Add(step);
+        }
+        SelectedSfcStep = SfcSteps.FirstOrDefault();
+    }
+
+    // ===== 多工位 SFC 配置管理 =====
+
+    /// <summary>从完整 AppConfig 初始化所有工位缓存（用于启动加载）</summary>
+    private void RestoreAllSfcStations(AppConfig config)
+    {
+        _suppressStationSwitch = true;
+        try
+        {
+            _sfcProgramsByStation.Clear();
+
+            // 兼容旧版单工位字段迁移
+            if (config.SfcProgram?.Steps?.Count > 0)
+            {
+                var key = string.IsNullOrWhiteSpace(config.SfcProgram.StationNo) ? "1" : config.SfcProgram.StationNo;
+                _sfcProgramsByStation[key] = config.SfcProgram;
+            }
+
+            // 加载多工位列表
+            foreach (var sfcCfg in config.SfcPrograms ?? Enumerable.Empty<SfcProgramConfig>())
+            {
+                var key = string.IsNullOrWhiteSpace(sfcCfg.StationNo) ? "1" : sfcCfg.StationNo;
+                _sfcProgramsByStation[key] = sfcCfg;
+            }
+
+            // 选取第一个工位（按字符串升序）作为初始显示工位
+            var targetStation = _sfcProgramsByStation.Keys.OrderBy(k => k).FirstOrDefault() ?? "1";
+            if (_sfcProgramsByStation.TryGetValue(targetStation, out var stationConfig))
+                RestoreSfcSteps(stationConfig); // 内含 SfcStationNo 赋值，被 _suppressStationSwitch 屏蔽
+            else
+                SfcStationNo = targetStation;
+
+            _prevSfcStationNo = SfcStationNo;
+        }
+        finally
+        {
+            _suppressStationSwitch = false;
+        }
+    }
+
+    /// <summary>工位号变更钩子：保存旧工位 → 加载新工位 → 持久化</summary>
+    partial void OnSfcStationNoChanged(string value)
+    {
+        if (_suppressStationSwitch) return;
+        FlushCurrentSfcToDict(_prevSfcStationNo);
+        _prevSfcStationNo = value;
+        LoadSfcFromDictInternal(value);
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    /// <summary>将当前 UI 状态快照保存到工位字典</summary>
+    internal void FlushCurrentSfcToDict(string stationNo)
+    {
+        if (string.IsNullOrWhiteSpace(stationNo)) return;
+        _sfcProgramsByStation[stationNo] = new SfcProgramConfig
+        {
+            ProgramName = SfcProgramName,
+            StationNo = stationNo,
+            Steps = SfcSteps.Select(s => new SfcStepDto
+            {
+                StepNo = s.StepNo,
+                CompletionCondition = s.CompletionCondition,
+                NextStep = s.NextStep,
+                Actions = s.Actions.Select(a => new SfcStepActionDto
+                {
+                    DeviceType = a.DeviceType,
+                    DeviceIndex = a.DeviceIndex,
+                    DeviceName = a.DeviceName,
+                    ActionType = a.ActionType,
+                    PointIndex = a.PointIndex,
+                    CustomCommand = a.CustomCommand,
+                    CustomCondition = a.CustomCondition
+                }).ToList(),
+                Branches = s.Branches.Select(b => new SfcStepBranchDto
+                {
+                    Condition = b.Condition,
+                    TargetStep = b.TargetStep
+                }).ToList(),
+                Alarms = s.AlarmEntries.Select(al => new SfcStepAlarmDto
+                {
+                    AlarmMessage = al.AlarmMessage,
+                    AlarmCondition = al.AlarmCondition,
+                    AlarmType = al.AlarmType
+                }).ToList()
+            }).ToList()
+        };
+    }
+
+    /// <summary>从字典中加载指定工位的步骤（不修改 SfcStationNo，避免循环触发）</summary>
+    private void LoadSfcFromDictInternal(string stationNo)
+    {
+        SfcSteps.Clear();
+        SelectedSfcStep = null;
+        SfcGeneratedCode = "配置步骤后点击「生成代码」。";
+        if (!_sfcProgramsByStation.TryGetValue(stationNo, out var config)) return;
+        if (!string.IsNullOrWhiteSpace(config.ProgramName)) SfcProgramName = config.ProgramName;
+        foreach (var dto in config.Steps ?? Enumerable.Empty<SfcStepDto>())
+        {
+            var step = new SfcStep
+            {
+                StepNo = dto.StepNo,
+                CompletionCondition = dto.CompletionCondition ?? string.Empty,
+                NextStep = dto.NextStep ?? "END"
+            };
+            foreach (var adto in dto.Actions ?? Enumerable.Empty<SfcStepActionDto>())
+            {
+                var action = new SfcStepAction
+                {
+                    DeviceType = adto.DeviceType ?? "Cylinder",
+                    DeviceIndex = adto.DeviceIndex,
+                    DeviceName = adto.DeviceName ?? string.Empty,
+                    ActionType = adto.ActionType ?? "ToWork",
+                    PointIndex = adto.PointIndex,
+                    CustomCommand = adto.CustomCommand ?? string.Empty,
+                    CustomCondition = adto.CustomCondition ?? string.Empty
+                };
+                WireSfcAction(action);
+                step.Actions.Add(action);
+            }
+            foreach (var bdto in dto.Branches ?? Enumerable.Empty<SfcStepBranchDto>())
+            {
+                step.Branches.Add(new SfcStepBranch
+                {
+                    Condition = bdto.Condition ?? string.Empty,
+                    TargetStep = bdto.TargetStep ?? "END"
+                });
+            }
+            foreach (var aldto in dto.Alarms ?? Enumerable.Empty<SfcStepAlarmDto>())
+            {
+                step.AlarmEntries.Add(new SfcStepAlarm
+                {
+                    AlarmMessage   = aldto.AlarmMessage   ?? string.Empty,
+                    AlarmCondition = aldto.AlarmCondition ?? string.Empty,
+                    AlarmType      = aldto.AlarmType      ?? "Stop"
+                });
+            }
+            SfcSteps.Add(step);
+        }
+        SelectedSfcStep = SfcSteps.FirstOrDefault();
+    }
+
+    [RelayCommand]
+    private void AutoFillSelectedSfcStep()
+    {
+        if (SelectedSfcStep is null) return;
+        var driveDb = BuildSfcDriveDb();
+        SfcCodeGeneratorService.AutoFill(SelectedSfcStep, driveDb);
+        SystemMessage = "已自动填充完成条件";
+    }
+
+    [RelayCommand]
+    private async Task GenerateSfcCode()
+    {
+        if (SfcSteps.Count == 0) { SystemMessage = "请先添加步骤"; return; }
+        var driveDb = BuildSfcDriveDb();
+        var opBase = ResolveOperationBaseNumber(IoOperationNumber);
+        var controlDb = $"DB{opBase}_Control";
+        var faultDbBase = $"DB{opBase + 70}";
+        if (!int.TryParse(SfcStationNo, out var stationNo)) stationNo = 1;
+        SfcGeneratedCode = SfcCodeGeneratorService.Generate(SfcSteps, driveDb, controlDb, stationNo, SfcProgramName, IoOperationNumber, GetProjectRoot(), faultDbBase);
+        SystemMessage = "SFC 代码已生成";
+        _ = PersistConfigAsync(updateStatus: false);
+        AddLog("SFC 生成", $"{SfcProgramName} 已生成 {SfcSteps.Count} 步", "Info");
+
+        try
+        {
+            // 保存自动流程 .txt 到 exe 路径
+            var outputDir = Path.Combine(AppContext.BaseDirectory, "Generated", "SfcProgram");
+            Directory.CreateDirectory(outputDir);
+            var fileName = $"{IoOperationNumber}_{SfcProgramName}_S{SfcStationNo}.txt";
+            var filePath = Path.Combine(outputDir, fileName);
+            File.WriteAllText(filePath, SfcGeneratedCode, Encoding.UTF8);
+            AddLog("SFC 生成", $"已保存：{filePath}", "Info");
+
+            // 生成并保存报警文件
+            var usedAlarmTypes = SfcCodeGeneratorService.GetUsedAlarmTypes(SfcSteps);
+            if (usedAlarmTypes.Count > 0)
+            {
+                var normalizedOp = IoOperationNumber.Trim().ToUpperInvariant().StartsWith("OP")
+                    ? IoOperationNumber.Trim().ToUpperInvariant()
+                    : $"OP{IoOperationNumber.Trim().ToUpperInvariant()}";
+                foreach (var alarmType in usedAlarmTypes)
+                {
+                    // 本地备份使用 MergeAlarmDut（传 null 表示从零生成），保持与 _exported 逻辑一致
+                    var dutContent = SfcCodeGeneratorService.MergeAlarmDut(null, SfcSteps, IoOperationNumber, alarmType);
+                    File.WriteAllText(Path.Combine(outputDir, $"Str_{normalizedOp}_Fault{alarmType}.st"), dutContent, Encoding.UTF8);
+                }
+                AddLog("SFC 生成", $"已保存报警文件（{string.Join(", ", usedAlarmTypes)}）至 {outputDir}", "Info");
+            }
+
+            // 写入 _exported 目录（OPXX/ACT_AutoRunSTXX.st + 0.Struct/报警文件）
+            await SaveSfcToExportedDirectoryAsync(SfcGeneratedCode, IoOperationNumber, SfcStationNo, usedAlarmTypes, faultDbBase);
+        }
+        catch (Exception ex)
+        {
+            AddLog("SFC 生成", $"保存/导入流程失败：{ex.Message}", "Warning");
+        }
+    }
+
+    private async Task SaveSfcToExportedDirectoryAsync(string code, string opNo, string stationNo,
+        IReadOnlyList<string> usedAlarmTypes, string faultDbBase)
+    {
+        var exportedDir = TryGetExportedDirectory();
+        if (string.IsNullOrWhiteSpace(exportedDir))
+        {
+            AddLog("SFC 生成", "未配置工程目录，跳过写入 _exported。", "Info");
+            return;
+        }
+
+        var normalizedOp = opNo.Trim().ToUpperInvariant().StartsWith("OP")
+            ? opNo.Trim().ToUpperInvariant()
+            : $"OP{opNo.Trim().ToUpperInvariant()}";
+
+        // 自动流程 Action → OPXX/2.PRG/OPXX_Graph/ACT_AutoRunSTXX_程序名.st
+        var graphDir = Path.Combine(exportedDir, normalizedOp, "2.PRG", $"{normalizedOp}_Graph");
+        Directory.CreateDirectory(graphDir);
+        // 程序名净化：去除文件名非法字符
+        var safeProgramName = Regex.Replace(SfcProgramName.Trim(), @"[\\/:*?""<>|]", "_");
+        var actionFileName = string.IsNullOrWhiteSpace(safeProgramName)
+            ? $"ACT_AutoRunST{stationNo}.st"
+            : $"ACT_AutoRunST{stationNo}_{safeProgramName}.st";
+        await Compat.WriteAllTextAsync(Path.Combine(graphDir, actionFileName), code, Encoding.UTF8);
+        AddLog("SFC 生成", $"已写入 _exported：{normalizedOp}/2.PRG/{normalizedOp}_Graph/{actionFileName}", "Info");
+
+        // 报警结构体 DUT → OPXX/0.Struct/Str_OPXX_FaultXXX.st
+        // 注意：只更新结构体（追加模式），不修改 GVL 文件（DBXX70_Fault.st）
+        if (usedAlarmTypes.Count > 0)
+        {
+            var opStructDir = Path.Combine(exportedDir, normalizedOp, "0.Struct");
+            Directory.CreateDirectory(opStructDir);
+
+            foreach (var alarmType in usedAlarmTypes)
+            {
+                // 大小写与已有文件保持一致：FaultEstop / FaultStop / FaultRun
+                var alarmTypePascal = char.ToUpperInvariant(alarmType[0]) + alarmType.Substring(1).ToLowerInvariant();
+                var dutName = $"Str_{normalizedOp}_Fault{alarmTypePascal}.st";
+                var dutPath = Path.Combine(opStructDir, dutName);
+
+                // 读取已有文件内容（追加模式，不覆盖 MAP/Space 占位符和已有变量）
+                string? existingContent = null;
+                if (File.Exists(dutPath))
+                {
+                    try { existingContent = await Compat.ReadAllTextAsync(dutPath, Encoding.UTF8); }
+                    catch { /* 读取失败则视为新建 */ }
+                }
+
+                var dutContent = SfcCodeGeneratorService.MergeAlarmDut(existingContent, SfcSteps, opNo, alarmType);
+                await Compat.WriteAllTextAsync(dutPath, dutContent, Encoding.UTF8);
+                AddLog("SFC 生成", $"已{(existingContent != null ? "追加更新" : "新建")}报警结构体：{normalizedOp}/0.Struct/{dutName}", "Info");
+            }
+        }
+
+        // 调用 InProShop 导入脚本（自动将新文件注册到 .project）
+        try
+        {
+            await RunInProShopImportAsync();
+        }
+        catch (Exception ex)
+        {
+            AddLog("SFC 生成", $"运行导入脚本失败：{ex.Message}", "Warning");
+        }
+    }
+
+    // ========== 初始化程序生成（独立步骤集合，生成 ACT_InitSTxx.st）==========
+
+    [RelayCommand]
+    private async Task GenerateSfcInitCode()
+    {
+        if (SfcInitSteps.Count == 0) { SystemMessage = "请先在初始化程序页添加步骤"; return; }
+
+        var driveDb     = BuildSfcDriveDb();
+        var opBase      = ResolveOperationBaseNumber(IoOperationNumber);
+        var controlDb   = $"DB{opBase}_Control";
+        var faultDb     = $"DB{opBase + 70}";
+        if (!int.TryParse(SfcInitStationNo, out var stationNo)) stationNo = 1;
+
+        var initCode = SfcCodeGeneratorService.GenerateInit(
+            SfcInitSteps, driveDb, controlDb, faultDb, stationNo,
+            SfcInitProgramName, IoOperationNumber, GetProjectRoot());
+
+        SfcInitGeneratedCode = initCode;
+        SystemMessage = "初始化程序已生成";
+        _ = PersistConfigAsync(updateStatus: false);
+        AddLog("Init 生成", $"初始化程序已生成 {SfcInitSteps.Count} 步", "Info");
+
+        try
+        {
+            var outputDir = Path.Combine(AppContext.BaseDirectory, "Generated", "SfcProgram");
+            Directory.CreateDirectory(outputDir);
+
+            // 本地备份：主程序 .txt
+            var safeName = Regex.Replace(SfcInitProgramName.Trim(), @"[\\/:*?""<>|]", "_");
+            var backupFileName = string.IsNullOrWhiteSpace(safeName)
+                ? $"{IoOperationNumber}_Init_S{SfcInitStationNo}.txt"
+                : $"{IoOperationNumber}_Init_{safeName}_S{SfcInitStationNo}.txt";
+            File.WriteAllText(Path.Combine(outputDir, backupFileName), initCode, Encoding.UTF8);
+            AddLog("Init 生成", $"已保存本地备份：{backupFileName}", "Info");
+
+            // 本地备份：报警 DUT 文件（与自动程序一致）
+            var usedAlarmTypes = SfcCodeGeneratorService.GetUsedAlarmTypes(SfcInitSteps);
+            if (usedAlarmTypes.Count > 0)
+            {
+                var normalizedOpLocal = IoOperationNumber.Trim().ToUpperInvariant().StartsWith("OP")
+                    ? IoOperationNumber.Trim().ToUpperInvariant()
+                    : $"OP{IoOperationNumber.Trim().ToUpperInvariant()}";
+                foreach (var alarmType in usedAlarmTypes)
+                {
+                    var dutContent = SfcCodeGeneratorService.MergeAlarmDut(null, SfcInitSteps, IoOperationNumber, alarmType);
+                    File.WriteAllText(Path.Combine(outputDir, $"Init_Str_{normalizedOpLocal}_Fault{alarmType}.st"), dutContent, Encoding.UTF8);
+                }
+                AddLog("Init 生成", $"已保存报警文件（{string.Join(", ", usedAlarmTypes)}）至 {outputDir}", "Info");
+            }
+
+            // 写入 _exported
+            var exportedDir = TryGetExportedDirectory();
+            if (!string.IsNullOrWhiteSpace(exportedDir))
+            {
+                var normalizedOp = IoOperationNumber.Trim().ToUpperInvariant().StartsWith("OP")
+                    ? IoOperationNumber.Trim().ToUpperInvariant()
+                    : $"OP{IoOperationNumber.Trim().ToUpperInvariant()}";
+
+                // _exported：OPXX/2.PRG/OPXX_Graph/ACT_InitSTxx.st
+                var graphDir = Path.Combine(exportedDir, normalizedOp, "2.PRG", $"{normalizedOp}_Graph");
+                Directory.CreateDirectory(graphDir);
+                var initFileName = $"ACT_InitST{SfcInitStationNo}.st";
+                await Compat.WriteAllTextAsync(Path.Combine(graphDir, initFileName), initCode, Encoding.UTF8);
+                AddLog("Init 生成", $"已写入 _exported：{normalizedOp}/2.PRG/{normalizedOp}_Graph/{initFileName}", "Info");
+
+                // _exported：OPXX/0.Struct/Str_OPXX_FaultXXX.st（追加合并，与自动程序逻辑一致）
+                if (usedAlarmTypes.Count > 0)
+                {
+                    var opStructDir = Path.Combine(exportedDir, normalizedOp, "0.Struct");
+                    Directory.CreateDirectory(opStructDir);
+                    foreach (var alarmType in usedAlarmTypes)
+                    {
+                        var alarmTypePascal = char.ToUpperInvariant(alarmType[0]) + alarmType.Substring(1).ToLowerInvariant();
+                        var dutName = $"Str_{normalizedOp}_Fault{alarmTypePascal}.st";
+                        var dutPath = Path.Combine(opStructDir, dutName);
+                        string? existingContent = null;
+                        if (File.Exists(dutPath))
+                            try { existingContent = await Compat.ReadAllTextAsync(dutPath, Encoding.UTF8); } catch { }
+                        var dutContent = SfcCodeGeneratorService.MergeAlarmDut(existingContent, SfcInitSteps, IoOperationNumber, alarmType);
+                        await Compat.WriteAllTextAsync(dutPath, dutContent, Encoding.UTF8);
+                        AddLog("Init 生成", $"已{(existingContent != null ? "追加更新" : "新建")}报警结构体：{normalizedOp}/0.Struct/{dutName}", "Info");
+                    }
+                }
+            }
+
+            // 运行 InProShop 导入脚本
+            try { await RunInProShopImportAsync(); }
+            catch (Exception ex) { AddLog("Init 生成", $"导入脚本失败：{ex.Message}", "Warning"); }
+        }
+        catch (Exception ex)
+        {
+            AddLog("Init 生成", $"保存失败：{ex.Message}", "Warning");
+        }
+    }
+
+    [RelayCommand]
+    private void CopySfcCode()
+    {
+        if (string.IsNullOrWhiteSpace(SfcGeneratedCode)) return;
+        System.Windows.Clipboard.SetText(SfcGeneratedCode);
+        SystemMessage = "代码已复制到剪贴板";
+    }
+
+    [RelayCommand]
+    private void SaveSfcCodeToFile()
+    {
+        if (string.IsNullOrWhiteSpace(SfcGeneratedCode)) { SystemMessage = "请先生成代码"; return; }
+        try
+        {
+            var outputDir = Path.Combine(AppContext.BaseDirectory, "Generated", "SfcProgram");
+            Directory.CreateDirectory(outputDir);
+            var fileName = $"{IoOperationNumber}_{SfcProgramName}_S{SfcStationNo}.txt";
+            var filePath = Path.Combine(outputDir, fileName);
+            File.WriteAllText(filePath, SfcGeneratedCode, Encoding.UTF8);
+            SystemMessage = $"已保存：{filePath}";
+            AddLog("SFC 生成", $"保存至 {filePath}", "Info");
+        }
+        catch (Exception ex)
+        {
+            SystemMessage = $"保存失败：{ex.Message}";
+        }
+    }
+
+    private string BuildSfcDriveDb()
+    {
+        var baseNo = ResolveOperationBaseNumber(IoOperationNumber);
+        return $"DB{baseNo + _driveDbOffset}";
     }
 
     // ========== 设计器元素操作 ==========
@@ -740,57 +1493,19 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
-    private async Task SaveDesignerLayoutAsync()
-    {
-        var path = Path.Combine(GetProjectRoot(), "config", "designer-layout.json");
-        var page = new DesignerPage { Name = DesignerPageName, CanvasWidth = DesignerCanvasWidth, CanvasHeight = DesignerCanvasHeight, Elements = DesignerElements.ToList() };
-        await _designerLayoutService.SavePageAsync(path, page);
-        SystemMessage = $"设计器布局已保存：{path}";
-        AddLog("设计器", SystemMessage, "Info");
-    }
+    private Task SaveDesignerLayoutAsync() => Task.CompletedTask;
 
     [RelayCommand]
-    private async Task LoadDesignerLayoutAsync()
-    {
-        var path = Path.Combine(GetProjectRoot(), "config", "designer-layout.json");
-        var page = await _designerLayoutService.LoadPageAsync(path);
-        if (page is null) { SystemMessage = "未找到设计器布局文件"; return; }
-        DesignerPageName = page.Name;
-        DesignerCanvasWidth = page.CanvasWidth;
-        DesignerCanvasHeight = page.CanvasHeight;
-        DesignerElements.Clear();
-        foreach (var element in page.Elements) DesignerElements.Add(element);
-        SelectedDesignerElement = DesignerElements.FirstOrDefault();
-        SystemMessage = "设计器布局加载完成";
-        AddLog("设计器", SystemMessage, "Info");
-    }
+    private Task LoadDesignerLayoutAsync() => Task.CompletedTask;
 
     [RelayCommand]
-    private async Task SaveDesignerProjectAsync()
-    {
-        SyncCanvasToPage();
-        var path = Path.Combine(GetProjectRoot(), "config", "designer-project.json");
-        var project = new DesignerProject
-        {
-            ProjectName = DesignerProjectName,
-            Pages = DesignerPages.Select(p => new DesignerPage
-            {
-                Name = p.Name,
-                CanvasWidth = p.CanvasWidth,
-                CanvasHeight = p.CanvasHeight,
-                Elements = p.Elements.Select(CloneElement).ToList()
-            }).ToList()
-        };
-        await _designerProjectService.SaveProjectAsync(path, project);
-        SystemMessage = $"设计器工程已保存：{path}";
-        AddLog("设计器", SystemMessage, "Info");
-    }
+    private Task SaveDesignerProjectAsync() => Task.CompletedTask;
 
     [RelayCommand]
     private async Task LoadDesignerProjectAsync()
     {
-        var path = Path.Combine(GetProjectRoot(), "config", "designer-project.json");
-        var project = await _designerProjectService.LoadProjectAsync(path);
+        await Task.CompletedTask;
+        var project = (DesignerProject?)null;
         if (project is null) { SystemMessage = "未找到设计器工程文件"; return; }
         DesignerProjectName = project.ProjectName;
         DesignerPages.Clear();
@@ -934,114 +1649,6 @@ public partial class MainViewModel
         _ => "控件"
     };
 
-    // ========== 自动程序流程 ==========
-
-    private void SeedAutoProgramFlow()
-    {
-        AutoProgramFlowNodes.Clear();
-        AutoProgramFlowNodes.Add(new AutoProgramFlowNode { StepNo = 10, Title = "上料检测", Action = "检测载具到位与产品存在信号", NextStep = "20", Left = 70, Top = 40, Fill = "#DBEAFE" });
-        AutoProgramFlowNodes.Add(new AutoProgramFlowNode { StepNo = 20, Title = "夹紧定位", Action = "下压夹爪并确认夹紧完成", NextStep = "30", Left = 70, Top = 170, Fill = "#DCFCE7" });
-        AutoProgramFlowNodes.Add(new AutoProgramFlowNode { StepNo = 30, Title = "机械手取放", Action = "机械手取料并放入加工位", NextStep = "40", Left = 70, Top = 300, Fill = "#FEF3C7" });
-        AutoProgramFlowNodes.Add(new AutoProgramFlowNode { StepNo = 40, Title = "装配执行", Action = "执行装配动作并监视超时", NextStep = "50", Left = 70, Top = 430, Fill = "#FCE7F3" });
-        AutoProgramFlowNodes.Add(new AutoProgramFlowNode { StepNo = 50, Title = "结果判定", Action = "判定 OK/NG 并写入结果", NextStep = "60", Left = 70, Top = 560, Fill = "#E0E7FF", IsDecision = true });
-        AutoProgramFlowNodes.Add(new AutoProgramFlowNode { StepNo = 60, Title = "下料复位", Action = "下料并将流程复位到待机", NextStep = "END", Left = 70, Top = 690, Fill = "#F1F5F9" });
-        RefreshAutoProgramSummary();
-    }
-
-    private void RebuildAutoFlowLayout()
-    {
-        var ordered = AutoProgramFlowNodes.OrderBy(x => x.StepNo).ToList();
-        for (var index = 0; index < ordered.Count; index++)
-        {
-            ordered[index].Left = ordered[index].IsDecision ? 110 : 70;
-            ordered[index].Top = 40 + index * 130;
-        }
-
-        RefreshAutoProgramSummary();
-    }
-
-    private GeneratedProgramArtifact CreateGeneratedArtifact(string outputDirectory, string fileName, string content)
-    {
-        var fullPath = Path.Combine(outputDirectory, fileName);
-        File.WriteAllText(fullPath, content, new UTF8Encoding(false));
-        return new GeneratedProgramArtifact
-        {
-            DisplayName = Path.GetFileNameWithoutExtension(fileName),
-            FileName = fileName,
-            OutputPath = fullPath,
-            Content = content
-        };
-    }
-
-    private string ReadGenerationTemplate(string templateFileName)
-    {
-        var templateDirectory = Path.Combine(GetApplicationRoot(), "Templates", SelectedIoPlcTemplate);
-        var templatePath = Path.Combine(templateDirectory, templateFileName);
-        return File.Exists(templatePath) ? File.ReadAllText(templatePath, Encoding.UTF8) : string.Empty;
-    }
-
-    private string BuildAutoTemplateProgram(string template, string controlDb, int stationNo, IReadOnlyList<AutoProgramFlowNode> nodes)
-    {
-        if (string.IsNullOrWhiteSpace(template))
-        {
-            return string.Empty;
-        }
-
-        var startStep = nodes.FirstOrDefault()?.StepNo ?? 10;
-        var stepCases = new StringBuilder();
-        foreach (var node in nodes)
-        {
-            stepCases.AppendLine($"\t{node.StepNo}:");
-            stepCases.AppendLine($"\t\tAuto[{stationNo}].Comment:=\"{node.Title} - {node.Action}\";");
-            stepCases.AppendLine($"\t\tAuto[{stationNo}].Step:={ResolveNextStepValue(node.NextStep, node.StepNo)};");
-        }
-
-        var result = template
-            .Replace("{StationNo}", stationNo.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal)
-            .Replace("{GeneratedAt}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), StringComparison.Ordinal)
-            .Replace("{ControlDb}", controlDb, StringComparison.Ordinal)
-            .Replace("Auto[{StationNo}].Step:=10;", $"Auto[{stationNo}].Step:={startStep};", StringComparison.Ordinal)
-            .Replace("\t10:\r\n\t\tAuto[{StationNo}].Comment:=\"缁涘绶熷銉ㄥ濮濄儵顎冮柊宥囩枂\";\r\n\t\tAuto[{StationNo}].Step:=1000;", stepCases.ToString().TrimEnd(), StringComparison.Ordinal)
-            .Replace("Auto[{StationNo}].Comment:=\"自动流程启动\";", $"Auto[{stationNo}].Comment:=\"{AutoProgramName} 启动\";", StringComparison.Ordinal);
-
-        return result;
-    }
-
-    private string BuildInitTemplateProgram(string template, string controlDb, int stationNo, IReadOnlyList<AutoProgramFlowNode> nodes)
-    {
-        if (string.IsNullOrWhiteSpace(template))
-        {
-            return string.Empty;
-        }
-
-        var summaryComment = nodes.Count == 0 ? "等待初始化条件" : $"初始化 {AutoProgramName}，共 {nodes.Count} 步";
-        var result = template
-            .Replace("{StationNo}", stationNo.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal)
-            .Replace("{GeneratedAt}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), StringComparison.Ordinal)
-            .Replace("{ControlDb}", controlDb, StringComparison.Ordinal)
-            .Replace("Init[{StationNo}].Comment:=\"初始化开始\";", $"Init[{stationNo}].Comment:=\"{AutoProgramName} 初始化开始\";", StringComparison.Ordinal)
-            .Replace("Init[{StationNo}].Comment:=\"初始化摘要\";", $"Init[{stationNo}].Comment:=\"{summaryComment}\";", StringComparison.Ordinal)
-            .Replace("Init[{StationNo}].Comment:=\"初始化完成\";", $"Init[{stationNo}].Comment:=\"{AutoProgramName} 初始化完成\";", StringComparison.Ordinal);
-
-        return result;
-    }
-
-    private static string ResolveNextStepValue(string? nextStep, int currentStep)
-    {
-        if (string.IsNullOrWhiteSpace(nextStep))
-        {
-            return "10";
-        }
-
-        var trimmed = nextStep.Trim();
-        if (trimmed.Equals("END", StringComparison.OrdinalIgnoreCase))
-        {
-            return "10";
-        }
-
-        return int.TryParse(trimmed, out var stepNo) ? stepNo.ToString(CultureInfo.InvariantCulture) : (currentStep + 10).ToString(CultureInfo.InvariantCulture);
-    }
-
     private int ResolveOperationBaseNumber(string? operationNumber)
     {
         if (string.IsNullOrWhiteSpace(operationNumber))
@@ -1139,25 +1746,6 @@ public partial class MainViewModel
             .ThenBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
             .Select(pair => pair.Key)
             .FirstOrDefault();
-    }
-
-    private static int ResolveStationNo(string? stationText)
-    {
-        if (string.IsNullOrWhiteSpace(stationText))
-        {
-            return 1;
-        }
-
-        var digits = new string(stationText.Where(char.IsDigit).ToArray());
-        return int.TryParse(digits, out var stationNo) && stationNo > 0 ? stationNo : 1;
-    }
-
-    private void RefreshAutoProgramSummary()
-    {
-        OnPropertyChanged(nameof(AutoProgramHeadline));
-        OnPropertyChanged(nameof(AutoProgramSummary));
-        OnPropertyChanged(nameof(HasGeneratedAutoPrograms));
-        OnPropertyChanged(nameof(SelectedGeneratedAutoProgramContent));
     }
 
     private void RefreshIoGenerationSummary(IoGenerationResult? result = null)

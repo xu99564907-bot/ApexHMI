@@ -588,8 +588,12 @@
                     <pages:AuditView DataContext="{Binding Audit}"/>
                 </TabItem>
 
-                <TabItem Header="{l:Loc Tab_Designer}">
+                <TabItem Header="程序生成">
                     <pages:DesignerView DataContext="{Binding Designer}"/>
+                </TabItem>
+
+                <TabItem Header="画布设计">
+                    <pages:DesignerEditorView DataContext="{Binding DesignerEditor}"/>
                 </TabItem>
 
                 <TabItem Header="{l:Loc Tab_Runtime}">

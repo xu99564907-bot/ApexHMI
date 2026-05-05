@@ -1,9 +1,13 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexHMI", "ApexHMI.csproj", "{88700F28-7628-492A-814F-7E44F3490FDF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1689AAF8-2E57-4772-AF3C-3BA509EA47F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApexHMI.Benchmarks", "tests\ApexHMI.Benchmarks\ApexHMI.Benchmarks.csproj", "{B66256D7-D31C-48DB-824D-EB8CB4E80F79}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +22,12 @@ Global
 		{88700F28-7628-492A-814F-7E44F3490FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88700F28-7628-492A-814F-7E44F3490FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88700F28-7628-492A-814F-7E44F3490FDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B66256D7-D31C-48DB-824D-EB8CB4E80F79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B66256D7-D31C-48DB-824D-EB8CB4E80F79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B66256D7-D31C-48DB-824D-EB8CB4E80F79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B66256D7-D31C-48DB-824D-EB8CB4E80F79}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B66256D7-D31C-48DB-824D-EB8CB4E80F79} = {1689AAF8-2E57-4772-AF3C-3BA509EA47F8}
 	EndGlobalSection
 EndGlobal

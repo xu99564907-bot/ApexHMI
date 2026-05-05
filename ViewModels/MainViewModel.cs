@@ -18,6 +18,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using ApexHMI.Models.Sfc;
 using ApexHMI.Services;
 
 namespace ApexHMI.ViewModels;
@@ -35,8 +36,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly IoProgramGenerationService _ioProgramGenerationService;
     private readonly IConfigurationService _configurationService;
     private readonly NamingRulesService _namingRulesService;
-    private readonly DesignerLayoutService _designerLayoutService;
-    private readonly DesignerProjectService _designerProjectService;
     private readonly IParameterService _parameterService;
     private readonly IAlarmService _alarmService;
     private readonly FlowLogCsvService _flowLogCsvService;
@@ -113,12 +112,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<ManualCylinderBlockItem> ManualCylinderBlocks { get; } = new();
     public ObservableCollection<ManualAxisBlockItem> ManualAxisBlocks { get; } = new();
     public ObservableCollection<GeneratedProgramArtifact> GeneratedIoPrograms { get; } = new();
-    public ObservableCollection<AutoProgramFlowNode> AutoProgramFlowNodes { get; } = new();
-    public ObservableCollection<GeneratedProgramArtifact> GeneratedAutoPrograms { get; } = new();
+    public ObservableCollection<SfcStep> SfcSteps { get; } = new();
+    public ObservableCollection<SfcStep> SfcInitSteps { get; } = new();
     public ObservableCollection<string> FlowFilterOptions { get; } = new() { "全部", "主线1", "主线2", "主线3" };
     public ObservableCollection<string> FlowTimeRangeOptions { get; } = new() { "全部", "本班次", "今日", "近7天" };
     public ObservableCollection<string> FlowStepFilterOptions { get; } = new() { "全部", "10", "20", "30", "40", "50", "60" };
-    public ObservableCollection<string> IoPlcTemplateOptions { get; } = new() { "汇川中型PLC" };
+    public ObservableCollection<string> IoPlcTemplateOptions { get; } = new() { "汇川中型PLC", "汇川小型PLC", "西门子PLC" };
     public ObservableCollection<string> ProgramMonitorTraceFlowOptions { get; } = new() { "主线1", "主线2", "主线3" };
 
     [ObservableProperty] private OpcUaConnectionOptions connection = new();
@@ -127,7 +126,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
 [ObservableProperty] private string currentManualSubSection = "气缸";
     [ObservableProperty] private string currentParameterSubSection = "系统参数设定";
     [ObservableProperty] private string currentAlarmSubSection = "当前报警";
-[ObservableProperty] private string currentDesignerSubSection = "画布设计";
+[ObservableProperty] private string currentDesignerSubSection = "手动程序生成";
     [ObservableProperty] private string currentSection = "主界面";
     [ObservableProperty] private string systemMessage = "系统就绪";
     [ObservableProperty] private string loginUser = "操作员";
@@ -217,10 +216,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string ioImportSummary = "尚未导入 IO 表";
     [ObservableProperty] private string generatedIoOutputDirectory = string.Empty;
     [ObservableProperty] private GeneratedProgramArtifact? selectedGeneratedIoProgram;
-    [ObservableProperty] private string autoProgramName = "主装配流程";
-    [ObservableProperty] private string autoProgramStation = "Station1";
-    [ObservableProperty] private string generatedAutoOutputDirectory = string.Empty;
-    [ObservableProperty] private GeneratedProgramArtifact? selectedGeneratedAutoProgram;
+    [ObservableProperty] private SfcStep? selectedSfcStep;
+    [ObservableProperty] private string sfcGeneratedCode = "配置步骤后点击「生成代码」。";
+    [ObservableProperty] private string sfcProgramName = "主装配流程";
+    [ObservableProperty] private string sfcStationNo = "1";
+    [ObservableProperty] private SfcStep? selectedSfcInitStep;
+    [ObservableProperty] private string sfcInitGeneratedCode = "配置步骤后点击「生成初始化程序」。";
+    [ObservableProperty] private string sfcInitProgramName = "初始化流程";
+    [ObservableProperty] private string sfcInitStationNo = "1";
+
+    private SfcStep? _prevSfcStep;
+    /// <summary>各工位 SFC 配置缓存，key = 工位号字符串（如 "1"）</summary>
+    internal readonly Dictionary<string, SfcProgramConfig> _sfcProgramsByStation = new();
+    /// <summary>上一个生效的工位号，用于切站前保存</summary>
+    private string _prevSfcStationNo = "1";
+    /// <summary>初始化阶段禁止切站钩子触发，避免递归</summary>
+    private bool _suppressStationSwitch;
 
     [ObservableProperty] private OpcUaBrowseNode? selectedOpcUaBrowseNode;
     [ObservableProperty] private string selectedOpcUaNodeValue = "--";
@@ -446,12 +457,47 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public string SelectedGeneratedIoProgramContent => SelectedGeneratedIoProgram?.Content ?? "生成完成后，程序预览会显示在这里。";
     public string IoGenerationHeadline => $"PLC 模板：{SelectedIoPlcTemplate} / 工位号：{IoOperationNumber}";
     public string IoGenerationCountSummary => $"输入 {IoTableRows.Count(r => !string.IsNullOrWhiteSpace(r.InputAddress))} 点 / 输出 {IoTableRows.Count(r => !string.IsNullOrWhiteSpace(r.OutputAddress))} 点";
-    public bool HasGeneratedAutoPrograms => GeneratedAutoPrograms.Count > 0;
-    public string SelectedGeneratedAutoProgramContent => SelectedGeneratedAutoProgram?.Content ?? "生成完成后，自动程序预览会显示在这里。";
-    public string AutoProgramHeadline => $"流程：{AutoProgramName} / 工位：{AutoProgramStation} / 步序：{AutoProgramFlowNodes.Count}";
-    public string AutoProgramSummary => AutoProgramFlowNodes.Count == 0
-        ? "尚未配置自动流程节点"
-        : $"已配置 {AutoProgramFlowNodes.Count} 个流程节点，支持绘制流程图并生成自动程序骨架。";
+    public IReadOnlyList<string> SfcDeviceTypes => SfcCodeGeneratorService.DeviceTypes;
+
+    public IEnumerable<SfcDeviceOption> SfcCylinderOptions =>
+        ManualCylinderBlocks
+            .GroupBy(c => c.CylinderIndex)
+            .Select(g =>
+            {
+                var c = g.First();
+                return new SfcDeviceOption("Cylinder", g.Key, c.DisplayName, c.WorkCommandLabel, c.HomeCommandLabel);
+            });
+
+    public IEnumerable<SfcDeviceOption> SfcAxisOptions =>
+        ManualAxisBlocks
+            .GroupBy(a => a.AxisIndex)
+            .Select(g => new SfcDeviceOption("Axis", g.Key, g.First().DisplayName));
+
+    public IEnumerable<SfcDeviceOption> SfcVacuumOptions
+    {
+        get
+        {
+            var seen = new Dictionary<int, SfcDeviceOption>();
+            foreach (var row in IoTableRows)
+            {
+                TryAddVacuumOption(seen, row.OutputComment);
+                TryAddVacuumOption(seen, row.InputComment);
+            }
+            return seen.Values.OrderBy(o => o.Index);
+        }
+    }
+
+    private static void TryAddVacuumOption(Dictionary<int, SfcDeviceOption> seen, string? comment)
+    {
+        if (string.IsNullOrWhiteSpace(comment)) return;
+        var m = System.Text.RegularExpressions.Regex.Match(comment, @"VAC(\d{1,3})", RegexOptions.IgnoreCase);
+        if (!m.Success) return;
+        var idx = int.Parse(m.Groups[1].Value);
+        if (seen.ContainsKey(idx)) return;
+        // Strip the raw key suffix to get a clean display name
+        var displayName = comment.Trim();
+        seen[idx] = new SfcDeviceOption("Vacuum", idx, displayName);
+    }
     // 只要当前有 IO 表内容即可保存：
     // - 若之前导入过（或已从配置恢复来源路径）则保存到原目录；
     // - 否则保存到默认目录（config/IoTable），保证重启后也能一直有效。
@@ -477,9 +523,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public bool IsAlarmLogPageVisible => string.Equals(CurrentAlarmSubSection, "日志", StringComparison.Ordinal);
     public bool IsAlarmStatisticsPageVisible => string.Equals(CurrentAlarmSubSection, "报警统计", StringComparison.Ordinal);
     public string CurrentDesignerTitle => CurrentDesignerSubSection;
-public bool IsDesignerCanvasPageVisible => string.Equals(CurrentDesignerSubSection, "画布设计", StringComparison.Ordinal);
-public bool IsDesignerIoProgramPageVisible => string.Equals(CurrentDesignerSubSection, "手动程序生成", StringComparison.Ordinal);
-public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSubSection, "自动程序生成", StringComparison.Ordinal);
+    public bool IsDesignerCanvasPageVisible => string.Equals(CurrentDesignerSubSection, "画布设计", StringComparison.Ordinal);
+    public bool IsDesignerIoProgramPageVisible => string.Equals(CurrentDesignerSubSection, "手动程序生成", StringComparison.Ordinal);
+    public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSubSection, "自动程序生成", StringComparison.Ordinal);
+    public bool IsDesignerInitProgramPageVisible => string.Equals(CurrentDesignerSubSection, "初始化程序生成", StringComparison.Ordinal);
     public bool IsSelectedDesignerElementButtonLike => SelectedDesignerElement is not null
         && SelectedDesignerElement.ElementType is "Button" or "Motor" or "Cylinder" or "Stopper" or "Robot" or "PageButton";
     public bool IsSelectedDesignerElementTagBindable => SelectedDesignerElement is not null
@@ -574,6 +621,12 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         OnPropertyChanged(nameof(IsDesignerCanvasPageVisible));
         OnPropertyChanged(nameof(IsDesignerIoProgramPageVisible));
         OnPropertyChanged(nameof(IsDesignerAutoProgramPageVisible));
+        OnPropertyChanged(nameof(IsDesignerInitProgramPageVisible));
+    }
+
+    partial void OnSelectedSfcStepChanged(SfcStep? value)
+    {
+        _prevSfcStep = value;
     }
 
     partial void OnCurrentSectionChanged(string value)
@@ -646,8 +699,6 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         OnPropertyChanged(nameof(IoGenerationHeadline));
         RebindCylinderDbByOperation();
     }
-    partial void OnAutoProgramNameChanged(string value) => OnPropertyChanged(nameof(AutoProgramHeadline));
-    partial void OnAutoProgramStationChanged(string value) => OnPropertyChanged(nameof(AutoProgramHeadline));
     partial void OnCylinderHomeMaskEnabledChanged(bool value) => OnPropertyChanged(nameof(CylinderHomeMaskButtonText));
     partial void OnCylinderWorkMaskEnabledChanged(bool value) => OnPropertyChanged(nameof(CylinderWorkMaskButtonText));
     partial void OnCylinderConfiguredNameChanged(string value) => OnPropertyChanged(nameof(CylinderDisplayName));
@@ -972,7 +1023,6 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         }
     }
     partial void OnSelectedGeneratedIoProgramChanged(GeneratedProgramArtifact? value) => OnPropertyChanged(nameof(SelectedGeneratedIoProgramContent));
-    partial void OnSelectedGeneratedAutoProgramChanged(GeneratedProgramArtifact? value) => OnPropertyChanged(nameof(SelectedGeneratedAutoProgramContent));
     partial void OnAutoRefreshEnabledChanged(bool value) => _ = UpdateAutoRefreshStateAsync();
     partial void OnUseOpcSubscriptionChanged(bool value) => _ = UpdateAutoRefreshStateAsync();
     partial void OnSelectedRecipeNameChanged(string value)
@@ -1101,19 +1151,15 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
                 CurrentSection = CurrentAlarmSubSection;
                 break;
             case "设计器":
-            case "运行页面":
-            case "画布设计":
             case "手动程序生成":
             case "自动程序生成":
-                if (target == "运行页面")
-                {
-                    CurrentSection = "运行页面";
-                }
-                else
-                {
-                    CurrentDesignerSubSection = target == "设计器" ? "画布设计" : target;
-                    CurrentSection = CurrentDesignerSubSection;
-                }
+            case "初始化程序生成":
+                CurrentDesignerSubSection = target == "设计器" ? "手动程序生成" : target;
+                CurrentSection = CurrentDesignerSubSection;
+                break;
+            case "画布设计":
+            case "运行页面":
+                CurrentSection = target;
                 break;
             default:
                 CurrentSection = target;
@@ -1131,7 +1177,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         NavigationItems.Add(new NavigationItemViewModel("参数设定", "系统参数设定", "轴参数设定", "气缸参数设定", "真空参数设定", "传感器参数设定"));
         NavigationItems.Add(new NavigationItemViewModel("报警画面", "当前报警", "历史报警", "日志", "报警统计"));
         NavigationItems.Add(new NavigationItemViewModel("登录"));
-        NavigationItems.Add(new NavigationItemViewModel("设计器", "画布设计", "运行页面", "手动程序生成", "自动程序生成"));
+        NavigationItems.Add(new NavigationItemViewModel("设计器", "画布设计", "运行页面", "手动程序生成", "自动程序生成", "初始化程序生成"));
     }
 
     private static int ResolveTabIndex(string? section)
@@ -1151,8 +1197,9 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
             "报警画面" or "当前报警" or "历史报警" or "日志" or "报警统计" => 5,
             "登录" or "登录权限" => 6,
             "操作审计" => 7,
-            "设计器" or "画布设计" or "手动程序生成" or "自动程序生成" => 8,
-            "运行页面" => 9,
+            "设计器" or "手动程序生成" or "自动程序生成" or "初始化程序生成" => 8,
+            "画布设计" => 9,
+            "运行页面" => 10,
             _ => 0
         };
     }
@@ -1168,7 +1215,8 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
         6 => "登录权限",
         7 => "操作审计",
         8 => "设计器",
-        9 => "运行页面",
+        9 => "画布设计",
+        10 => "运行页面",
         _ => "运行总览"
     };
 
@@ -1184,7 +1232,7 @@ public bool IsDesignerAutoProgramPageVisible => string.Equals(CurrentDesignerSub
             "报警画面" or "当前报警" or "历史报警" or "日志" or "报警统计" => "报警画面",
             "登录" or "登录权限" => "登录",
             "操作审计" => "操作审计",
-            "设计器" or "画布设计" or "运行页面" or "手动程序生成" or "自动程序生成" => "设计器",
+            "设计器" or "画布设计" or "运行页面" or "手动程序生成" or "自动程序生成" or "初始化程序生成" => "设计器",
             _ => string.Empty
         };
     }

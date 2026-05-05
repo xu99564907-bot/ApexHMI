@@ -16,6 +16,7 @@ using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using Microsoft.Extensions.Options;
 using Serilog;
+using Serilog.Context;
 
 namespace ApexHMI.Services;
 
@@ -45,42 +46,24 @@ public class OpcUaService : IOpcUaService
 
     public async Task ConnectAsync(OpcUaConnectionOptions options, CancellationToken cancellationToken = default)
     {
-        _activeEndpointKey = OpcUaResolvedNodeCacheStore.NormalizeEndpointKey(options.GetEndpointUrl());
-        _configuration = await OpcUaApplicationConfigurationFactory.BuildAsync().ConfigureAwait(false);
-        await DisconnectAsync(cancellationToken).ConfigureAwait(false);
-        _resolvedNodeIds.Clear();
-        _unresolvedNodeIds.Clear();
-        _subscribedTagNames.Clear();
-        ClearPreferredApplicationSymbolTemplate();
-
-        Exception? directAttemptException = null;
-
+        using var _ = LogContext.PushProperty("CorrelationId", Guid.NewGuid().ToString("N"));
+        var sw = Stopwatch.StartNew();
         try
         {
-            _session = await WithTimeoutAsync(
-                ct => OpcUaSessionFactory.CreateDirectAsync(_configuration, options.GetEndpointUrl(), options, ct),
-                _runtimeOptions.ConnectAttemptTimeoutMs,
-                cancellationToken).ConfigureAwait(false);
-            await MergeResolvedNodeCacheAsync(cancellationToken).ConfigureAwait(false);
-            return;
-        }
-        catch (Exception ex)
-        {
-            directAttemptException = ex;
-            Log.Warning(ex, "OPC UA 直连尝试失败，Endpoint={Endpoint}", options.GetEndpointUrl());
-            // Fallback to discovery-based attempts below.
-        }
+            _activeEndpointKey = OpcUaResolvedNodeCacheStore.NormalizeEndpointKey(options.GetEndpointUrl());
+            _configuration = await OpcUaApplicationConfigurationFactory.BuildAsync().ConfigureAwait(false);
+            await DisconnectAsync(cancellationToken).ConfigureAwait(false);
+            _resolvedNodeIds.Clear();
+            _unresolvedNodeIds.Clear();
+            _subscribedTagNames.Clear();
+            ClearPreferredApplicationSymbolTemplate();
 
-        var connectionAttempts = BuildConnectionAttempts(options);
-        Exception? lastException = null;
-        var attemptErrors = new List<string>();
+            Exception? directAttemptException = null;
 
-        foreach (var attempt in connectionAttempts)
-        {
             try
             {
                 _session = await WithTimeoutAsync(
-                    ct => OpcUaSessionFactory.CreateAsync(_configuration, attempt.EndpointUrl, attempt.UseSecurity, options, ct),
+                    ct => OpcUaSessionFactory.CreateDirectAsync(_configuration, options.GetEndpointUrl(), options, ct),
                     _runtimeOptions.ConnectAttemptTimeoutMs,
                     cancellationToken).ConfigureAwait(false);
                 await MergeResolvedNodeCacheAsync(cancellationToken).ConfigureAwait(false);
@@ -88,26 +71,53 @@ public class OpcUaService : IOpcUaService
             }
             catch (Exception ex)
             {
-                lastException = ex;
-                Log.Warning(ex, "OPC UA 连接尝试失败，Endpoint={Endpoint}, Security={Security}", attempt.EndpointUrl, attempt.UseSecurity);
-                attemptErrors.Add($"{attempt.EndpointUrl} (security={(attempt.UseSecurity ? "on" : "off")}): {ex.Message}");
+                directAttemptException = ex;
+                Log.Warning(ex, "OPC UA 直连尝试失败，Endpoint={Endpoint}", options.GetEndpointUrl());
+                // Fallback to discovery-based attempts below.
             }
-        }
 
-        var detailBuilder = new StringBuilder();
-        if (directAttemptException is not null)
+            var connectionAttempts = BuildConnectionAttempts(options);
+            Exception? lastException = null;
+            var attemptErrors = new List<string>();
+
+            foreach (var attempt in connectionAttempts)
+            {
+                try
+                {
+                    _session = await WithTimeoutAsync(
+                        ct => OpcUaSessionFactory.CreateAsync(_configuration, attempt.EndpointUrl, attempt.UseSecurity, options, ct),
+                        _runtimeOptions.ConnectAttemptTimeoutMs,
+                        cancellationToken).ConfigureAwait(false);
+                    await MergeResolvedNodeCacheAsync(cancellationToken).ConfigureAwait(false);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    lastException = ex;
+                    Log.Warning(ex, "OPC UA 连接尝试失败，Endpoint={Endpoint}, Security={Security}", attempt.EndpointUrl, attempt.UseSecurity);
+                    attemptErrors.Add($"{attempt.EndpointUrl} (security={(attempt.UseSecurity ? "on" : "off")}): {ex.Message}");
+                }
+            }
+
+            var detailBuilder = new StringBuilder();
+            if (directAttemptException is not null)
+            {
+                detailBuilder.AppendLine($"direct: {options.GetEndpointUrl()} (security=off): {directAttemptException.Message}");
+            }
+
+            foreach (var attemptError in attemptErrors.Take(6))
+            {
+                detailBuilder.AppendLine(attemptError);
+            }
+
+            throw new InvalidOperationException(
+                $"无法连接到 OPC UA 服务器：{options.GetEndpointUrl()}。请检查 Endpoint、匿名权限或安全策略设置。{Environment.NewLine}{detailBuilder.ToString().TrimEnd()}",
+                lastException);
+        }
+        finally
         {
-            detailBuilder.AppendLine($"direct: {options.GetEndpointUrl()} (security=off): {directAttemptException.Message}");
+            Log.Information("OPC UA 连接完成 elapsedMs={ElapsedMs} connected={Connected}", sw.ElapsedMilliseconds, IsConnected);
         }
-
-        foreach (var attemptError in attemptErrors.Take(6))
-        {
-            detailBuilder.AppendLine(attemptError);
-        }
-
-        throw new InvalidOperationException(
-            $"无法连接到 OPC UA 服务器：{options.GetEndpointUrl()}。请检查 Endpoint、匿名权限或安全策略设置。{Environment.NewLine}{detailBuilder.ToString().TrimEnd()}",
-            lastException);
     }
 
     public async Task DisconnectAsync(CancellationToken cancellationToken = default)
@@ -460,73 +470,81 @@ public class OpcUaService : IOpcUaService
 
     public async Task SubscribeTagsAsync(IEnumerable<TagItem> tags, int publishingInterval = 500, CancellationToken cancellationToken = default)
     {
-        if (_session is null || !_session.Connected)
-        {
-            return;
-        }
-
-        var tagList = tags.Where(t => !string.IsNullOrWhiteSpace(t.NodeId)).ToList();
-        if (tagList.Count == 0)
-        {
-            await UnsubscribeAllAsync(cancellationToken).ConfigureAwait(false);
-            return;
-        }
-
-        await UnsubscribeAllAsync(cancellationToken).ConfigureAwait(false);
-
-        _subscription = new Subscription(_session.DefaultSubscription)
-        {
-            PublishingInterval = publishingInterval,
-            DisplayName = "ApexHMISubscription"
-        };
-
-        _session.AddSubscription(_subscription);
-        await _subscription.CreateAsync(cancellationToken).ConfigureAwait(false);
-
-        foreach (var tag in tagList)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            try
-            {
-                var parsedNodeId = await ResolveNodeIdAsync(tag.NodeId).ConfigureAwait(false);
-
-                var monitoredItem = new MonitoredItem(_subscription.DefaultItem)
-                {
-                    DisplayName = tag.NodeId,
-                    StartNodeId = parsedNodeId,
-                    AttributeId = Attributes.Value,
-                    SamplingInterval = publishingInterval,
-                    QueueSize = 1,
-                    DiscardOldest = true
-                };
-
-                monitoredItem.Notification += (_, _) =>
-                {
-                    foreach (var value in monitoredItem.DequeueValues())
-                    {
-                        TagValueChanged?.Invoke(tag.Name, value.Value?.ToString() ?? string.Empty);
-                    }
-                };
-
-                _subscription.AddItem(monitoredItem);
-                _monitoredItems[tag.NodeId] = monitoredItem;
-                _subscribedTagNames[tag.Name] = 0;
-            }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "OPC UA 订阅 Tag 失败，Tag={TagName}, NodeId={NodeId}", tag.Name, tag.NodeId);
-                continue;
-            }
-        }
-
+        var sw = Stopwatch.StartNew();
         try
         {
-            await _subscription.ApplyChangesAsync(cancellationToken).ConfigureAwait(false);
+            if (_session is null || !_session.Connected)
+            {
+                return;
+            }
+
+            var tagList = tags.Where(t => !string.IsNullOrWhiteSpace(t.NodeId)).ToList();
+            if (tagList.Count == 0)
+            {
+                await UnsubscribeAllAsync(cancellationToken).ConfigureAwait(false);
+                return;
+            }
+
+            await UnsubscribeAllAsync(cancellationToken).ConfigureAwait(false);
+
+            _subscription = new Subscription(_session.DefaultSubscription)
+            {
+                PublishingInterval = publishingInterval,
+                DisplayName = "ApexHMISubscription"
+            };
+
+            _session.AddSubscription(_subscription);
+            await _subscription.CreateAsync(cancellationToken).ConfigureAwait(false);
+
+            foreach (var tag in tagList)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    var parsedNodeId = await ResolveNodeIdAsync(tag.NodeId).ConfigureAwait(false);
+
+                    var monitoredItem = new MonitoredItem(_subscription.DefaultItem)
+                    {
+                        DisplayName = tag.NodeId,
+                        StartNodeId = parsedNodeId,
+                        AttributeId = Attributes.Value,
+                        SamplingInterval = publishingInterval,
+                        QueueSize = 1,
+                        DiscardOldest = true
+                    };
+
+                    monitoredItem.Notification += (_, _) =>
+                    {
+                        foreach (var value in monitoredItem.DequeueValues())
+                        {
+                            TagValueChanged?.Invoke(tag.Name, value.Value?.ToString() ?? string.Empty);
+                        }
+                    };
+
+                    _subscription.AddItem(monitoredItem);
+                    _monitoredItems[tag.NodeId] = monitoredItem;
+                    _subscribedTagNames[tag.Name] = 0;
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "OPC UA 订阅 Tag 失败，Tag={TagName}, NodeId={NodeId}", tag.Name, tag.NodeId);
+                    continue;
+                }
+            }
+
+            try
+            {
+                await _subscription.ApplyChangesAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                ClearSubscriptionState();
+                throw;
+            }
         }
-        catch
+        finally
         {
-            ClearSubscriptionState();
-            throw;
+            Log.Information("OPC UA 订阅初始化完成 elapsedMs={ElapsedMs} count={Count}", sw.ElapsedMilliseconds, _subscribedTagNames.Count);
         }
     }
 

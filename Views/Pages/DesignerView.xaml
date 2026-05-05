@@ -1,53 +1,27 @@
-<UserControl x:Class="ApexHMI.Views.Pages.DesignerView"
+﻿<UserControl x:Class="ApexHMI.Views.Pages.DesignerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:model="clr-namespace:ApexHMI.Models"
+             xmlns:models="clr-namespace:ApexHMI.Models.Sfc"
              xmlns:behavior="clr-namespace:ApexHMI.Behaviors"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
-                    <Grid Margin="12" DataContext="{Binding ShellViewModel}" Visibility="{Binding IsDesignMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="12" DataContext="{Binding ShellViewModel}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <!-- Row 0: 设计器标题栏 -->
+                        <!-- Row 0: 程序生成标题与导航栏 -->
                         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,0,12">
                             <DockPanel>
-                                <TextBlock Text="{Binding CurrentDesignerTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
-                                <TextBlock DockPanel.Dock="Right" Text="仅设计态可用" Foreground="#64748B" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding CurrentDesignerTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                    <Button Content="手动程序生成" Command="{Binding NavigateCommand}" CommandParameter="手动程序生成" Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="10,6" Margin="0,0,8,0"/>
+                                    <Button Content="自动程序生成" Command="{Binding NavigateCommand}" CommandParameter="自动程序生成" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,8,0"/>
+                                    <Button Content="初始化程序生成" Command="{Binding NavigateCommand}" CommandParameter="初始化程序生成" Background="#9333EA" Foreground="White" BorderBrush="#9333EA" Padding="10,6"/>
+                                </StackPanel>
                             </DockPanel>
                         </Border>
-                        <Grid Grid.Row="1" Visibility="{Binding IsDesignerCanvasPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="280"/><ColumnDefinition Width="*"/><ColumnDefinition Width="360"/></Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="10" Margin="0,0,10,0"><DockPanel><StackPanel DockPanel.Dock="Top"><TextBlock Text="页面与工具箱" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/><TextBlock Text="工程名称" Foreground="#475569"/><TextBox Text="{Binding DesignerProjectName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/><TextBlock Text="当前页面" Foreground="#475569"/><ComboBox ItemsSource="{Binding DesignerPages}" SelectedItem="{Binding SelectedDesignerPage}" Margin="0,4,0,8"/><WrapPanel Margin="0,0,0,8"><Button Content="新建页面" Command="{Binding AddNewPageCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/><Button Content="删除页面" Command="{Binding RemoveCurrentPageCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/><Button Content="加载工程" Command="{Binding LoadDesignerProjectCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/></WrapPanel><TextBlock Text="运行页模板" Foreground="#475569"/><ComboBox ItemsSource="{Binding RuntimeTemplates}" SelectedItem="{Binding SelectedRuntimeTemplate}" Margin="0,4,0,8"/><Button Content="应用模板" Command="{Binding ApplyRuntimeTemplateCommand}" CommandParameter="{Binding SelectedRuntimeTemplate}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,0,8"/><TextBlock Text="页面名称" Foreground="#475569"/><TextBox Text="{Binding DesignerPageName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/><TextBlock Text="画布尺寸" Foreground="#475569"/><UniformGrid Columns="2" Margin="0,4,0,8"><TextBox Text="{Binding DesignerCanvasWidth, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,6,0"/><TextBox Text="{Binding DesignerCanvasHeight, UpdateSourceTrigger=PropertyChanged}" Margin="6,0,0,0"/></UniformGrid><TextBlock Text="工具箱" Foreground="#475569" Margin="0,0,0,8"/></StackPanel><ItemsControl ItemsSource="{Binding ToolboxItems}"><ItemsControl.ItemTemplate><DataTemplate><Button Content="{Binding}" Command="{Binding DataContext.AddDesignerElementCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Margin="0,0,0,8" Padding="10" Background="#F8FAFC" Foreground="#334155" BorderBrush="#D7DFEA" PreviewMouseMove="ToolboxItem_PreviewMouseMove"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></DockPanel></Border>
-                            <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="10" Margin="0,0,10,0"><Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions><DockPanel Margin="0,0,0,10"><TextBlock Text="设计画布" FontSize="18" FontWeight="Bold" Foreground="#0F172A"/><TextBlock DockPanel.Dock="Right" Text="仅设计态可编辑" Foreground="#64748B"/></DockPanel><ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView"><Canvas x:Name="DesignerCanvas" Width="{Binding DesignerCanvasWidth}" Height="{Binding DesignerCanvasHeight}" Background="#0F172A" ClipToBounds="True" AllowDrop="True" DragOver="DesignerCanvas_DragOver" Drop="DesignerCanvas_Drop"><ItemsControl ItemsSource="{Binding DesignerElements}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><Canvas/></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemContainerStyle><Style TargetType="ContentPresenter"><Setter Property="Canvas.Left" Value="{Binding Left}"/><Setter Property="Canvas.Top" Value="{Binding Top}"/></Style></ItemsControl.ItemContainerStyle><ItemsControl.Resources><DataTemplate DataType="{x:Type model:DesignerElement}"><Border Width="{Binding Width}" Height="{Binding Height}" Background="{Binding Background, Converter={StaticResource StringToBrushConverter}}" BorderBrush="{Binding BorderBrush, Converter={StaticResource StringToBrushConverter}}" BorderThickness="2" CornerRadius="8" behavior:DragCanvasBehavior.EnableDrag="True"><Button Command="{Binding DataContext.SelectDesignerElementCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Background="Transparent" BorderThickness="0" Padding="0"><Grid><StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"><TextBlock Text="{Binding ElementType}" FontSize="10" Foreground="#E2E8F0" HorizontalAlignment="Center"/><TextBlock Text="{Binding Text}" FontSize="{Binding FontSize}" FontWeight="SemiBold" Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}" HorizontalAlignment="Center" TextWrapping="Wrap"/></StackPanel></Grid></Button></Border></DataTemplate></ItemsControl.Resources></ItemsControl></Canvas></ScrollViewer></Grid></Border>
-                            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="12">
-                                <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
-                                    <StackPanel>
-                                        <TextBlock Text="属性编辑器" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
-                                        <WrapPanel Margin="0,0,0,10">
-                                            <Button Content="删除" Command="{Binding RemoveSelectedDesignerElementCommand}" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C" Padding="10,6" Margin="0,0,6,6"/>
-                                            <Button Content="复制" Command="{Binding CopySelectedDesignerElementCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/>
-                                            <Button Content="粘贴" Command="{Binding PasteDesignerElementCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/>
-                                        </WrapPanel>
-                                        <TextBlock Text="名称" Foreground="#475569"/>
-                                        <TextBox Text="{Binding SelectedDesignerElement.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-                                        <TextBlock Text="类型" Foreground="#475569"/>
-                                        <TextBox Text="{Binding SelectedDesignerElement.ElementType, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-                                        <TextBlock Text="显示文本" Foreground="#475569"/>
-                                        <TextBox Text="{Binding SelectedDesignerElement.Text, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-                                        <TextBlock Text="变量绑定" Foreground="#475569"/>
-                                        <ComboBox ItemsSource="{Binding Tags}" DisplayMemberPath="Name" SelectedValuePath="Name" SelectedValue="{Binding SelectedDesignerElement.TagBinding, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-                                        <TextBlock Text="动作方式" Foreground="#475569" Visibility="{Binding IsSelectedDesignerElementButtonLike, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                        <ComboBox ItemsSource="{Binding DesignerActionOptions}" SelectedItem="{Binding SelectedDesignerElement.CommandBinding, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" Visibility="{Binding IsSelectedDesignerElementButtonLike, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                        <TextBlock Text="跳转目标" Foreground="#475569" Visibility="{Binding IsSelectedDesignerElementNavigationAction, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                        <ComboBox ItemsSource="{Binding DesignerNavigationTargetOptions}" SelectedItem="{Binding SelectedDesignerElement.NavigationTarget, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12" Visibility="{Binding IsSelectedDesignerElementNavigationAction, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                        <TextBlock Foreground="#64748B" TextWrapping="Wrap" Text="按钮类控件现在可直接选择绑定变量和动作方式；页面跳转动作可单独设置目标页面。" />
-                                    </StackPanel>
-                                </ScrollViewer>
-                            </Border>
-                        </Grid>
-
                         <Grid Grid.Row="1" Visibility="{Binding IsDesignerIoProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="420"/>
@@ -208,121 +182,671 @@
                             </Grid>
                         </Grid>
 
-                        <Grid Grid.Row="1" Visibility="{Binding IsDesignerAutoProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <!-- SFC 步骤式自动程序生成 -->
+                        <Grid Grid.Row="1"
+                              Height="{Binding ViewportHeight, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                              Visibility="{Binding IsDesignerAutoProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="440"/>
+                                <ColumnDefinition Width="380"/>
+                                <ColumnDefinition Width="400"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,10,0">
+
+                            <!-- 左栏：步骤列表 -->
+                            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,8,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="SFC 步骤列表" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,10"/>
+
+                                    <!-- 程序设置 -->
+                                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="程序名称" Foreground="#475569" FontSize="12"/>
+                                            <TextBox Text="{Binding SfcProgramName, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" FontSize="13"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="工位号" Foreground="#475569" FontSize="12"/>
+                                            <TextBox Text="{Binding SfcStationNo, UpdateSourceTrigger=LostFocus}" Padding="6,4" FontSize="13"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 操作按钮 -->
+                                    <WrapPanel Grid.Row="2" Margin="0,0,0,8">
+                                        <Button Content="+ 添加" Command="{Binding AddSfcStepCommand}" Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="8,4" Margin="0,0,4,4"/>
+                                        <Button Content="删除" Command="{Binding DeleteSfcStepCommand}" Background="#DC2626" Foreground="White" BorderBrush="#DC2626" Padding="8,4" Margin="0,0,4,4"/>
+                                        <Button Content="↑" Command="{Binding MoveSfcStepUpCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                        <Button Content="↓" Command="{Binding MoveSfcStepDownCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                    </WrapPanel>
+
+                                    <!-- 步骤表格 -->
+                                    <DataGrid Grid.Row="3"
+                                              ItemsSource="{Binding SfcSteps}"
+                                              SelectedItem="{Binding SelectedSfcStep}"
+                                              AutoGenerateColumns="False"
+                                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False"
+                                              HeadersVisibility="Column" SelectionMode="Single"
+                                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#D7DFEA"
+                                              RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
+                                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EDF2F7"
+                                              MinHeight="300">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="步序" Binding="{Binding StepNo}" Width="50" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="动作" Binding="{Binding ActionSummary}" Width="*" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="跳转" Binding="{Binding NextSummary}" Width="70" IsReadOnly="True"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
+                            </Border>
+
+                            <!-- 中栏：步骤属性（多动作 + 多分支） -->
+                            <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,8,0">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
                                     <StackPanel>
-                                        <TextBlock Text="自动程序生成" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
-                                        <TextBlock Text="{Binding AutoProgramHeadline}" Foreground="#2563EB" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding AutoProgramSummary}" Foreground="#64748B" Margin="0,6,0,12" TextWrapping="Wrap"/>
+                                        <TextBlock Text="步骤属性" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
 
-                                        <TextBlock Text="流程名称" Foreground="#475569"/>
-                                        <TextBox Text="{Binding AutoProgramName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,10"/>
-                                        <TextBlock Text="工位 / Station" Foreground="#475569"/>
-                                        <TextBox Text="{Binding AutoProgramStation, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
+                                        <!-- 无选中提示 -->
+                                        <TextBlock Text="← 在左侧选择一个步骤" Foreground="#94A3B8" FontStyle="Italic" TextWrapping="Wrap"
+                                                   Visibility="{Binding SelectedSfcStep, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
 
-                                        <WrapPanel Margin="0,0,0,12">
-                                            <Button Content="新增步骤" Command="{Binding AddAutoProgramStepCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="10,6" Margin="0,0,6,6"/>
-                                            <Button Content="生成程序" Command="{Binding GenerateAutoProgramsCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,6" Margin="0,0,6,6"/>
-                                            <Button Content="打开目录" Command="{Binding OpenGeneratedAutoFolderCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/>
-                                            <Button Content="重置流程" Command="{Binding ResetAutoProgramFlowCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,6" Margin="0,0,6,6"/>
-                                        </WrapPanel>
+                                        <!-- 属性面板（有选中时显示） -->
+                                        <StackPanel Visibility="{Binding SelectedSfcStep, Converter={StaticResource NullToVisibilityConverter}}">
 
-                                        <Border Background="#F8FAFC" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" Padding="12">
-                                            <StackPanel>
-                                                <TextBlock Text="流程步骤配置" FontSize="16" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,10"/>
-                                                <DataGrid ItemsSource="{Binding AutoProgramFlowNodes}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False" HeadersVisibility="Column" Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#D7DFEA" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC" MinHeight="340">
-                                                    <DataGrid.Columns>
-                                                        <DataGridTextColumn Header="步序" Binding="{Binding StepNo}" Width="70"/>
-                                                        <DataGridTextColumn Header="步骤名称" Binding="{Binding Title}" Width="120"/>
-                                                        <DataGridTextColumn Header="动作说明" Binding="{Binding Action}" Width="*"/>
-                                                        <DataGridTextColumn Header="流向" Binding="{Binding NextStep}" Width="80"/>
-                                                    </DataGrid.Columns>
-                                                </DataGrid>
-                                            </StackPanel>
-                                        </Border>
+                                            <!-- 步序号 -->
+                                            <TextBlock Text="步序号" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedSfcStep.StepNo, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,12"/>
+
+                                            <!-- 动作列表标题栏 -->
+                                            <DockPanel Margin="0,0,0,4">
+                                                <TextBlock Text="动作列表" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <Button DockPanel.Dock="Right" Content="+ 添加动作" Command="{Binding AddSfcActionCommand}"
+                                                        Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                        Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+
+                                            <!-- 动作行列表（每行内联编辑） -->
+                                            <ItemsControl ItemsSource="{Binding SelectedSfcStep.Actions}" Margin="0,0,0,12">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4"
+                                                                Padding="4,3" Margin="0,0,0,4" Background="#FAFAFA">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="88"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="72"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="90"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="22"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- 设备类型 -->
+                                                                <ComboBox Grid.Column="0"
+                                                                          ItemsSource="{Binding AllDeviceTypes}"
+                                                                          SelectedItem="{Binding DeviceType, UpdateSourceTrigger=PropertyChanged}"
+                                                                          Padding="4,2" FontSize="12"/>
+
+                                                                <!-- 气缸选择下拉 -->
+                                                                <ComboBox Grid.Column="2"
+                                                                          ItemsSource="{Binding DataContext.SfcCylinderOptions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                          SelectedItem="{Binding SelectedDeviceOption, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowCylinderPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 轴选择下拉 -->
+                                                                <ComboBox Grid.Column="2"
+                                                                          ItemsSource="{Binding DataContext.SfcAxisOptions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                          SelectedItem="{Binding SelectedDeviceOption, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowAxisPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 真空选择下拉 -->
+                                                                <ComboBox Grid.Column="2"
+                                                                          ItemsSource="{Binding DataContext.SfcVacuumOptions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                          SelectedItem="{Binding SelectedDeviceOption, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowVacuumPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 电机序号输入框 -->
+                                                                <TextBox Grid.Column="2"
+                                                                         Text="{Binding DeviceIndex, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"
+                                                                         Visibility="{Binding ShowDeviceIndex, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 动作类型 -->
+                                                                <ComboBox Grid.Column="4"
+                                                                          ItemsSource="{Binding AvailableActionTypes}"
+                                                                          SelectedItem="{Binding ActionType, UpdateSourceTrigger=PropertyChanged}"
+                                                                          Padding="4,2" FontSize="12"/>
+
+                                                                <!-- 轴点位选择下拉（Axis+MoveToPoint） -->
+                                                                <ComboBox Grid.Column="6"
+                                                                          ItemsSource="{Binding AxisPointOptions}"
+                                                                          SelectedItem="{Binding SelectedAxisPoint, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="Label"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowAxisPointPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 延时输入（Wait+Timer） -->
+                                                                <TextBox Grid.Column="6"
+                                                                         Text="{Binding PointIndex, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"
+                                                                         Visibility="{Binding ShowTimerInput, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 自定义指令（Custom 或 Wait+Condition） -->
+                                                                <TextBox Grid.Column="6"
+                                                                         Text="{Binding CustomCommand, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"
+                                                                         Visibility="{Binding ShowCustom, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 删除按钮 -->
+                                                                <Button Grid.Column="8" Content="×" FontSize="12"
+                                                                        Command="{Binding DataContext.DeleteSfcActionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Background="Transparent" BorderBrush="#FCA5A5"
+                                                                        Foreground="#DC2626" Padding="2,1" VerticalAlignment="Stretch"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- 跳转分支标题栏 -->
+                                            <DockPanel Margin="0,0,0,4">
+                                                <TextBlock Text="跳转分支" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <Button DockPanel.Dock="Right" Content="+ 添加分支" Command="{Binding AddSfcBranchCommand}"
+                                                        Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
+                                                        Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+
+                                            <!-- 分支行列表（条件 → 目标步序） -->
+                                            <ItemsControl ItemsSource="{Binding SelectedSfcStep.Branches}" Margin="0,0,0,4">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="4"
+                                                                Padding="4,3" Margin="0,0,0,4" Background="#FAFAFA">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="4"/>
+                                                                    <ColumnDefinition Width="16"/>
+                                                                    <ColumnDefinition Width="4"/>
+                                                                    <ColumnDefinition Width="52"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="22"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBox Grid.Column="0"
+                                                                         Text="{Binding Condition, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"/>
+                                                                <TextBlock Grid.Column="2" Text="→" VerticalAlignment="Center"
+                                                                           FontSize="13" Foreground="#64748B" HorizontalAlignment="Center"/>
+                                                                <TextBox Grid.Column="4"
+                                                                         Text="{Binding TargetStep, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"/>
+                                                                <Button Grid.Column="6" Content="×" FontSize="12"
+                                                                        Command="{Binding DataContext.DeleteSfcBranchCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Background="Transparent" BorderBrush="#DDD6FE"
+                                                                        Foreground="#7C3AED" Padding="2,1" VerticalAlignment="Stretch"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- 分支说明（有分支时显示） -->
+                                            <TextBlock Text="无分支时使用下方默认跳转" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,6"/>
+
+                                            <!-- 默认下一步 -->
+                                            <TextBlock Text="默认下一步（步序号 或 END）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedSfcStep.NextStep, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,10"/>
+
+                                            <!-- 完成条件（覆盖自动生成） -->
+                                            <TextBlock Text="完成条件（留空则自动生成）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedSfcStep.CompletionCondition, UpdateSourceTrigger=PropertyChanged}"
+                                                     Padding="6,4" Margin="0,0,0,4"/>
+                                            <Button Content="自动填充完成条件" Command="{Binding AutoFillSelectedSfcStepCommand}"
+                                                    Background="#F0FDF4" Foreground="#166534" BorderBrush="#BBF7D0"
+                                                    Padding="8,4" Margin="0,0,0,12" HorizontalAlignment="Left"/>
+
+                                            <!-- 报警条目 -->
+                                            <DockPanel Margin="0,0,0,4">
+                                                <TextBlock Text="报警条目" Foreground="#475569" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <Button Content="+" DockPanel.Dock="Right"
+                                                        Command="{Binding AddSfcAlarmCommand}"
+                                                        Background="#FEF3C7" Foreground="#92400E" BorderBrush="#FDE68A"
+                                                        Padding="6,2" FontWeight="Bold"/>
+                                            </DockPanel>
+
+                                            <ItemsControl ItemsSource="{Binding SelectedSfcStep.AlarmEntries}" Margin="0,0,0,4">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="4"
+                                                                Background="#FFFBEB" Padding="8,6" Margin="0,0,0,4">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel Grid.Column="0">
+                                                                    <!-- 类型选择 -->
+                                                                    <DockPanel Margin="0,0,0,4">
+                                                                        <TextBlock Text="类型：" Foreground="#78350F" FontSize="11" Width="40" VerticalAlignment="Center"/>
+                                                                        <ComboBox ItemsSource="{x:Static models:SfcStepAlarm.AlarmTypes}"
+                                                                                  SelectedItem="{Binding AlarmType, UpdateSourceTrigger=PropertyChanged}"
+                                                                                  Padding="4,2" FontSize="12"/>
+                                                                    </DockPanel>
+                                                                    <!-- 报警信息 -->
+                                                                    <DockPanel Margin="0,0,0,4">
+                                                                        <TextBlock Text="信息：" Foreground="#78350F" FontSize="11" Width="40" VerticalAlignment="Center"/>
+                                                                        <TextBox Text="{Binding AlarmMessage, UpdateSourceTrigger=PropertyChanged}"
+                                                                                 Padding="4,2" FontSize="12" ToolTip="报警显示信息（注释用途）"/>
+                                                                    </DockPanel>
+                                                                    <!-- 报警条件 -->
+                                                                    <DockPanel>
+                                                                        <TextBlock Text="条件：" Foreground="#78350F" FontSize="11" Width="40" VerticalAlignment="Center"/>
+                                                                        <TextBox Text="{Binding AlarmCondition, UpdateSourceTrigger=PropertyChanged}"
+                                                                                 Padding="4,2" FontSize="12" FontFamily="Consolas"
+                                                                                 ToolTip="ST 表达式，如 DB1050.CylCtrl[...].Status.Error"/>
+                                                                    </DockPanel>
+                                                                </StackPanel>
+                                                                <Button Grid.Column="1" Content="×" VerticalAlignment="Top"
+                                                                        Command="{Binding DataContext.DeleteSfcAlarmCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Background="Transparent" Foreground="#DC2626" BorderThickness="0"
+                                                                        Padding="4,0" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
+                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                        </StackPanel>
                                     </StackPanel>
                                 </ScrollViewer>
                             </Border>
 
-                            <Grid Grid.Column="1">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="300"/>
-                                </Grid.RowDefinitions>
-                                <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,0,10" MinHeight="260">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <TextBlock Text="流程图绘制" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,10"/>
-                                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
-                                            <ItemsControl ItemsSource="{Binding AutoProgramFlowNodes}">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <StackPanel/>
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
+                            <!-- 右栏：代码预览 -->
+                            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- 工具栏 -->
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,10" MouseLeftButtonDown="SfcCodePreviewHeader_MouseLeftButtonDown">
+                                        <TextBlock Text="生成代码" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Button Content="生成代码" Command="{Binding GenerateSfcCodeCommand}"
+                                                    Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,5" Margin="0,0,6,0"/>
+                                            <Button Content="复制" Command="{Binding CopySfcCodeCommand}"
+                                                    Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,5" Margin="0,0,6,0"/>
+                                            <Button Content="保存文件" Command="{Binding SaveSfcCodeToFileCommand}"
+                                                    Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,5" Margin="0,0,6,0"/>
+                                            <Button Content="术语表" Click="OpenAlarmTermsDialog_Click"
+                                                    Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED" Padding="10,5"
+                                                    ToolTip="编辑中文→英文报警术语对照表"/>
+                                        </StackPanel>
+                                    </DockPanel>
+
+                                    <!-- 代码文本框（可手动编辑，独立滚动） -->
+                                    <TextBox Grid.Row="1"
+                                             x:Name="SfcCodePreviewTextBox"
+                                             Text="{Binding SfcGeneratedCode, UpdateSourceTrigger=PropertyChanged}"
+                                             AcceptsReturn="True" TextWrapping="NoWrap"
+                                             VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
+                                             FontFamily="Consolas" FontSize="13"
+                                             Background="#F8FAFC" BorderBrush="#D7DFEA" Foreground="#0F172A"
+                                             MouseLeftButtonDown="SfcCodePreviewHeader_MouseLeftButtonDown"
+                                             PreviewMouseWheel="CodePreviewTextBox_PreviewMouseWheel"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <!-- 初始化程序生成页 (独立步骤集合，与自动程序页等级相同) -->
+                        <Grid Grid.Row="1"
+                              Height="{Binding ViewportHeight, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
+                              Visibility="{Binding IsDesignerInitProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="380"/>
+                                <ColumnDefinition Width="400"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 左栏：初始化步骤列表 -->
+                            <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,8,0">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="初始化步骤列表" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,10"/>
+
+                                    <!-- 程序设置 -->
+                                    <Grid Grid.Row="1" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="程序名称" Foreground="#475569" FontSize="12"/>
+                                            <TextBox Text="{Binding SfcInitProgramName, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" FontSize="13"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="工位号" Foreground="#475569" FontSize="12"/>
+                                            <TextBox Text="{Binding SfcInitStationNo, UpdateSourceTrigger=LostFocus}" Padding="6,4" FontSize="13"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- 操作按钮 -->
+                                    <WrapPanel Grid.Row="2" Margin="0,0,0,8">
+                                        <Button Content="+ 添加" Command="{Binding AddSfcInitStepCommand}" Background="#9333EA" Foreground="White" BorderBrush="#9333EA" Padding="8,4" Margin="0,0,4,4"/>
+                                        <Button Content="删除" Command="{Binding DeleteSfcInitStepCommand}" Background="#DC2626" Foreground="White" BorderBrush="#DC2626" Padding="8,4" Margin="0,0,4,4"/>
+                                        <Button Content="↑" Command="{Binding MoveSfcInitStepUpCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                        <Button Content="↓" Command="{Binding MoveSfcInitStepDownCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                    </WrapPanel>
+
+                                    <!-- 步骤表格 -->
+                                    <DataGrid Grid.Row="3"
+                                              ItemsSource="{Binding SfcInitSteps}"
+                                              SelectedItem="{Binding SelectedSfcInitStep}"
+                                              AutoGenerateColumns="False"
+                                              CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False"
+                                              HeadersVisibility="Column" SelectionMode="Single"
+                                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#D7DFEA"
+                                              RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
+                                              GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EDF2F7"
+                                              MinHeight="300">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="步序" Binding="{Binding StepNo}" Width="50" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="动作" Binding="{Binding ActionSummary}" Width="*" IsReadOnly="True"/>
+                                            <DataGridTextColumn Header="跳转" Binding="{Binding NextSummary}" Width="70" IsReadOnly="True"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
+                            </Border>
+
+                            <!-- 中栏：初始化步骤属性（与自动程序中栏完全一致，绑定 Init 版本） -->
+                            <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,8,0">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
+                                    <StackPanel>
+                                        <TextBlock Text="步骤属性" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+
+                                        <!-- 无选中提示 -->
+                                        <TextBlock Text="← 在左侧选择一个步骤" Foreground="#94A3B8" FontStyle="Italic" TextWrapping="Wrap"
+                                                   Visibility="{Binding SelectedSfcInitStep, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+
+                                        <!-- 属性面板（有选中时显示） -->
+                                        <StackPanel Visibility="{Binding SelectedSfcInitStep, Converter={StaticResource NullToVisibilityConverter}}">
+
+                                            <!-- 步序号 -->
+                                            <TextBlock Text="步序号" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedSfcInitStep.StepNo, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,12"/>
+
+                                            <!-- 动作列表标题栏 -->
+                                            <DockPanel Margin="0,0,0,4">
+                                                <TextBlock Text="动作列表" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <Button DockPanel.Dock="Right" Content="+ 添加动作" Command="{Binding AddSfcInitActionCommand}"
+                                                        Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                        Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+
+                                            <!-- 动作行列表（每行内联编辑，与自动程序完全相同布局） -->
+                                            <ItemsControl ItemsSource="{Binding SelectedSfcInitStep.Actions}" Margin="0,0,0,12">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <StackPanel Margin="0,0,0,10" HorizontalAlignment="Center">
-                                                            <Border Width="520" Background="{Binding Fill}" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12" Padding="14">
-                                                                <Grid>
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="100"/>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                        <ColumnDefinition Width="90"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <StackPanel Grid.Column="0">
-                                                                        <TextBlock Text="{Binding StepCode}" FontWeight="Bold" Foreground="#1E3A8A"/>
-                                                                        <TextBlock Text="{Binding NextStep, StringFormat=流向 {0}}" Foreground="#64748B" Margin="0,4,0,0"/>
-                                                                    </StackPanel>
-                                                                    <StackPanel Grid.Column="1" Margin="12,0">
-                                                                        <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Foreground="#0F172A"/>
-                                                                        <TextBlock Text="{Binding Action}" Foreground="#475569" Margin="0,6,0,0" TextWrapping="Wrap"/>
-                                                                    </StackPanel>
-                                                                    <Border Grid.Column="2" Background="#FFFFFF" BorderBrush="#BFDBFE" BorderThickness="1" CornerRadius="16" Padding="10,4" HorizontalAlignment="Right" VerticalAlignment="Center">
-                                                                        <TextBlock Text="{Binding NextStep}" Foreground="#2563EB" FontWeight="SemiBold"/>
-                                                                    </Border>
-                                                                </Grid>
-                                                            </Border>
-                                                            <materialDesign:PackIcon Kind="ArrowDownThin" Width="26" Height="26" Foreground="#94A3B8" Margin="0,6,0,0"/>
-                                                        </StackPanel>
+                                                        <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4"
+                                                                Padding="4,3" Margin="0,0,0,4" Background="#FAFAFA">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="88"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="72"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="90"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="22"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- 设备类型 -->
+                                                                <ComboBox Grid.Column="0"
+                                                                          ItemsSource="{Binding AllDeviceTypes}"
+                                                                          SelectedItem="{Binding DeviceType, UpdateSourceTrigger=PropertyChanged}"
+                                                                          Padding="4,2" FontSize="12"/>
+
+                                                                <!-- 气缸选择下拉 -->
+                                                                <ComboBox Grid.Column="2"
+                                                                          ItemsSource="{Binding DataContext.SfcCylinderOptions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                          SelectedItem="{Binding SelectedDeviceOption, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowCylinderPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 轴选择下拉 -->
+                                                                <ComboBox Grid.Column="2"
+                                                                          ItemsSource="{Binding DataContext.SfcAxisOptions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                          SelectedItem="{Binding SelectedDeviceOption, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowAxisPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 真空选择下拉 -->
+                                                                <ComboBox Grid.Column="2"
+                                                                          ItemsSource="{Binding DataContext.SfcVacuumOptions, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                          SelectedItem="{Binding SelectedDeviceOption, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="DisplayName"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowVacuumPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 电机序号输入框 -->
+                                                                <TextBox Grid.Column="2"
+                                                                         Text="{Binding DeviceIndex, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"
+                                                                         Visibility="{Binding ShowDeviceIndex, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 动作类型 -->
+                                                                <ComboBox Grid.Column="4"
+                                                                          ItemsSource="{Binding AvailableActionTypes}"
+                                                                          SelectedItem="{Binding ActionType, UpdateSourceTrigger=PropertyChanged}"
+                                                                          Padding="4,2" FontSize="12"/>
+
+                                                                <!-- 轴点位选择下拉（Axis+MoveToPoint） -->
+                                                                <ComboBox Grid.Column="6"
+                                                                          ItemsSource="{Binding AxisPointOptions}"
+                                                                          SelectedItem="{Binding SelectedAxisPoint, UpdateSourceTrigger=PropertyChanged}"
+                                                                          DisplayMemberPath="Label"
+                                                                          Padding="4,2" FontSize="12"
+                                                                          Visibility="{Binding ShowAxisPointPicker, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 延时输入（Wait+Timer） -->
+                                                                <TextBox Grid.Column="6"
+                                                                         Text="{Binding PointIndex, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"
+                                                                         Visibility="{Binding ShowTimerInput, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 自定义指令（Custom 或 Wait+Condition） -->
+                                                                <TextBox Grid.Column="6"
+                                                                         Text="{Binding CustomCommand, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"
+                                                                         Visibility="{Binding ShowCustom, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                                                <!-- 删除按钮 -->
+                                                                <Button Grid.Column="8" Content="×" FontSize="12"
+                                                                        Command="{Binding DataContext.DeleteSfcInitActionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Background="Transparent" BorderBrush="#FCA5A5"
+                                                                        Foreground="#DC2626" Padding="2,1" VerticalAlignment="Stretch"/>
+                                                            </Grid>
+                                                        </Border>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                        </ScrollViewer>
-                                    </Grid>
-                                </Border>
-                                <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="12" Height="300" MinHeight="300">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Margin="0,0,0,10" Background="Transparent">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="程序预览" FontSize="18" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
-                                            <ComboBox Grid.Column="2" Width="220" ItemsSource="{Binding GeneratedAutoPrograms}" SelectedItem="{Binding SelectedGeneratedAutoProgram}" DisplayMemberPath="DisplayName" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal">
-                                                <Button Content="复制当前文件" Click="CopyCurrentAutoProgramButton_Click" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,8,0"/>
-                                                <Button Content="打开当前文件" Command="{Binding OpenGeneratedIoFileCommand}" CommandParameter="{Binding SelectedGeneratedAutoProgram}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4"/>
-                                            </StackPanel>
-                                        </Grid>
-                                        <TextBox x:Name="AutoProgramPreviewTextBox" Grid.Row="1" Text="{Binding SelectedGeneratedAutoProgramContent, Mode=OneWay}" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" Background="#F8FAFC" BorderBrush="#D7DFEA" Foreground="#0F172A" PreviewMouseWheel="CodePreviewTextBox_PreviewMouseWheel"/>
-                                    </Grid>
-                                </Border>
-                            </Grid>
+
+                                            <!-- 跳转分支标题栏 -->
+                                            <DockPanel Margin="0,0,0,4">
+                                                <TextBlock Text="跳转分支" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <Button DockPanel.Dock="Right" Content="+ 添加分支" Command="{Binding AddSfcInitBranchCommand}"
+                                                        Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
+                                                        Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
+                                            </DockPanel>
+
+                                            <!-- 分支行列表（条件 → 目标步序） -->
+                                            <ItemsControl ItemsSource="{Binding SelectedSfcInitStep.Branches}" Margin="0,0,0,4">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="4"
+                                                                Padding="4,3" Margin="0,0,0,4" Background="#FAFAFA">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="4"/>
+                                                                    <ColumnDefinition Width="16"/>
+                                                                    <ColumnDefinition Width="4"/>
+                                                                    <ColumnDefinition Width="52"/>
+                                                                    <ColumnDefinition Width="3"/>
+                                                                    <ColumnDefinition Width="22"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBox Grid.Column="0"
+                                                                         Text="{Binding Condition, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"/>
+                                                                <TextBlock Grid.Column="2" Text="→" VerticalAlignment="Center"
+                                                                           FontSize="13" Foreground="#64748B" HorizontalAlignment="Center"/>
+                                                                <TextBox Grid.Column="4"
+                                                                         Text="{Binding TargetStep, UpdateSourceTrigger=PropertyChanged}"
+                                                                         Padding="3,2" FontSize="12"/>
+                                                                <Button Grid.Column="6" Content="×" FontSize="12"
+                                                                        Command="{Binding DataContext.DeleteSfcInitBranchCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Background="Transparent" BorderBrush="#DDD6FE"
+                                                                        Foreground="#7C3AED" Padding="2,1" VerticalAlignment="Stretch"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                            <!-- 分支说明（有分支时显示） -->
+                                            <TextBlock Text="无分支时使用下方默认跳转" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,6"/>
+
+                                            <!-- 默认下一步 -->
+                                            <TextBlock Text="默认下一步（步序号 或 END）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedSfcInitStep.NextStep, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,10"/>
+
+                                            <!-- 完成条件（覆盖自动生成） -->
+                                            <TextBlock Text="完成条件（留空则自动生成）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBox Text="{Binding SelectedSfcInitStep.CompletionCondition, UpdateSourceTrigger=PropertyChanged}"
+                                                     Padding="6,4" Margin="0,0,0,4"/>
+                                            <Button Content="自动填充完成条件" Command="{Binding AutoFillSelectedSfcInitStepCommand}"
+                                                    Background="#F0FDF4" Foreground="#166534" BorderBrush="#BBF7D0"
+                                                    Padding="8,4" Margin="0,0,0,12" HorizontalAlignment="Left"/>
+
+                                            <!-- 报警条目 -->
+                                            <DockPanel Margin="0,0,0,4">
+                                                <TextBlock Text="报警条目" Foreground="#475569" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <Button Content="+" DockPanel.Dock="Right"
+                                                        Command="{Binding AddSfcInitAlarmCommand}"
+                                                        Background="#FEF3C7" Foreground="#92400E" BorderBrush="#FDE68A"
+                                                        Padding="6,2" FontWeight="Bold"/>
+                                            </DockPanel>
+
+                                            <ItemsControl ItemsSource="{Binding SelectedSfcInitStep.AlarmEntries}" Margin="0,0,0,4">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#FDE68A" BorderThickness="1" CornerRadius="4"
+                                                                Background="#FFFBEB" Padding="8,6" Margin="0,0,0,4">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <StackPanel Grid.Column="0">
+                                                                    <!-- 类型选择 -->
+                                                                    <DockPanel Margin="0,0,0,4">
+                                                                        <TextBlock Text="类型：" Foreground="#78350F" FontSize="11" Width="40" VerticalAlignment="Center"/>
+                                                                        <ComboBox ItemsSource="{x:Static models:SfcStepAlarm.AlarmTypes}"
+                                                                                  SelectedItem="{Binding AlarmType, UpdateSourceTrigger=PropertyChanged}"
+                                                                                  Padding="4,2" FontSize="12"/>
+                                                                    </DockPanel>
+                                                                    <!-- 报警信息 -->
+                                                                    <DockPanel Margin="0,0,0,4">
+                                                                        <TextBlock Text="信息：" Foreground="#78350F" FontSize="11" Width="40" VerticalAlignment="Center"/>
+                                                                        <TextBox Text="{Binding AlarmMessage, UpdateSourceTrigger=PropertyChanged}"
+                                                                                 Padding="4,2" FontSize="12" ToolTip="报警显示信息（注释用途）"/>
+                                                                    </DockPanel>
+                                                                    <!-- 报警条件 -->
+                                                                    <DockPanel>
+                                                                        <TextBlock Text="条件：" Foreground="#78350F" FontSize="11" Width="40" VerticalAlignment="Center"/>
+                                                                        <TextBox Text="{Binding AlarmCondition, UpdateSourceTrigger=PropertyChanged}"
+                                                                                 Padding="4,2" FontSize="12" FontFamily="Consolas"
+                                                                                 ToolTip="ST 表达式，如 DB1050.CylCtrl[...].Status.Error"/>
+                                                                    </DockPanel>
+                                                                </StackPanel>
+                                                                <Button Grid.Column="1" Content="×" VerticalAlignment="Top"
+                                                                        Command="{Binding DataContext.DeleteSfcInitAlarmCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                        CommandParameter="{Binding}"
+                                                                        Background="Transparent" Foreground="#DC2626" BorderThickness="0"
+                                                                        Padding="4,0" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+
+                                        </StackPanel>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- 右栏：初始化程序代码预览 -->
+                            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="12">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <DockPanel Grid.Row="0" Margin="0,0,0,10">
+                                        <TextBlock Text="初始化程序代码" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                            <Button Content="生成初始化程序" Command="{Binding GenerateSfcInitCodeCommand}"
+                                                    Background="#9333EA" Foreground="White" BorderBrush="#9333EA" Padding="10,5" Margin="0,0,6,0"/>
+                                            <Button Content="复制" Command="{Binding CopySfcInitCodeCommand}"
+                                                    Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,5" Margin="0,0,6,0"/>
+                                            <Button Content="保存文件" Command="{Binding SaveSfcInitCodeToFileCommand}"
+                                                    Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,5"/>
+                                        </StackPanel>
+                                    </DockPanel>
+
+                                    <TextBox Grid.Row="1"
+                                             Text="{Binding SfcInitGeneratedCode, UpdateSourceTrigger=PropertyChanged}"
+                                             AcceptsReturn="True" TextWrapping="NoWrap"
+                                             VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
+                                             FontFamily="Consolas" FontSize="13"
+                                             Background="#F8FAFC" BorderBrush="#D7DFEA" Foreground="#0F172A"
+                                             PreviewMouseWheel="CodePreviewTextBox_PreviewMouseWheel"/>
+                                </Grid>
+                            </Border>
                         </Grid>
                     </Grid>
                     </ScrollViewer>

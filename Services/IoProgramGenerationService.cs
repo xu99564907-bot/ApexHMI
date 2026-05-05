@@ -37,7 +37,8 @@ public class IoProgramGenerationService : IIoProgramGenerationService
         }
 
         var templateDirectory = GetTemplateDirectory(projectRoot, settings.PlcType);
-        var outputDirectory = Path.Combine(projectRoot, "Generated", "Program");
+        // 手动程序始终输出到 exe 所在目录的 Generated/Program，方便部署后拷贝使用
+        var outputDirectory = Path.Combine(AppContext.BaseDirectory, "Generated", "Program");
         Directory.CreateDirectory(outputDirectory);
 
         var dbName = NormalizeOperationNumber(settings.OperationNumber).Replace("OP", "DB", StringComparison.OrdinalIgnoreCase);
@@ -52,6 +53,7 @@ public class IoProgramGenerationService : IIoProgramGenerationService
         };
 
         artifacts.AddRange(BuildObjectProgramArtifacts(inputSignals, outputSignals, templateDirectory, outputDirectory, controlDb, driveDb, _options));
+        artifacts.AddRange(BuildEnumArtifacts(inputSignals, outputSignals, outputDirectory, settings.OperationNumber, settings.AxisEntries));
 
         foreach (var artifact in artifacts)
         {
@@ -333,6 +335,92 @@ public class IoProgramGenerationService : IIoProgramGenerationService
             }));
     }
 
+    private static IEnumerable<GeneratedProgramArtifact> BuildEnumArtifacts(
+        IReadOnlyList<IoSignal> inputs,
+        IReadOnlyList<IoSignal> outputs,
+        string outputDirectory,
+        string operationNumber,
+        IReadOnlyList<ApexHMI.Models.AxisConfigEntry>? axisEntries = null)
+    {
+        var opNo = NormalizeOperationNumber(operationNumber);
+        var typeConfigs = new[]
+        {
+            (Type: ObjectType.Cylinder, Code: "Cyl",    KeyPrefix: "CY"),
+            (Type: ObjectType.Vacuum,   Code: "Vac",    KeyPrefix: "VAC"),
+            (Type: ObjectType.Motor,    Code: "Motor",  KeyPrefix: "MOTOR"),
+            (Type: ObjectType.Axis,     Code: "Axis",   KeyPrefix: "AXIS"),
+            (Type: ObjectType.Sensor,   Code: "Sensor", KeyPrefix: "SENSOR"),
+        };
+        foreach (var cfg in typeConfigs)
+        {
+            List<ObjectProgramItem> items;
+            // 轴来自"轴名称"Sheet，不在 IO 表中，需单独处理
+            if (cfg.Type == ObjectType.Axis && axisEntries != null && axisEntries.Count > 0)
+            {
+                items = axisEntries
+                    .OrderBy(e => e.Index)
+                    .Select(e =>
+                    {
+                        var key = $"AXIS{e.Index:D2}";
+                        return new ObjectProgramItem(ObjectType.Axis, key, e.Name, e.Index);
+                    })
+                    .ToList();
+            }
+            else
+            {
+                items = BuildObjects(inputs, outputs, cfg.Type)
+                    .Where(item => !ShouldSkipPlainEnumKey(item, cfg.Type, inputs, outputs))
+                    .Where(item => item.Index != int.MaxValue)
+                    .OrderBy(item => item.Index)
+                    .ThenBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+            }
+            if (items.Count == 0) continue;
+            var typeName = $"Enum_{opNo}_{cfg.Code}";
+            var sb = new StringBuilder();
+            sb.AppendLine("{attribute 'qualified_only'}");
+            sb.AppendLine("{attribute 'strict'}");
+            sb.AppendLine($"TYPE {typeName} :");
+            sb.AppendLine("(");
+            for (int i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                var key = item.Key;
+                var memberName = string.IsNullOrWhiteSpace(item.Name)
+                    ? key
+                    : item.Name.EndsWith(key, StringComparison.OrdinalIgnoreCase) ? item.Name : $"{item.Name}{key}";
+                var comma = i < items.Count - 1 ? "," : "";
+                sb.AppendLine($"\t{memberName} := {item.Index}{comma}");
+            }
+            sb.AppendLine(");");
+            sb.Append("END_TYPE");
+            yield return CreateArtifact(outputDirectory, typeName, sb.ToString());
+        }
+    }
+
+    private static bool ShouldSkipPlainEnumKey(
+        ObjectProgramItem item,
+        ObjectType type,
+        IReadOnlyList<IoSignal> inputs,
+        IReadOnlyList<IoSignal> outputs)
+    {
+        if (!Regex.IsMatch(item.Key, @"^[A-Z]+\d+$", RegexOptions.IgnoreCase))
+        {
+            return false;
+        }
+
+        var allDescriptors = inputs
+            .Concat(outputs)
+            .Select(signal => DescribeObject(signal.Comment, type))
+            .Where(descriptor => descriptor is not null)
+            .Cast<ObjectDescriptor>()
+            .ToList();
+
+        return allDescriptors.Any(descriptor =>
+            descriptor.Key.StartsWith(item.Key, StringComparison.OrdinalIgnoreCase)
+            && descriptor.Key.Length > item.Key.Length);
+    }
+
     private static string BuildAutoProgram(string templateDirectory, string controlDb, int stationNo)
     {
         var template = ReadTemplate(templateDirectory, "Auto.txt");
@@ -416,14 +504,14 @@ public class IoProgramGenerationService : IIoProgramGenerationService
         var normalized = comment.Trim();
         var candidates = new[]
         {
-            CreateDescriptor(ObjectType.Cylinder, normalized, "(CY\\d{1,3})", "CY", "气缸"),
-            CreateDescriptor(ObjectType.Vacuum, normalized, "(VAC\\d{1,3})", "VAC", "真空"),
-            CreateDescriptor(ObjectType.Sensor, normalized, "(SENSOR\\d{1,3})", "SENSOR", "传感器", "感应"),
-            CreateDescriptor(ObjectType.Motor, normalized, "(MOTOR\\d{1,3})", "MOTOR", "电机"),
-            CreateDescriptor(ObjectType.Axis, normalized, "(AXIS\\d{1,3})", "AXIS", "轴", "伺服"),
-            CreateDescriptor(ObjectType.Rotdisk, normalized, "(ROTDISK\\d{1,3})", "ROTDISK", "转盘"),
-            CreateDescriptor(ObjectType.EpsonRobot, normalized, "(EPSONROB\\d{1,3})", "EPSONROB", "EPSON", "机器人"),
-            CreateDescriptor(ObjectType.KukaRobot, normalized, "(KUKAROB\\d{1,3})", "KUKAROB", "KUKA", "机器人")
+            CreateDescriptor(ObjectType.Cylinder, normalized, "(CY\\d{1,3}[A-Z]?)", "CY", "气缸"),
+            CreateDescriptor(ObjectType.Vacuum, normalized, "(VAC\\d{1,3}[A-Z]?)", "VAC", "真空"),
+            CreateDescriptor(ObjectType.Sensor, normalized, "(SENSOR\\d{1,3}[A-Z]?)", "SENSOR", "传感器", "感应"),
+            CreateDescriptor(ObjectType.Motor, normalized, "(MOTOR\\d{1,3}[A-Z]?)", "MOTOR", "电机"),
+            CreateDescriptor(ObjectType.Axis, normalized, "(AXIS\\d{1,3}[A-Z]?)", "AXIS", "轴", "伺服"),
+            CreateDescriptor(ObjectType.Rotdisk, normalized, "(ROTDISK\\d{1,3}[A-Z]?)", "ROTDISK", "转盘"),
+            CreateDescriptor(ObjectType.EpsonRobot, normalized, "(EPSONROB\\d{1,3}[A-Z]?)", "EPSONROB", "EPSON", "机器人"),
+            CreateDescriptor(ObjectType.KukaRobot, normalized, "(KUKAROB\\d{1,3}[A-Z]?)", "KUKAROB", "KUKA", "机器人")
         };
 
         return candidates.FirstOrDefault(item => item is not null && item.Type == targetType);
@@ -434,8 +522,10 @@ public class IoProgramGenerationService : IIoProgramGenerationService
         var match = Regex.Match(comment, keyPattern, RegexOptions.IgnoreCase);
         if (match.Success)
         {
-            var key = match.Groups[1].Value.ToUpperInvariant();
-            return new ObjectDescriptor(type, key, ExtractDisplayName(comment), ParseIndexFromKey(key));
+            var rawKey = match.Groups[1].Value.ToUpperInvariant();
+            var normalizedKey = NormalizeObjectKey(rawKey);
+            var normalizedDisplayName = NormalizeDisplayNameKey(ExtractDisplayName(comment), rawKey, normalizedKey);
+            return new ObjectDescriptor(type, normalizedKey, normalizedDisplayName, ParseIndexFromKey(normalizedKey));
         }
 
         if (!keywords.Any(keyword => comment.Contains(keyword, StringComparison.OrdinalIgnoreCase)))
@@ -453,11 +543,26 @@ public class IoProgramGenerationService : IIoProgramGenerationService
         return int.TryParse(digits, out var index) && index > 0 ? index : int.MaxValue;
     }
 
+    private static string NormalizeObjectKey(string key)
+    {
+        return Regex.Replace(key.ToUpperInvariant(), "(\\d{1,3})[A-Z]$", "$1", RegexOptions.IgnoreCase);
+    }
+
+    private static string NormalizeDisplayNameKey(string displayName, string rawKey, string normalizedKey)
+    {
+        if (string.Equals(rawKey, normalizedKey, StringComparison.OrdinalIgnoreCase))
+        {
+            return displayName;
+        }
+
+        return Regex.Replace(displayName, Regex.Escape(rawKey), normalizedKey, RegexOptions.IgnoreCase);
+    }
+
     private static string ExtractDisplayName(string comment)
     {
         var text = comment.Trim();
-        var underscoreIndex = text.LastIndexOf('_');
-        return underscoreIndex > 0 ? text[..underscoreIndex] : text;
+        var splitIndex = Math.Max(text.LastIndexOf('_'), text.LastIndexOf('-'));
+        return splitIndex > 0 ? text[..splitIndex] : text;
     }
 
     private static string SanitizeKey(ObjectType type, string value)

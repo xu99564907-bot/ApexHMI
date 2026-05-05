@@ -29,7 +29,8 @@ namespace ApexHMI.Services;
 /// </summary>
 public class GeneratedArtifactSyncService : IGeneratedArtifactSyncService
 {
-    private static readonly Regex DbIoPattern = new(@"^DB\d+_IO$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex DbIoPattern  = new(@"^DB\d+_IO$",                                    RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex EnumDutPattern = new(@"^Enum_[A-Za-z0-9]+_(Cyl|Axis|Vac|Motor|Sensor)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex InstanceStartPattern = new(@"(?m)^[ \t]*(?<key>FB_[A-Za-z0-9_]+_instance\[\d+\])\s*\(", RegexOptions.Compiled);
     private static readonly Regex VarDeclarationPattern = new(@"(?<line>^[ \t]*.*?\bAT\b[ \t]*%(?<address>[A-Za-z]+\d+(?:\.\d+)?)[ \t]*:[ \t]*BOOL[ \t]*;[ \t]*(?:\r?\n|$))", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
 
@@ -108,6 +109,12 @@ public class GeneratedArtifactSyncService : IGeneratedArtifactSyncService
         var prgDir = Path.Combine(normalizedOp, "2.PRG");
         var driveDir = Path.Combine(prgDir, $"{normalizedOp}_DriveControl");
 
+        // 枚举 DUT：Enum_OPXX_Cyl/Axis/Vac/Motor/Sensor → OPXX/0.Struct/Enum_OPXX_XXX.st
+        if (EnumDutPattern.IsMatch(name))
+        {
+            return Path.Combine(normalizedOp, "0.Struct", $"{name}.st");
+        }
+
         return name.ToUpperInvariant() switch
         {
             "DI_ACT_COMMENT" => Path.Combine(prgDir, $"{normalizedOp}_DI_Mirror", "ACT_Comment.st"),
@@ -143,13 +150,21 @@ public class GeneratedArtifactSyncService : IGeneratedArtifactSyncService
 
     private static string MergeArtifactContent(string existingContent, GeneratedProgramArtifact artifact)
     {
+        var displayName = artifact.DisplayName ?? string.Empty;
         var generatedContent = NormalizeTrailingNewline(artifact.Content ?? string.Empty, GetPreferredNewLine(existingContent));
+
         if (string.IsNullOrWhiteSpace(existingContent))
         {
             return generatedContent;
         }
 
-        return DbIoPattern.IsMatch(artifact.DisplayName ?? string.Empty)
+        // 枚举 DUT 每次完整重新生成，直接替换旧内容
+        if (EnumDutPattern.IsMatch(displayName))
+        {
+            return generatedContent;
+        }
+
+        return DbIoPattern.IsMatch(displayName)
             ? MergeVariableDeclarations(existingContent, generatedContent)
             : MergeInstanceBlocks(existingContent, generatedContent);
     }

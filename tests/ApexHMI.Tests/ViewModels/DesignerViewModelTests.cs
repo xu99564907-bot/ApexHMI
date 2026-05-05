@@ -7,7 +7,7 @@ namespace ApexHMI.Tests.ViewModels;
 public class DesignerViewModelTests
 {
     [Fact]
-    public void DesignerModuleOwnsAll20DesignerCommands()
+    public void DesignerModuleOwnsAll16DesignerCommands()
     {
         using var provider = Bootstrapper.BuildServiceProvider();
         var shell = provider.GetRequiredService<MainWindowViewModel>();
@@ -18,11 +18,7 @@ public class DesignerViewModelTests
         Assert.NotNull(shell.Designer.ClearIoTableCommand);
         Assert.NotNull(shell.Designer.SaveIoTableToSourceCommand);
         Assert.NotNull(shell.Designer.GenerateIoProgramsCommand);
-        Assert.NotNull(shell.Designer.ResetAutoProgramFlowCommand);
-        Assert.NotNull(shell.Designer.AddAutoProgramStepCommand);
-        Assert.NotNull(shell.Designer.GenerateAutoProgramsCommand);
         Assert.NotNull(shell.Designer.OpenGeneratedIoFolderCommand);
-        Assert.NotNull(shell.Designer.OpenGeneratedAutoFolderCommand);
         Assert.NotNull(shell.Designer.OpenGeneratedIoFileCommand);
         Assert.NotNull(shell.Designer.ApplyRuntimeTemplateCommand);
         Assert.NotNull(shell.Designer.AddDesignerElementCommand);
@@ -53,14 +49,12 @@ public class DesignerViewModelTests
 
         Assert.NotSame(shell.ImportIoTableCommand, shell.Designer.ImportIoTableCommand);
         Assert.NotSame(shell.GenerateIoProgramsCommand, shell.Designer.GenerateIoProgramsCommand);
-        Assert.NotSame(shell.GenerateAutoProgramsCommand, shell.Designer.GenerateAutoProgramsCommand);
         Assert.NotSame(shell.AddDesignerElementCommand, shell.Designer.AddDesignerElementCommand);
         Assert.NotSame(shell.RemoveSelectedDesignerElementCommand, shell.Designer.RemoveSelectedDesignerElementCommand);
         Assert.NotSame(shell.CopySelectedDesignerElementCommand, shell.Designer.CopySelectedDesignerElementCommand);
         Assert.NotSame(shell.PasteDesignerElementCommand, shell.Designer.PasteDesignerElementCommand);
         Assert.NotSame(shell.MoveSelectedElementCommand, shell.Designer.MoveSelectedElementCommand);
         Assert.NotSame(shell.OpenGeneratedIoFolderCommand, shell.Designer.OpenGeneratedIoFolderCommand);
-        Assert.NotSame(shell.OpenGeneratedAutoFolderCommand, shell.Designer.OpenGeneratedAutoFolderCommand);
     }
 
     [Fact]
@@ -73,8 +67,6 @@ public class DesignerViewModelTests
         Assert.Same(shell.DesignerElements, shell.Designer.Elements);
         Assert.Same(shell.IoTableRows, shell.Designer.IoTableRows);
         Assert.Same(shell.GeneratedIoPrograms, shell.Designer.GeneratedIoPrograms);
-        Assert.Same(shell.GeneratedAutoPrograms, shell.Designer.GeneratedAutoPrograms);
-        Assert.Same(shell.AutoProgramFlowNodes, shell.Designer.AutoProgramFlowNodes);
         Assert.Same(shell.Tags, shell.Designer.Tags);
         Assert.Same(shell.DesignerActionOptions, shell.Designer.DesignerActionOptions);
     }
@@ -98,6 +90,5 @@ public class DesignerViewModelTests
 
         Assert.Equal(shell.CanSaveIoTable, shell.Designer.CanSaveIoTable);
         Assert.Equal(shell.GeneratedIoOutputDirectory, shell.Designer.GeneratedIoOutputDirectory);
-        Assert.Equal(shell.GeneratedAutoOutputDirectory, shell.Designer.GeneratedAutoOutputDirectory);
     }
 }

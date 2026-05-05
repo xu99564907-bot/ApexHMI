@@ -15,6 +15,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly RuntimeProjectService _runtimeProjectService;
     private readonly RuntimeDataBindingService _dataBindingService;
     private readonly IWidgetViewFactory _widgetFactory;
+    private readonly IProjectEditorService _projectEditorService;
+    private readonly IWidgetEditorService _widgetEditorService;
 
     public MainWindowViewModel(
         IOpcUaService opcUaService,
@@ -24,8 +26,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
         IoProgramGenerationService ioProgramGenerationService,
         IConfigurationService configurationService,
         NamingRulesService namingRulesService,
-        DesignerLayoutService designerLayoutService,
-        DesignerProjectService designerProjectService,
         IParameterService parameterService,
         IAlarmService alarmService,
         FlowLogCsvService flowLogCsvService,
@@ -36,7 +36,9 @@ public sealed partial class MainWindowViewModel : MainViewModel
         IDataPointCatalog dataPointCatalog,
         IWidgetViewFactory widgetFactory,
         RuntimeProjectService runtimeProjectService,
-        RuntimeDataBindingService dataBindingService)
+        RuntimeDataBindingService dataBindingService,
+        IProjectEditorService projectEditorService,
+        IWidgetEditorService widgetEditorService)
         : base(
             opcUaService,
             csvImportService,
@@ -45,8 +47,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
             ioProgramGenerationService,
             configurationService,
             namingRulesService,
-            designerLayoutService,
-            designerProjectService,
             parameterService,
             alarmService,
             flowLogCsvService,
@@ -58,6 +58,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _runtimeProjectService = runtimeProjectService;
         _dataBindingService = dataBindingService;
         _widgetFactory = widgetFactory;
+        _projectEditorService = projectEditorService;
+        _widgetEditorService = widgetEditorService;
 
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -65,7 +67,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
         ParametersModule = new ParameterViewModel(this, parameterService);
         Alarm = new AlarmViewModel(this, alarmService);
         Recipe = new RecipeViewModel(this, recipeService);
-        Designer = new DesignerViewModel(this);
         GitPull = new GitPullViewModel(this, gitPullService, generatedArtifactSyncService);
         Login = new LoginViewModel(this);
         Audit = new AuditViewModel(this);
@@ -74,7 +75,10 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
         Recipe.SeedRecipes();
 
+        // 先初始化运行时（LoadDefault 设置 Current），再让编辑器共享同一 ProjectDocument
         InitializeDynamicRuntime();
+        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService);
+        Designer = new DesignerViewModel(this);
     }
 
     public HomeViewModel Home { get; }
@@ -83,6 +87,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     public ParameterViewModel ParametersModule { get; }
     public AlarmViewModel Alarm { get; }
     public RecipeViewModel Recipe { get; }
+    public DesignerEditorViewModel DesignerEditor { get; }
     public DesignerViewModel Designer { get; }
     public GitPullViewModel GitPull { get; }
     public LoginViewModel Login { get; }
@@ -127,12 +132,19 @@ public sealed partial class MainWindowViewModel : MainViewModel
         }
     }
 
-    private async Task NavigateToRuntimePageAsync(string routeKey)
+    internal async Task NavigateToRuntimePageAsync(string routeKey)
     {
         try
         {
             var project = _runtimeProjectService.Current;
             if (project is null) return;
+
+            if (!RoleBasedAccessGuard.CanNavigateTo(CurrentUserRole, project, routeKey, out var reason))
+            {
+                SystemMessage = reason ?? "权限不足，无法访问该页面";
+                Log.Warning("运行时导航被阻止 routeKey={RouteKey} reason={Reason}", routeKey, reason);
+                return;
+            }
 
             var page = project.Pages.FirstOrDefault(p =>
                 string.Equals(p.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
@@ -158,5 +170,21 @@ public sealed partial class MainWindowViewModel : MainViewModel
         {
             await NavigateToRuntimePageAsync(defaultPage.RouteKey);
         }
+    }
+
+    /// <summary>
+    /// 编辑器"发布"时调用：用 Current（编辑器共享引用）刷新运行时视图，无需重读文件。
+    /// </summary>
+    internal async Task PublishProjectAsync()
+    {
+        var project = _runtimeProjectService.Current;
+        if (project is null) return;
+
+        var defaultPage = project.Pages.FirstOrDefault(p =>
+            string.Equals(p.RouteKey, project.DefaultPageRouteKey, StringComparison.OrdinalIgnoreCase))
+            ?? project.Pages.FirstOrDefault();
+
+        if (defaultPage is not null)
+            await NavigateToRuntimePageAsync(defaultPage.RouteKey);
     }
 }

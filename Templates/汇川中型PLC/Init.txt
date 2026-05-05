@@ -1,31 +1,54 @@
-// Init template
-// Station: {StationNo}
-// Generated: {GeneratedAt}
+// {ProgramName}
+// 生成时间：{GeneratedAt}
+// DriveDB：{DriveDb}_DriveControl
 
-IF {ControlDb}_Fault.EstopTotal OR {ControlDb}_Fault.StopTotal OR {ControlDb}_Control.Mode.Status.ManualMode OR {ControlDb}_Control.Mode.Out.Stop THEN
-	Init[{StationNo}].Step:=0;
-	Init[{StationNo}].Running:=FALSE;
+//延时时间
+IntitalTimeDelay[{StationNo},0](IN:=Init[{StationNo}].Step=5,PT:=T#500MS);
+IntitalTimeDelay[{StationNo},1]();
+IntitalTimeDelay[{StationNo},2]();
+IntitalTimeDelay[{StationNo},3]();
+IntitalTimeDelay[{StationNo},4]();
+IntitalTimeDelay[{StationNo},5]();
+
+//初始化完成状态清除
+IF {FaultDb}_Fault.EstopTotal OR {FaultDb}_Fault.StopTotal OR {ControlDb}.Mode.Status.ManualMode OR {ControlDb}.Mode.Out.Stop THEN
+    Init[{StationNo}].Step:=0;
+    Init[{StationNo}].Running:=FALSE;
 END_IF
 
-IF {ControlDb}_Control.Mode.Out.HomeStart AND NOT Init[{StationNo}].Running THEN
-	Init[{StationNo}].Running:=TRUE;
-	Init[{StationNo}].Complete:=FALSE;
-	Init[{StationNo}].Step:=5;
-	Init[{StationNo}].Comment:="初始化开始";
+//启动回原
+IF {ControlDb}.Mode.Out.HomeStart_R AND NOT Init[{StationNo}].Running THEN
+    Init[{StationNo}].Running:=TRUE;
+    Init[{StationNo}].Complete:=FALSE;
+    Init[{StationNo}].Step:=5;
+    Init[{StationNo}].Comment:="初始化开始";
 END_IF
 
 IF Init[{StationNo}].Running THEN
-	CASE Init[{StationNo}].Step OF
-		5:
-			Init[{StationNo}].Comment:="等待初始化条件";
-			Init[{StationNo}].Step:=1000;
-		1000:
-			Init[{StationNo}].Comment:="初始化完成";
-			Init[{StationNo}].Running:=FALSE;
-			Init[{StationNo}].Complete:=TRUE;
-			{ControlDb}_Control.Mode.Status.HomeOK:=TRUE;
-			Init[{StationNo}].Step:=0;
-	ELSE
-		;
-	END_CASE
+
+    CASE Init[{StationNo}].Step OF
+        5 :
+            Init[{StationNo}].Comment:="初始化开始判定";
+            IF IntitalTimeDelay[{StationNo},0].Q THEN
+                IF Auto[{StationNo}].Disable THEN
+                    Init[{StationNo}].Step:=1000;
+                ELSE
+                    Init[{StationNo}].Step:={FirstStep};
+                END_IF
+            END_IF
+
+{Steps}
+
+        1000:
+            Init[{StationNo}].Comment:="工位初始化完成，等待下工位完成";
+            Init[{StationNo}].Complete:=TRUE;
+            IF Init[{StationNo}].Complete AND Init[2].Complete AND Init[3].Complete AND Init[4].Complete AND Init[5].Complete AND Init[6].Complete THEN
+                {ControlDb}.Mode.Status.HomeOK:=TRUE;
+                Init[{StationNo}].Running:=FALSE;
+                Init[{StationNo}].Step:=0;
+            END_IF
+    ELSE
+        ;
+    END_CASE
+
 END_IF

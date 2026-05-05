@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Xml.Linq;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using Serilog;
+using Serilog.Context;
 
 namespace ApexHMI.Services;
 
@@ -34,13 +36,17 @@ public class IoTableImportService : IIoTableImportService
 
     public async Task<IoTableImportResult> ImportAsync(string filePath)
     {
+        using var _ = LogContext.PushProperty("CorrelationId", Guid.NewGuid().ToString("N"));
+        var sw = Stopwatch.StartNew();
         var extension = Path.GetExtension(filePath).ToLowerInvariant();
-        return extension switch
+        var result = extension switch
         {
             ".csv" or ".txt" => await ImportDelimitedAsync(filePath),
             ".xlsx" => await ImportExcelAsync(filePath),
             _ => throw new NotSupportedException("当前版本支持 CSV/TXT/XLSX 格式的 IO 表。")
         };
+        Log.Information("IO 表导入完成 elapsedMs={ElapsedMs} count={Count} source={Source}", sw.ElapsedMilliseconds, result.Rows.Count, filePath);
+        return result;
     }
 
     public async Task SaveAsync(string filePath, IEnumerable<IoTableRow> rows, IReadOnlyList<string>? headers, int encodingCodePage)

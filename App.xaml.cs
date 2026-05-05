@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
@@ -20,12 +21,18 @@ public partial class App : Application
         LoggingBootstrapper.Configure();
         RegisterGlobalExceptionHandlers();
 
+        var coldStartSw = Stopwatch.StartNew();
+
         base.OnStartup(e);
 
         try
         {
             _serviceProvider = Bootstrapper.BuildServiceProvider();
             MainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            MainWindow.ContentRendered += (_, _) =>
+            {
+                Log.Information("冷启动完成 elapsedMs={ElapsedMs}", coldStartSw.ElapsedMilliseconds);
+            };
             MainWindow.Show();
         }
         catch (Exception ex)

@@ -6,6 +6,7 @@
         <!-- 通用转换器 -->
         <converters:StringToBrushConverter x:Key="StringToBrushConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <Style x:Key="SparklinePathStyle" TargetType="Path">
             <Setter Property="StrokeThickness" Value="2.5"/>
             <Setter Property="Stretch" Value="Fill"/>

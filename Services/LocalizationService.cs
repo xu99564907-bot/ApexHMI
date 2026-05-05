@@ -71,14 +71,19 @@ public sealed class LocalizationService : ILocalizationService, INotifyPropertyC
         if (_currentManager is null)
             return $"#{key}#";
 
+        // Try current culture first
         try
         {
             var value = _currentManager.GetString(key);
             if (value is not null)
                 return value;
+        }
+        catch { /* fall through to en-US */ }
 
-            // Fallback to neutral (en-US)
-            value = _resourceManagers["en-US"].GetString(key);
+        // Fallback to en-US
+        try
+        {
+            var value = _resourceManagers["en-US"].GetString(key);
             return value ?? $"#{key}#";
         }
         catch

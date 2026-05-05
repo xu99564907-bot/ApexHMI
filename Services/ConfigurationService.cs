@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using ApexHMI.Services.Security;
+using Serilog;
 
 namespace ApexHMI.Services;
 
@@ -35,6 +37,7 @@ public class ConfigurationService : IConfigurationService
 
     public async Task<AppConfig?> LoadAsync(string filePath)
     {
+        var sw = Stopwatch.StartNew();
         if (File.Exists(filePath))
         {
             using var stream = File.OpenRead(filePath);
@@ -45,6 +48,7 @@ public class ConfigurationService : IConfigurationService
             }
 
             DecryptSecrets(config);
+            Log.Information("配置加载完成 elapsedMs={ElapsedMs} source={Source}", sw.ElapsedMilliseconds, filePath);
             return config;
         }
 
@@ -58,6 +62,7 @@ public class ConfigurationService : IConfigurationService
         var migrated = await LoadSplitFilesAsync(configDir);
         DecryptSecrets(migrated);
         await SaveAsync(filePath, migrated);
+        Log.Information("配置迁移加载完成 elapsedMs={ElapsedMs} source={Source}", sw.ElapsedMilliseconds, filePath);
         return migrated;
     }
 

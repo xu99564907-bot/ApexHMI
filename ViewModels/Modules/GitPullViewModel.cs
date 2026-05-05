@@ -181,6 +181,7 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
 
             Shell.SystemMessage = GitPullStatus;
             Shell.AddLog("Git", GitPullStatus, "Info");
+            Shell.ShowPopup("Git 拉取完成", GitPullStatus, "Info");
 
             try { await PostPullPostProcessAsync(result.TargetFolder); }
             catch (Exception postEx) { Shell.AddLog("Git", $"拉取后置处理失败：{postEx.Message}", "Warning"); }
@@ -458,6 +459,17 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
         return files.Length == 1 ? files[0] : null;
     }
 
+    /// <summary>返回 _exported 目录路径，未配置或找不到 .project 时返回 null。</summary>
+    public string? TryGetExportedDirectory()
+    {
+        var projectFolder = ResolveEffectiveGitFolder();
+        if (string.IsNullOrWhiteSpace(projectFolder) || !Directory.Exists(projectFolder)) return null;
+        var projectFilePath = RenameProjectFileIfNeeded(projectFolder) ?? FindSingleProjectFile(projectFolder);
+        if (string.IsNullOrWhiteSpace(projectFilePath) || !File.Exists(projectFilePath)) return null;
+        var projectName = Path.GetFileNameWithoutExtension(projectFilePath);
+        return Path.Combine(projectFolder, projectName + "_exported");
+    }
+
     // ========== InProShop 导入准备 ==========
 
     /// <summary>
@@ -516,7 +528,12 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
             var scriptTargetPath = Path.Combine(projectFolder, "inproshop_import.py");
             File.Copy(scriptSourcePath, scriptTargetPath, overwrite: true);
             Shell.AddLog("InProShop", $"导入脚本已复制：{scriptTargetPath}", "Info");
-            await RunInProShopImportScriptAsync(projectFilePath, scriptTargetPath);
+
+            var confirmed = await ConfirmRunImportScriptOnUiThreadAsync();
+            if (confirmed)
+                await RunInProShopImportScriptAsync(projectFilePath, scriptTargetPath);
+            else
+                Shell.AddLog("InProShop", "用户取消，跳过执行导入脚本。", "Info");
         }
         else
         {
@@ -534,6 +551,70 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
         }
 
         Shell.AddLog("InProShop", $".project 导入准备完成：{Path.GetFileName(projectFilePath)}。生成流程不会自动打开 InoProShop。", "Info");
+    }
+
+    /// <summary>
+    /// 直接运行 InProShop 导入脚本（不复制 artifacts，仅执行脚本）。
+    /// 用于 SFC 生成后自动刷新 .project。
+    /// </summary>
+    public async Task RunImportScriptIfAvailableAsync()
+    {
+        var projectFolder = ResolveEffectiveGitFolder();
+        if (string.IsNullOrWhiteSpace(projectFolder) || !Directory.Exists(projectFolder))
+        {
+            Shell.AddLog("InProShop", "未配置 Git 保存目录，跳过自动导入脚本。", "Info");
+            return;
+        }
+
+        var projectFilePath = RenameProjectFileIfNeeded(projectFolder) ?? FindSingleProjectFile(projectFolder);
+        if (string.IsNullOrWhiteSpace(projectFilePath) || !File.Exists(projectFilePath))
+        {
+            Shell.AddLog("InProShop", $"未找到 .project 文件，跳过自动导入脚本：{projectFolder}", "Warning");
+            return;
+        }
+
+        // 同步最新脚本到工程目录
+        var scriptTargetPath = Path.Combine(projectFolder, "inproshop_import.py");
+        var scriptSourcePath = ResolveInProShopImportScriptPath();
+        if (!string.IsNullOrWhiteSpace(scriptSourcePath))
+        {
+            try { File.Copy(scriptSourcePath, scriptTargetPath, overwrite: true); }
+            catch { /* 复制失败不影响主流程 */ }
+        }
+
+        if (!File.Exists(scriptTargetPath))
+        {
+            Shell.AddLog("InProShop", "未找到 inproshop_import.py，跳过自动导入。", "Warning");
+            return;
+        }
+
+        var confirmed = await ConfirmRunImportScriptOnUiThreadAsync();
+        if (confirmed)
+            await RunInProShopImportScriptAsync(projectFilePath, scriptTargetPath);
+        else
+            Shell.AddLog("InProShop", "用户取消，跳过执行导入脚本。", "Info");
+    }
+
+    /// <summary>在 UI 线程上弹出确认框，询问是否立即执行 InProShop 导入脚本。</summary>
+    private static Task<bool> ConfirmRunImportScriptOnUiThreadAsync()
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is null || dispatcher.CheckAccess())
+        {
+            return Task.FromResult(ConfirmRunImportScriptDialog());
+        }
+        return dispatcher.InvokeAsync(ConfirmRunImportScriptDialog).Task;
+    }
+
+    private static bool ConfirmRunImportScriptDialog()
+    {
+        var result = System.Windows.MessageBox.Show(
+            "是否立即运行 InProShop 导入脚本，将生成内容写入 .project 文件？\n\n" +
+            "（请确保 InProShop 已关闭或处于可脚本状态）",
+            "执行导入脚本",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+        return result == System.Windows.MessageBoxResult.Yes;
     }
 
     private async Task RunInProShopImportScriptAsync(string projectFilePath, string scriptPath)

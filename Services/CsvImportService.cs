@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using CsvHelper;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using Serilog;
 
 namespace ApexHMI.Services;
 
@@ -10,6 +12,7 @@ public class CsvImportService : ICsvImportService
 {
     public async Task<List<TagItem>> ImportTagsAsync(string csvFilePath)
     {
+        var sw = Stopwatch.StartNew();
         using var reader = new StreamReader(csvFilePath);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         var records = new List<TagCsvRecord>();
@@ -18,7 +21,7 @@ public class CsvImportService : ICsvImportService
             records.Add(record);
         }
 
-        return records.Select(r => new TagItem
+        var result = records.Select(r => new TagItem
         {
             Name = r.Name ?? string.Empty,
             NodeId = r.NodeId ?? string.Empty,
@@ -30,6 +33,9 @@ public class CsvImportService : ICsvImportService
             IsAlarm = r.IsAlarm,
             IsWritable = r.IsWritable
         }).ToList();
+
+        Log.Information("CSV 标签导入完成 elapsedMs={ElapsedMs} count={Count} source={Source}", sw.ElapsedMilliseconds, result.Count, csvFilePath);
+        return result;
     }
 
     private class TagCsvRecord

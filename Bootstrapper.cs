@@ -57,10 +57,6 @@ public static class Bootstrapper
         services.AddSingleton(sp => (GeneratedArtifactSyncService)sp.GetRequiredService<IGeneratedArtifactSyncService>());
         services.AddSingleton<INamingRulesService, NamingRulesService>();
         services.AddSingleton(sp => (NamingRulesService)sp.GetRequiredService<INamingRulesService>());
-        services.AddSingleton<IDesignerLayoutService, DesignerLayoutService>();
-        services.AddSingleton(sp => (DesignerLayoutService)sp.GetRequiredService<IDesignerLayoutService>());
-        services.AddSingleton<IDesignerProjectService, DesignerProjectService>();
-        services.AddSingleton(sp => (DesignerProjectService)sp.GetRequiredService<IDesignerProjectService>());
         services.AddSingleton<IFlowLogCsvService, FlowLogCsvService>();
         services.AddSingleton(sp => (FlowLogCsvService)sp.GetRequiredService<IFlowLogCsvService>());
         services.AddSingleton<ITrendHistoryService, TrendHistoryService>();
@@ -71,6 +67,10 @@ public static class Bootstrapper
         services.AddSingleton<IWidgetViewFactory, WidgetRegistry>();
         services.AddSingleton<RuntimeProjectService>();
         services.AddSingleton<RuntimeDataBindingService>();
+
+        // 开放平台 — 编辑器服务 (Phase B)
+        services.AddSingleton<IProjectEditorService, ProjectEditorService>();
+        services.AddSingleton<IWidgetEditorService, WidgetEditorService>();
 
         services.AddSingleton<RefreshCoordinator>();
 
