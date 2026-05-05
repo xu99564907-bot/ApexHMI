@@ -89,28 +89,64 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>当前选中控件的属性列表，绑定到属性编辑器 ItemsControl。</summary>
     public ObservableCollection<WidgetPropertyItem> CurrentWidgetProperties { get; } = new();
 
+    /// <summary>已订阅 PropertyChanged 的 widget → 处理器映射，便于解订避免内存泄漏。</summary>
+    private readonly Dictionary<WidgetInstance, PropertyChangedEventHandler> _widgetHandlers = new();
+
     private FrameworkElement BuildWidgetView(WidgetInstance widget) =>
         WidgetViewFactory.Create(widget, DesignModeContext);
 
     private void RefreshCurrentWidgetItems()
     {
+        // 解订所有旧 widget
+        foreach (var kv in _widgetHandlers)
+            kv.Key.PropertyChanged -= kv.Value;
+        _widgetHandlers.Clear();
         CurrentWidgetItems.Clear();
+
         if (SelectedPage is null) return;
         foreach (var w in SelectedPage.Widgets)
-        {
-            CurrentWidgetItems.Add(new DesignerWidgetItem(w, BuildWidgetView(w)));
-        }
+            AddWidgetItem(w);
     }
 
     private void AddWidgetItem(WidgetInstance widget)
     {
-        CurrentWidgetItems.Add(new DesignerWidgetItem(widget, BuildWidgetView(widget)));
+        var item = new DesignerWidgetItem(widget, BuildWidgetView(widget));
+        PropertyChangedEventHandler handler = (_, e) => OnWidgetModelChanged(item, e);
+        widget.PropertyChanged += handler;
+        _widgetHandlers[widget] = handler;
+        CurrentWidgetItems.Add(item);
     }
 
     private void RemoveWidgetItem(WidgetInstance widget)
     {
         var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
-        if (item is not null) CurrentWidgetItems.Remove(item);
+        if (item is null) return;
+
+        if (_widgetHandlers.TryGetValue(widget, out var handler))
+        {
+            widget.PropertyChanged -= handler;
+            _widgetHandlers.Remove(widget);
+        }
+        CurrentWidgetItems.Remove(item);
+    }
+
+    /// <summary>
+    /// widget 模型变化时按需重建视图：
+    /// - Properties / Binding / ActionType / ActionParam / TypeId 改变 → 重建 View
+    /// - X/Y/Width/Height 改变 → 不重建（已有 binding 自动同步 Canvas.Left/Top + Border 尺寸）
+    /// </summary>
+    private void OnWidgetModelChanged(DesignerWidgetItem item, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(WidgetInstance.Properties):
+            case nameof(WidgetInstance.Binding):
+            case nameof(WidgetInstance.ActionType):
+            case nameof(WidgetInstance.ActionParam):
+            case nameof(WidgetInstance.TypeId):
+                item.View = BuildWidgetView(item.Model);
+                break;
+        }
     }
 
     // ========== B-07: Tag 数据源 ==========

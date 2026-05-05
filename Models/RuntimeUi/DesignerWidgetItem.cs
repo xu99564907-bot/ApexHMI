@@ -1,19 +1,23 @@
 using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace ApexHMI.Models.RuntimeUi;
 
 /// <summary>
 /// 设计器画布的渲染项：包含 WidgetInstance 模型 + 预创建的 WPF 视图。
-/// 通过预创建避免在 XAML 渲染路径上动态调用 IWidgetViewFactory 引发的反复重建/卡死。
+/// View 设为可观察属性，当 widget 属性修改后由 DesignerEditorViewModel
+/// 重建并替换，触发 ContentPresenter 重新渲染。
 /// </summary>
-public sealed class DesignerWidgetItem
+public sealed partial class DesignerWidgetItem : ObservableObject
 {
     public DesignerWidgetItem(WidgetInstance model, FrameworkElement view)
     {
         Model = model;
-        View = view;
+        _view = view;
     }
 
     public WidgetInstance Model { get; }
-    public FrameworkElement View { get; }
+
+    [ObservableProperty]
+    private FrameworkElement _view;
 }
