@@ -1533,7 +1533,15 @@ public partial class MainViewModel
     private async Task ToggleRuntimeModeAsync()
     {
         IsRuntimeMode = !IsRuntimeMode;
-        if (IsRuntimeMode) await RefreshTagsAsync();
+        if (IsRuntimeMode)
+        {
+            await RefreshTagsAsync();
+            Navigate("运行页面");
+        }
+        else
+        {
+            Navigate("画布设计");
+        }
     }
 
     [RelayCommand]

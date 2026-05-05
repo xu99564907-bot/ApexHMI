@@ -26,6 +26,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private readonly IProjectEditorService _projectEditor;
     private readonly IWidgetEditorService _widgetEditor;
     private readonly RuntimeProjectService _runtimeProjectService;
+    private readonly WidgetBlockGenerator _blockGenerator;
     private readonly EditStack _editStack = new();
     private bool _suppressEditRecording;
 
@@ -41,12 +42,14 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         MainViewModel shell,
         IProjectEditorService projectEditor,
         IWidgetEditorService widgetEditor,
-        RuntimeProjectService runtimeProjectService)
+        RuntimeProjectService runtimeProjectService,
+        WidgetBlockGenerator blockGenerator)
         : base(shell, "画布设计")
     {
         _projectEditor = projectEditor;
         _widgetEditor = widgetEditor;
         _runtimeProjectService = runtimeProjectService;
+        _blockGenerator = blockGenerator;
         InitDocument();
     }
 
@@ -402,6 +405,80 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         OnPropertyChanged(nameof(CanRedo));
         OnPropertyChanged(nameof(UndoDescription));
         OnPropertyChanged(nameof(RedoDescription));
+    }
+
+    // ========== 批量生成功能块 ==========
+
+    /// <summary>可选的功能块类型列表。</summary>
+    public IReadOnlyList<string> BatchBlockTypes => WidgetBlockGenerator.BlockTypes;
+
+    /// <summary>功能块中文名称映射，用于 UI 显示。</summary>
+    public IReadOnlyDictionary<string, string> BatchBlockTypeLabels => WidgetBlockGenerator.BlockTypeLabels;
+
+    [ObservableProperty]
+    private string _batchBlockType = "cylinder";
+
+    [ObservableProperty]
+    private string _batchNamePrefix = "CYL";
+
+    [ObservableProperty]
+    private int _batchCount = 3;
+
+    [ObservableProperty]
+    private double _batchStartX = 40;
+
+    [ObservableProperty]
+    private double _batchStartY = 40;
+
+    [ObservableProperty]
+    private bool _batchLayoutHorizontal = true;
+
+    partial void OnBatchBlockTypeChanged(string value)
+    {
+        // 自动更新默认前缀
+        BatchNamePrefix = value.ToUpperInvariant() switch
+        {
+            "CYLINDER" => "CYL",
+            "MOTOR"    => "MOT",
+            "AXIS"     => "AXIS",
+            "ROBOT"    => "ROB",
+            "STOPPER"  => "STP",
+            _          => value.ToUpperInvariant()[..Math.Min(3, value.Length)]
+        };
+    }
+
+    [RelayCommand]
+    private void BatchGenerate()
+    {
+        if (SelectedPage is null)
+        {
+            Log.Warning("DesignerEditor: 批量生成失败，未选中页面");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(BatchNamePrefix))
+        {
+            Log.Warning("DesignerEditor: 批量生成失败，命名前缀为空");
+            return;
+        }
+
+        var count = Math.Max(1, Math.Min(BatchCount, 20));
+        var generated = _blockGenerator.Generate(
+            SelectedPage,
+            BatchBlockType,
+            BatchNamePrefix,
+            count,
+            BatchStartX,
+            BatchStartY,
+            BatchLayoutHorizontal);
+
+        foreach (var w in generated)
+            CurrentWidgets.Add(w);
+
+        if (generated.Count > 0)
+            SelectedWidget = generated[0];
+
+        Log.Information("DesignerEditor: 批量生成 {Count} 个 {BlockType} 功能块", generated.Count, BatchBlockType);
     }
 
     // ========== 保存 / 发布 ==========

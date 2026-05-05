@@ -71,6 +71,7 @@ public static class Bootstrapper
         // 开放平台 — 编辑器服务 (Phase B)
         services.AddSingleton<IProjectEditorService, ProjectEditorService>();
         services.AddSingleton<IWidgetEditorService, WidgetEditorService>();
+        services.AddSingleton<WidgetBlockGenerator>();
 
         services.AddSingleton<RefreshCoordinator>();
 

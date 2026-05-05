@@ -6,7 +6,6 @@
         xmlns:vm="clr-namespace:ApexHMI.ViewModels"
         xmlns:model="clr-namespace:ApexHMI.Models"
         xmlns:conv="clr-namespace:ApexHMI.Converters"
-        xmlns:behavior="clr-namespace:ApexHMI.Behaviors"
         xmlns:controls="clr-namespace:ApexHMI.Views.Controls"
         xmlns:pages="clr-namespace:ApexHMI.Views.Pages"
         xmlns:runtime="clr-namespace:ApexHMI.Views.Runtime"

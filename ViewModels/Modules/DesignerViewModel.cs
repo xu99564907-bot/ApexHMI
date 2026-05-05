@@ -6,12 +6,19 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace ApexHMI.ViewModels.Modules;
 
+/// <summary>
+/// Tab 8 "程序生成" 视图模型：透传 Shell 的 IO 程序生成 / SFC 自动 / SFC 初始化 / GitPull 命令与状态。
+///
+/// 已移除 V1 画布相关命令与属性（DesignerElements/DesignerPages/...）；
+/// 画布设计已由 V2 的 <see cref="DesignerEditorViewModel"/> 接管（Tab 9）。
+/// V1 模型 (DesignerElement/DesignerPage/DesignerProject) 仍保留供 V1ProjectMigrator 使用。
+/// </summary>
 public sealed class DesignerViewModel : ModuleViewModelBase
 {
     public DesignerViewModel(MainViewModel shell)
         : base(shell, "设计器")
     {
-        // Designer commands
+        // IO 程序生成命令
         SaveConfigCommand = new AsyncRelayCommand(() => Shell.SaveConfigCommand.ExecuteAsync(null));
         LoadConfigCommand = new AsyncRelayCommand(() => Shell.LoadConfigCommand.ExecuteAsync(null));
         ImportIoTableCommand = new AsyncRelayCommand(() => Shell.ImportIoTableCommand.ExecuteAsync(null));
@@ -21,15 +28,8 @@ public sealed class DesignerViewModel : ModuleViewModelBase
         OpenGeneratedIoFolderCommand = new RelayCommand(() => Shell.OpenGeneratedIoFolderCommand.Execute(null));
         OpenGeneratedIoFileCommand = new RelayCommand<GeneratedProgramArtifact?>(a => Shell.OpenGeneratedIoFileCommand.Execute(a));
         ApplyRuntimeTemplateCommand = new RelayCommand<string?>(t => Shell.ApplyRuntimeTemplateCommand.Execute(t));
-        AddDesignerElementCommand = new RelayCommand<string?>(e => Shell.AddDesignerElementCommand.Execute(e));
-        AddDesignerElementAtDropCommand = new RelayCommand<string?>(p => Shell.AddDesignerElementAtDropCommand.Execute(p));
-        StartToolboxDragCommand = new RelayCommand<string?>(t => Shell.StartToolboxDragCommand.Execute(t));
-        RemoveSelectedDesignerElementCommand = new RelayCommand(() => Shell.RemoveSelectedDesignerElementCommand.Execute(null));
-        CopySelectedDesignerElementCommand = new RelayCommand(() => Shell.CopySelectedDesignerElementCommand.Execute(null));
-        PasteDesignerElementCommand = new RelayCommand(() => Shell.PasteDesignerElementCommand.Execute(null));
-        MoveSelectedElementCommand = new RelayCommand<string?>(d => Shell.MoveSelectedElementCommand.Execute(d));
 
-        // GitPull commands
+        // GitPull 命令
         BrowseGitTargetFolderCommand = new RelayCommand(() => Shell.BrowseGitTargetFolderCommand.Execute(null));
         PullGitRepositoryCommand = new AsyncRelayCommand(() => Shell.PullGitRepositoryCommand.ExecuteAsync(null));
         OpenGitTargetFolderCommand = new RelayCommand(() => Shell.OpenGitTargetFolderCommand.Execute(null));
@@ -67,7 +67,7 @@ public sealed class DesignerViewModel : ModuleViewModelBase
         SaveSfcInitCodeToFileCommand = new RelayCommand(() => Shell.SaveSfcInitCodeToFileCommand.Execute(null));
     }
 
-    // -- Designer Commands --
+    // -- IO 程序生成命令 --
     public IAsyncRelayCommand SaveConfigCommand { get; }
     public IAsyncRelayCommand LoadConfigCommand { get; }
     public IAsyncRelayCommand ImportIoTableCommand { get; }
@@ -77,15 +77,8 @@ public sealed class DesignerViewModel : ModuleViewModelBase
     public IRelayCommand OpenGeneratedIoFolderCommand { get; }
     public IRelayCommand<GeneratedProgramArtifact?> OpenGeneratedIoFileCommand { get; }
     public IRelayCommand<string?> ApplyRuntimeTemplateCommand { get; }
-    public IRelayCommand<string?> AddDesignerElementCommand { get; }
-    public IRelayCommand<string?> AddDesignerElementAtDropCommand { get; }
-    public IRelayCommand<string?> StartToolboxDragCommand { get; }
-    public IRelayCommand RemoveSelectedDesignerElementCommand { get; }
-    public IRelayCommand CopySelectedDesignerElementCommand { get; }
-    public IRelayCommand PasteDesignerElementCommand { get; }
-    public IRelayCommand<string?> MoveSelectedElementCommand { get; }
 
-    // -- GitPull Commands --
+    // -- GitPull 命令 --
     public IRelayCommand BrowseGitTargetFolderCommand { get; }
     public IAsyncRelayCommand PullGitRepositoryCommand { get; }
     public IRelayCommand OpenGitTargetFolderCommand { get; }
@@ -122,7 +115,7 @@ public sealed class DesignerViewModel : ModuleViewModelBase
     public IRelayCommand CopySfcInitCodeCommand { get; }
     public IRelayCommand SaveSfcInitCodeToFileCommand { get; }
 
-    // -- Navigation/Sub-section --
+    // -- 导航 / 子页面切换 --
     public string CurrentSubSection
     {
         get => Shell.CurrentDesignerSubSection;
@@ -131,87 +124,37 @@ public sealed class DesignerViewModel : ModuleViewModelBase
     public string CurrentDesignerTitle => Shell.CurrentDesignerTitle;
     public bool IsDesignMode => Shell.IsDesignMode;
     public bool IsRuntimeMode => Shell.IsRuntimeMode;
-    public bool IsDesignerCanvasPageVisible => Shell.IsDesignerCanvasPageVisible;
     public bool IsDesignerIoProgramPageVisible => Shell.IsDesignerIoProgramPageVisible;
     public bool IsDesignerAutoProgramPageVisible => Shell.IsDesignerAutoProgramPageVisible;
+    public bool IsDesignerInitProgramPageVisible => Shell.IsDesignerInitProgramPageVisible;
 
-    // -- Collections --
-    public ObservableCollection<DesignerPage> Pages => Shell.DesignerPages;
-    public ObservableCollection<DesignerElement> Elements => Shell.DesignerElements;
+    // -- 数据集合（IO/SFC/Tag）--
     public ObservableCollection<IoTableRow> IoTableRows => Shell.IoTableRows;
     public ObservableCollection<GeneratedProgramArtifact> GeneratedIoPrograms => Shell.GeneratedIoPrograms;
     public ObservableCollection<TagItem> Tags => Shell.Tags;
-    public ObservableCollection<string> DesignerActionOptions => Shell.DesignerActionOptions;
 
-    // -- Selected items --
-    public DesignerElement? SelectedDesignerElement
-    {
-        get => Shell.SelectedDesignerElement;
-        set => Shell.SelectedDesignerElement = value;
-    }
-    public DesignerPage? SelectedDesignerPage
-    {
-        get => Shell.SelectedDesignerPage;
-        set => Shell.SelectedDesignerPage = value;
-    }
     public GeneratedProgramArtifact? SelectedGeneratedIoProgram
     {
         get => Shell.SelectedGeneratedIoProgram;
         set => Shell.SelectedGeneratedIoProgram = value;
     }
 
-    // -- Selected element helpers --
-    public bool IsSelectedDesignerElementButtonLike => Shell.IsSelectedDesignerElementButtonLike;
-    public bool IsSelectedDesignerElementTagBindable => Shell.IsSelectedDesignerElementTagBindable;
-    public bool IsSelectedDesignerElementNavigationAction => Shell.IsSelectedDesignerElementNavigationAction;
-    public bool HasClipboard => Shell.HasClipboard;
-
-    // -- Designer settings --
-    public string SelectedToolboxItem
+    // -- IO 生成相关属性 --
+    public bool CanSaveIoTable => Shell.CanSaveIoTable;
+    public string IoImportSummary => Shell.IoImportSummary;
+    public string GeneratedIoOutputDirectory => Shell.GeneratedIoOutputDirectory;
+    public string SelectedIoPlcTemplate
     {
-        get => Shell.SelectedToolboxItem;
-        set => Shell.SelectedToolboxItem = value;
+        get => Shell.SelectedIoPlcTemplate;
+        set => Shell.SelectedIoPlcTemplate = value;
     }
-    public double DesignerCanvasWidth
+    public string IoOperationNumber
     {
-        get => Shell.DesignerCanvasWidth;
-        set => Shell.DesignerCanvasWidth = value;
+        get => Shell.IoOperationNumber;
+        set => Shell.IoOperationNumber = value;
     }
-    public double DesignerCanvasHeight
-    {
-        get => Shell.DesignerCanvasHeight;
-        set => Shell.DesignerCanvasHeight = value;
-    }
-    public string DesignerPageName
-    {
-        get => Shell.DesignerPageName;
-        set => Shell.DesignerPageName = value;
-    }
-    public string DesignerProjectName
-    {
-        get => Shell.DesignerProjectName;
-        set => Shell.DesignerProjectName = value;
-    }
-    public string DragToolboxItem
-    {
-        get => Shell.DragToolboxItem;
-        set => Shell.DragToolboxItem = value;
-    }
-    public bool EnableGridSnap
-    {
-        get => Shell.EnableGridSnap;
-        set => Shell.EnableGridSnap = value;
-    }
-    public int GridSize
-    {
-        get => Shell.GridSize;
-        set => Shell.GridSize = value;
-    }
-    public string SelectedRuntimeTemplate
-    {
-        get => Shell.SelectedRuntimeTemplate;
-        set => Shell.SelectedRuntimeTemplate = value;
-    }
+    public string SelectedGeneratedIoProgramContent => Shell.SelectedGeneratedIoProgramContent;
+    public bool HasGeneratedIoPrograms => Shell.HasGeneratedIoPrograms;
 
     // -- SFC 自动程序属性 --
     public ObservableCollection<SfcStep> SfcSteps => Shell.SfcSteps;
@@ -259,29 +202,11 @@ public sealed class DesignerViewModel : ModuleViewModelBase
         set => Shell.SfcInitGeneratedCode = value;
     }
 
-    public bool IsDesignerInitProgramPageVisible => Shell.IsDesignerInitProgramPageVisible;
     public IEnumerable<SfcDeviceOption> SfcCylinderOptions => Shell.SfcCylinderOptions;
     public IEnumerable<SfcDeviceOption> SfcAxisOptions => Shell.SfcAxisOptions;
     public IEnumerable<SfcDeviceOption> SfcVacuumOptions => Shell.SfcVacuumOptions;
 
-    // -- IO generation --
-    public bool CanSaveIoTable => Shell.CanSaveIoTable;
-    public string IoImportSummary => Shell.IoImportSummary;
-    public string GeneratedIoOutputDirectory => Shell.GeneratedIoOutputDirectory;
-    public string SelectedIoPlcTemplate
-    {
-        get => Shell.SelectedIoPlcTemplate;
-        set => Shell.SelectedIoPlcTemplate = value;
-    }
-    public string IoOperationNumber
-    {
-        get => Shell.IoOperationNumber;
-        set => Shell.IoOperationNumber = value;
-    }
-    public string SelectedGeneratedIoProgramContent => Shell.SelectedGeneratedIoProgramContent;
-    public bool HasGeneratedIoPrograms => Shell.HasGeneratedIoPrograms;
-
-    // -- GitPull properties --
+    // -- GitPull 属性 --
     public string GitRepositoryUrl
     {
         get => Shell.GitRepositoryUrl;

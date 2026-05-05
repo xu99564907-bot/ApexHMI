@@ -4,6 +4,7 @@ using ApexHMI.Models.RuntimeUi;
 using ApexHMI.Services;
 using ApexHMI.Services.DataBinding;
 using ApexHMI.Services.RuntimeUi;
+using ApexHMI.Models.RuntimeUi;
 using ApexHMI.ViewModels.Modules;
 using ApexHMI.ViewModels.Runtime;
 using Serilog;
@@ -17,6 +18,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly IWidgetViewFactory _widgetFactory;
     private readonly IProjectEditorService _projectEditorService;
     private readonly IWidgetEditorService _widgetEditorService;
+    private readonly WidgetBlockGenerator _widgetBlockGenerator;
 
     public MainWindowViewModel(
         IOpcUaService opcUaService,
@@ -38,7 +40,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         RuntimeProjectService runtimeProjectService,
         RuntimeDataBindingService dataBindingService,
         IProjectEditorService projectEditorService,
-        IWidgetEditorService widgetEditorService)
+        IWidgetEditorService widgetEditorService,
+        WidgetBlockGenerator widgetBlockGenerator)
         : base(
             opcUaService,
             csvImportService,
@@ -60,6 +63,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _widgetFactory = widgetFactory;
         _projectEditorService = projectEditorService;
         _widgetEditorService = widgetEditorService;
+        _widgetBlockGenerator = widgetBlockGenerator;
 
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -77,7 +81,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
         // 先初始化运行时（LoadDefault 设置 Current），再让编辑器共享同一 ProjectDocument
         InitializeDynamicRuntime();
-        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService);
+        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetBlockGenerator);
         Designer = new DesignerViewModel(this);
     }
 

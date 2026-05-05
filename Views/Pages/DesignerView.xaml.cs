@@ -151,32 +151,6 @@ public partial class DesignerView : UserControl
         }
     }
 
-    private void DesignerCanvas_DragOver(object sender, DragEventArgs e)
-    {
-        e.Effects = e.Data.GetDataPresent(DataFormats.StringFormat)
-            ? DragDropEffects.Copy
-            : DragDropEffects.None;
-        e.Handled = true;
-    }
-
-    private void DesignerCanvas_Drop(object sender, DragEventArgs e)
-    {
-        var vm = GetShell();
-        if (vm is null || sender is not Canvas canvas || !e.Data.GetDataPresent(DataFormats.StringFormat))
-        {
-            return;
-        }
-
-        var tool = e.Data.GetData(DataFormats.StringFormat)?.ToString();
-        if (string.IsNullOrWhiteSpace(tool))
-        {
-            return;
-        }
-
-        var position = e.GetPosition(canvas);
-        vm.AddDesignerElementAtDropCommand.Execute($"{tool}|{position.X}|{position.Y}");
-    }
-
     private void IoPreviewHeader_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ClickCount != 2)
