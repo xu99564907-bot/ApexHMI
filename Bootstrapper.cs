@@ -72,6 +72,7 @@ public static class Bootstrapper
         services.AddSingleton<IProjectEditorService, ProjectEditorService>();
         services.AddSingleton<IWidgetEditorService, WidgetEditorService>();
         services.AddSingleton<WidgetBlockGenerator>();
+        services.AddSingleton<ManualPageAutoGenerator>();
 
         services.AddSingleton<RefreshCoordinator>();
 

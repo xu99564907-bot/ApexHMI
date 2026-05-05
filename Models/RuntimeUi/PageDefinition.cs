@@ -42,4 +42,11 @@ public partial class PageDefinition : ObservableObject
     /// <summary>主导航按钮排序值（越小越靠前）。</summary>
     [ObservableProperty]
     private int _navOrder;
+
+    /// <summary>
+    /// 自动生成页面（manual.* 系列）专用标记：用户编辑过此页后置为 true，
+    /// 下次 IO 重新导入时不再覆盖该页布局，仅追加新设备 widget。
+    /// </summary>
+    [ObservableProperty]
+    private bool _isUserEdited;
 }

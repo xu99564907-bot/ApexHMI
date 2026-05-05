@@ -266,6 +266,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         CurrentWidgets.Add(widget);
         AddWidgetItem(widget);
         SelectedWidget = widget;
+        MarkPageEdited();
 
         _editStack.Execute(new AddWidgetEdit(_widgetEditor, SelectedPage, widget));
         OnPropertyChanged(nameof(CanUndo));
@@ -287,6 +288,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         CurrentWidgets.Add(widget);
         AddWidgetItem(widget);
         SelectedWidget = widget;
+        MarkPageEdited();
         Log.Information("DesignerEditor: 拖拽添加控件 typeId={TypeId} x={X} y={Y}", typeId, x, y);
     }
 
@@ -303,6 +305,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         CurrentWidgets.Remove(SelectedWidget);
         RemoveWidgetItem(SelectedWidget);
         SelectedWidget = null;
+        MarkPageEdited();
         OnPropertyChanged(nameof(CanUndo));
     }
 
@@ -314,10 +317,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
     // ========== B-06: 属性修改 ==========
 
+    /// <summary>标记当前页面为"用户已编辑"，防止 IO 重新导入时被自动覆盖。</summary>
+    private void MarkPageEdited()
+    {
+        if (SelectedPage is not null && !SelectedPage.IsUserEdited)
+            SelectedPage.IsUserEdited = true;
+    }
+
     /// <summary>修改当前选中控件的属性键值。</summary>
     public void UpdateWidgetProperty(string key, string? value)
     {
         if (SelectedWidget is null) return;
+        MarkPageEdited();
 
         var oldValue = SelectedWidget.Properties.TryGetValue(key, out var existing) ? existing : null;
         _widgetEditor.UpdateProperty(SelectedWidget, key, value);
@@ -350,6 +361,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     {
         if (SelectedWidget is null) return;
         _widgetEditor.MoveWidget(SelectedWidget, x, y);
+        MarkPageEdited();
     }
 
     /// <summary>拖拽结束后将移动写入撤销栈。</summary>
@@ -579,7 +591,10 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }
 
         if (generated.Count > 0)
+        {
             SelectedWidget = generated[0];
+            MarkPageEdited();
+        }
 
         Log.Information("DesignerEditor: 批量生成 {Count} 个 {BlockType} 功能块", generated.Count, BatchBlockType);
     }

@@ -19,6 +19,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly IProjectEditorService _projectEditorService;
     private readonly IWidgetEditorService _widgetEditorService;
     private readonly WidgetBlockGenerator _widgetBlockGenerator;
+    private readonly ManualPageAutoGenerator _manualPageAutoGenerator;
 
     public MainWindowViewModel(
         IOpcUaService opcUaService,
@@ -41,7 +42,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         RuntimeDataBindingService dataBindingService,
         IProjectEditorService projectEditorService,
         IWidgetEditorService widgetEditorService,
-        WidgetBlockGenerator widgetBlockGenerator)
+        WidgetBlockGenerator widgetBlockGenerator,
+        ManualPageAutoGenerator manualPageAutoGenerator)
         : base(
             opcUaService,
             csvImportService,
@@ -64,6 +66,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _projectEditorService = projectEditorService;
         _widgetEditorService = widgetEditorService;
         _widgetBlockGenerator = widgetBlockGenerator;
+        _manualPageAutoGenerator = manualPageAutoGenerator;
 
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -120,6 +123,31 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
     /// <summary>编辑器/发布触发后调用：刷新顶栏用户页按钮。</summary>
     internal void RefreshTopNavUserPages() => OnPropertyChanged(nameof(TopNavUserPages));
+
+    /// <summary>
+    /// IO 导入后调用：自动生成/刷新 manual.* 系列页面，并保存工程。
+    /// </summary>
+    internal void RegenerateManualPages()
+    {
+        var project = _runtimeProjectService.Current;
+        if (project is null) return;
+        try
+        {
+            _manualPageAutoGenerator.GenerateAll(
+                project,
+                ManualCylinderBlockCards,
+                ManualAxisBlockCards,
+                RobotControlViewModel is not null,
+                Tags);
+            _runtimeProjectService.Save(project);
+            RefreshTopNavUserPages();
+            Log.Information("MainWindowViewModel: 手动页面已根据 IO 重新生成");
+        }
+        catch (System.Exception ex)
+        {
+            Log.Error(ex, "RegenerateManualPages 失败");
+        }
+    }
 
     [RelayCommand]
     private async Task NavigateToUserPage(string? routeKey)
