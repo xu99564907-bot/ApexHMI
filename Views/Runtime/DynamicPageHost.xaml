@@ -6,6 +6,28 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="720" d:DesignWidth="1280">
+    <DockPanel>
+        <!-- 多页导航条：>=2 个页面时显示 -->
+        <Border DockPanel.Dock="Top" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="0,0,0,1"
+                Padding="8,4"
+                Visibility="{Binding ShowPageTabs, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <ItemsControl ItemsSource="{Binding AvailablePages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Content="{Binding Title}"
+                                Command="{Binding DataContext.NavigateTabCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Padding="12,4" Margin="0,0,4,0"
+                                Background="#F1F5F9" Foreground="#0F172A" BorderBrush="#D7DFEA"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Border Width="{Binding CurrentPage.CanvasWidth, FallbackValue=1280}"
                 Height="{Binding CurrentPage.CanvasHeight, FallbackValue=720}"
@@ -35,4 +57,5 @@
             </Canvas>
         </Border>
     </ScrollViewer>
+    </DockPanel>
 </UserControl>

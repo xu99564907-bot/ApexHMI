@@ -39,6 +39,10 @@
                             Background="#3B82F6" Foreground="White" BorderBrush="#3B82F6"
                             Padding="10,6" Margin="0,0,6,0"/>
                     <Separator Style="{x:Null}" Width="1" Background="#D7DFEA" Margin="6,4"/>
+                    <Button Content="👁 预览" Command="{Binding PreviewCommand}"
+                            Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
+                            Padding="14,6" Margin="0,0,6,0" FontWeight="SemiBold"
+                            ToolTip="保存并在运行视图中查看当前页面"/>
                     <Button Content="💾 保存" Command="{Binding SaveCommand}"
                             Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
                             Padding="14,6" Margin="0,0,6,0" FontWeight="SemiBold"
@@ -209,12 +213,34 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <DockPanel Margin="0,0,0,10">
-                        <TextBlock Text="设计画布" FontSize="18" FontWeight="Bold" Foreground="#0F172A"/>
-                        <TextBlock DockPanel.Dock="Right"
-                                   Text="{Binding CurrentWidgets.Count, Mode=OneWay, StringFormat=控件数: {0}}"
-                                   Foreground="#64748B" VerticalAlignment="Center"/>
-                    </DockPanel>
+                    <StackPanel Margin="0,0,0,10">
+                        <DockPanel>
+                            <TextBlock Text="设计画布" FontSize="18" FontWeight="Bold" Foreground="#0F172A"/>
+                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                                <CheckBox Content="网格" IsChecked="{Binding ShowGrid}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <CheckBox Content="吸附" IsChecked="{Binding SnapToGrid}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock Text="间距" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBox Text="{Binding GridSize, UpdateSourceTrigger=PropertyChanged}" Width="44" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <TextBlock Text="{Binding MouseCoord, StringFormat=({0})}" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="Consolas"/>
+                                <TextBlock Text="{Binding CurrentWidgets.Count, Mode=OneWay, StringFormat=控件数: {0}}"
+                                           Foreground="#64748B" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DockPanel>
+                        <!-- 对齐工具栏：多选时显示 -->
+                        <WrapPanel Margin="0,8,0,0"
+                                   Visibility="{Binding HasMultiSelection, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button Content="◧ 左对齐"   Command="{Binding AlignLeftCommand}"   Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="◨ 右对齐"   Command="{Binding AlignRightCommand}"  Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="⊤ 顶对齐"   Command="{Binding AlignTopCommand}"    Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="⊥ 底对齐"   Command="{Binding AlignBottomCommand}" Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="↔ 横向均布" Command="{Binding DistributeHorizontalCommand}" Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="↕ 纵向均布" Command="{Binding DistributeVerticalCommand}"   Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="↔ 等宽"     Command="{Binding SameWidthCommand}"   Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="↕ 等高"     Command="{Binding SameHeightCommand}"  Padding="8,4" Margin="0,0,4,0"/>
+                            <Button Content="🗑 删除"    Command="{Binding DeleteSelectedWidgetsCommand}"
+                                    Padding="8,4" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"/>
+                        </WrapPanel>
+                    </StackPanel>
                     <ScrollViewer Grid.Row="1" 
                                   HorizontalScrollBarVisibility="Auto" 
                                   VerticalScrollBarVisibility="Auto">
@@ -224,8 +250,35 @@
                                 Background="#E2E8F0"
                                 ClipToBounds="True"
                                 AllowDrop="True"
+                                MouseMove="DesignerCanvas_MouseMoveCoord"
+                                MouseLeftButtonDown="DesignerCanvas_BackgroundClick"
                                 DragOver="DesignerCanvas_DragOver"
                                 Drop="DesignerCanvas_Drop">
+                            <!-- 网格背景层 -->
+                            <Rectangle Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
+                                       Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}"
+                                       IsHitTestVisible="False"
+                                       Visibility="{Binding ShowGrid, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Rectangle.Fill>
+                                    <DrawingBrush TileMode="Tile" Stretch="None"
+                                                  Viewport="0,0,8,8" ViewportUnits="Absolute"
+                                                  Viewbox="0,0,8,8"  ViewboxUnits="Absolute">
+                                        <DrawingBrush.Drawing>
+                                            <GeometryDrawing>
+                                                <GeometryDrawing.Geometry>
+                                                    <GeometryGroup>
+                                                        <RectangleGeometry Rect="0,0,8,1"/>
+                                                        <RectangleGeometry Rect="0,0,1,8"/>
+                                                    </GeometryGroup>
+                                                </GeometryDrawing.Geometry>
+                                                <GeometryDrawing.Brush>
+                                                    <SolidColorBrush Color="#CBD5E1" Opacity="0.4"/>
+                                                </GeometryDrawing.Brush>
+                                            </GeometryDrawing>
+                                        </DrawingBrush.Drawing>
+                                    </DrawingBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
                             <ListBox ItemsSource="{Binding CurrentWidgetItems}"
                                      Background="Transparent"
                                      BorderThickness="0"
@@ -264,11 +317,20 @@
                                                 Height="{Binding Model.Height}"
                                                 Cursor="Hand"
                                                 Background="Transparent"
-                                                BorderBrush="Transparent"
-                                                BorderThickness="2"
                                                 MouseLeftButtonDown="Widget_MouseLeftButtonDown"
                                                 MouseMove="Widget_MouseMove"
                                                 MouseLeftButtonUp="Widget_MouseLeftButtonUp">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="BorderBrush" Value="Transparent"/>
+                                                    <Setter Property="BorderThickness" Value="2"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter Property="BorderBrush" Value="#F59E0B"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
                                             <ContentPresenter Content="{Binding View}"/>
                                         </Border>
                                     </DataTemplate>

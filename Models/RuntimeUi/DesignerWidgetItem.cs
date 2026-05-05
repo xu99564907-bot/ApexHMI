@@ -20,4 +20,8 @@ public sealed partial class DesignerWidgetItem : ObservableObject
 
     [ObservableProperty]
     private FrameworkElement _view;
+
+    /// <summary>是否在多选集合中（控制画布上选中边框显示）。</summary>
+    [ObservableProperty]
+    private bool _isSelected;
 }

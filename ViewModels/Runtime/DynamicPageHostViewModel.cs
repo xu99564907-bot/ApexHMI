@@ -35,6 +35,29 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
     /// <summary>暴露 Shell 给业务 widget（如 manual-cylinder-block 需要查 ManualCylinderBlockCards）。</summary>
     public object? Shell { get; }
 
+    /// <summary>顶部页面标签栏数据源；调用 SetAvailablePages 同步。</summary>
+    public ObservableCollection<PageDefinition> AvailablePages { get; } = new();
+
+    /// <summary>是否显示顶部页面标签栏（>=2 个页面时显示）。</summary>
+    public bool ShowPageTabs => AvailablePages.Count >= 2;
+
+    public void SetAvailablePages(IEnumerable<PageDefinition> pages)
+    {
+        AvailablePages.Clear();
+        foreach (var p in pages) AvailablePages.Add(p);
+        OnPropertyChanged(nameof(ShowPageTabs));
+    }
+
+    /// <summary>页签点击 → 通过外部 handler 加载该页（由 Shell 注入）。</summary>
+    public System.Action<string>? RequestLoadPage { get; set; }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void NavigateTab(PageDefinition? page)
+    {
+        if (page is null) return;
+        RequestLoadPage?.Invoke(page.RouteKey);
+    }
+
     /// <summary>当前页面下渲染的所有控件元素（位置信息已在 Create 前设置）。</summary>
     public ObservableCollection<PositionedWidget> WidgetElements { get; } = new();
 

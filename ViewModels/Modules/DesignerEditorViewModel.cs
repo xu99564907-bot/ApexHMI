@@ -34,6 +34,247 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>设计模式 widget 渲染所需的工厂。</summary>
     public IWidgetViewFactory WidgetViewFactory { get; }
 
+    // ========== P1.2 网格 / 吸附 ==========
+    [ObservableProperty]
+    private bool _showGrid = true;
+
+    [ObservableProperty]
+    private bool _snapToGrid = true;
+
+    [ObservableProperty]
+    private int _gridSize = 8;
+
+    /// <summary>对齐到网格（仅当 SnapToGrid=true 时生效）。</summary>
+    public double SnapValue(double v)
+    {
+        if (!SnapToGrid || GridSize <= 0) return v;
+        return System.Math.Round(v / GridSize) * GridSize;
+    }
+
+    [ObservableProperty]
+    private string _mouseCoord = "0, 0";
+
+    public void UpdateMouseCoord(double x, double y) => MouseCoord = $"{(int)x}, {(int)y}";
+
+    // ========== P1.3 多选 + 对齐 ==========
+
+    /// <summary>多选集合（包含 SelectedWidget；空时表示无多选）。</summary>
+    public ObservableCollection<WidgetInstance> SelectedWidgets { get; } = new();
+
+    private void RefreshItemSelection()
+    {
+        foreach (var item in CurrentWidgetItems)
+            item.IsSelected = SelectedWidgets.Contains(item.Model);
+    }
+
+    /// <summary>切换某 widget 的选中状态（Ctrl+点击）。</summary>
+    public void ToggleWidgetSelection(WidgetInstance widget)
+    {
+        if (SelectedWidgets.Contains(widget))
+        {
+            SelectedWidgets.Remove(widget);
+            if (ReferenceEquals(SelectedWidget, widget))
+                SelectedWidget = SelectedWidgets.LastOrDefault();
+        }
+        else
+        {
+            SelectedWidgets.Add(widget);
+            SelectedWidget = widget;
+        }
+        RefreshItemSelection();
+        OnPropertyChanged(nameof(HasMultiSelection));
+    }
+
+    /// <summary>清空多选 + 设置单选。</summary>
+    public void SelectSingleWidget(WidgetInstance? widget)
+    {
+        SelectedWidgets.Clear();
+        if (widget is not null) SelectedWidgets.Add(widget);
+        SelectedWidget = widget;
+        RefreshItemSelection();
+        OnPropertyChanged(nameof(HasMultiSelection));
+    }
+
+    /// <summary>框选范围内所有 widget。</summary>
+    public void SelectInRectangle(double x1, double y1, double x2, double y2)
+    {
+        if (SelectedPage is null) return;
+        var minX = System.Math.Min(x1, x2);
+        var maxX = System.Math.Max(x1, x2);
+        var minY = System.Math.Min(y1, y2);
+        var maxY = System.Math.Max(y1, y2);
+
+        SelectedWidgets.Clear();
+        foreach (var w in SelectedPage.Widgets)
+        {
+            // widget 中心点落在矩形内
+            var cx = w.X + w.Width / 2;
+            var cy = w.Y + w.Height / 2;
+            if (cx >= minX && cx <= maxX && cy >= minY && cy <= maxY)
+                SelectedWidgets.Add(w);
+        }
+        SelectedWidget = SelectedWidgets.FirstOrDefault();
+        RefreshItemSelection();
+        OnPropertyChanged(nameof(HasMultiSelection));
+    }
+
+    public bool HasMultiSelection => SelectedWidgets.Count > 1;
+
+    [RelayCommand]
+    private void AlignLeft()
+    {
+        if (SelectedWidgets.Count < 2) return;
+        var minX = SelectedWidgets.Min(w => w.X);
+        foreach (var w in SelectedWidgets) _widgetEditor.MoveWidget(w, minX, w.Y);
+        MarkPageEdited();
+    }
+    [RelayCommand]
+    private void AlignRight()
+    {
+        if (SelectedWidgets.Count < 2) return;
+        var maxR = SelectedWidgets.Max(w => w.X + w.Width);
+        foreach (var w in SelectedWidgets) _widgetEditor.MoveWidget(w, maxR - w.Width, w.Y);
+        MarkPageEdited();
+    }
+    [RelayCommand]
+    private void AlignTop()
+    {
+        if (SelectedWidgets.Count < 2) return;
+        var minY = SelectedWidgets.Min(w => w.Y);
+        foreach (var w in SelectedWidgets) _widgetEditor.MoveWidget(w, w.X, minY);
+        MarkPageEdited();
+    }
+    [RelayCommand]
+    private void AlignBottom()
+    {
+        if (SelectedWidgets.Count < 2) return;
+        var maxB = SelectedWidgets.Max(w => w.Y + w.Height);
+        foreach (var w in SelectedWidgets) _widgetEditor.MoveWidget(w, w.X, maxB - w.Height);
+        MarkPageEdited();
+    }
+    [RelayCommand]
+    private void DistributeHorizontal()
+    {
+        if (SelectedWidgets.Count < 3) return;
+        var sorted = SelectedWidgets.OrderBy(w => w.X).ToList();
+        var first = sorted.First(); var last = sorted.Last();
+        var span = last.X - first.X;
+        var step = span / (sorted.Count - 1);
+        for (int i = 1; i < sorted.Count - 1; i++)
+            _widgetEditor.MoveWidget(sorted[i], first.X + step * i, sorted[i].Y);
+        MarkPageEdited();
+    }
+    [RelayCommand]
+    private void DistributeVertical()
+    {
+        if (SelectedWidgets.Count < 3) return;
+        var sorted = SelectedWidgets.OrderBy(w => w.Y).ToList();
+        var first = sorted.First(); var last = sorted.Last();
+        var span = last.Y - first.Y;
+        var step = span / (sorted.Count - 1);
+        for (int i = 1; i < sorted.Count - 1; i++)
+            _widgetEditor.MoveWidget(sorted[i], sorted[i].X, first.Y + step * i);
+        MarkPageEdited();
+    }
+    [RelayCommand]
+    private void SameWidth()
+    {
+        if (SelectedWidgets.Count < 2 || SelectedWidget is null) return;
+        var w0 = SelectedWidget.Width;
+        foreach (var w in SelectedWidgets) _widgetEditor.ResizeWidget(w, w0, w.Height);
+        MarkPageEdited();
+    }
+    [RelayCommand]
+    private void SameHeight()
+    {
+        if (SelectedWidgets.Count < 2 || SelectedWidget is null) return;
+        var h0 = SelectedWidget.Height;
+        foreach (var w in SelectedWidgets) _widgetEditor.ResizeWidget(w, w.Width, h0);
+        MarkPageEdited();
+    }
+
+    // ========== P1.4 复制 / 粘贴 ==========
+
+    /// <summary>剪贴板：保存被复制 widget 的快照（深拷贝）。</summary>
+    private readonly List<WidgetInstance> _clipboard = new();
+
+    public bool HasClipboard => _clipboard.Count > 0;
+
+    [RelayCommand]
+    private void CopySelected()
+    {
+        if (SelectedWidgets.Count == 0) return;
+        _clipboard.Clear();
+        foreach (var w in SelectedWidgets)
+            _clipboard.Add(CloneWidget(w));
+        OnPropertyChanged(nameof(HasClipboard));
+        Log.Information("DesignerEditor: 已复制 {Count} 个控件到剪贴板", _clipboard.Count);
+    }
+
+    [RelayCommand]
+    private void PasteClipboard()
+    {
+        if (SelectedPage is null || _clipboard.Count == 0) return;
+        const double offset = 16;
+        SelectedWidgets.Clear();
+        foreach (var src in _clipboard)
+        {
+            var clone = CloneWidget(src);
+            clone.X = SnapValue(src.X + offset);
+            clone.Y = SnapValue(src.Y + offset);
+            SelectedPage.Widgets.Add(clone);
+            CurrentWidgets.Add(clone);
+            AddWidgetItem(clone);
+            SelectedWidgets.Add(clone);
+        }
+        SelectedWidget = SelectedWidgets.FirstOrDefault();
+        RefreshItemSelection();
+        MarkPageEdited();
+        OnPropertyChanged(nameof(HasMultiSelection));
+        Log.Information("DesignerEditor: 已粘贴 {Count} 个控件", _clipboard.Count);
+    }
+
+    private static WidgetInstance CloneWidget(WidgetInstance src)
+    {
+        var clone = new WidgetInstance
+        {
+            Id = System.Guid.NewGuid().ToString("N"),
+            TypeId = src.TypeId,
+            X = src.X,
+            Y = src.Y,
+            Width = src.Width,
+            Height = src.Height,
+            ActionType = src.ActionType,
+            ActionParam = src.ActionParam,
+            Binding = src.Binding is null ? null : new BindingSpec
+            {
+                TagId = src.Binding.TagId,
+                AccessMode = src.Binding.AccessMode,
+                DataType = src.Binding.DataType
+            }
+        };
+        foreach (var kv in src.Properties)
+            clone.Properties[kv.Key] = kv.Value;
+        return clone;
+    }
+
+    [RelayCommand]
+    private void DeleteSelectedWidgets()
+    {
+        if (SelectedPage is null || SelectedWidgets.Count == 0) return;
+        var toDelete = SelectedWidgets.ToList();
+        foreach (var w in toDelete)
+        {
+            _widgetEditor.RemoveWidget(SelectedPage, w.Id);
+            CurrentWidgets.Remove(w);
+            RemoveWidgetItem(w);
+        }
+        SelectedWidgets.Clear();
+        SelectedWidget = null;
+        MarkPageEdited();
+        OnPropertyChanged(nameof(HasMultiSelection));
+    }
+
     /// <summary>设计模式数据上下文（无 OPC UA 推送，但暴露 Shell 供业务 widget 取真实数据）。</summary>
     public IWidgetDataContext DesignModeContext { get; }
 
@@ -361,11 +602,11 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }
     }
 
-    /// <summary>移动当前选中控件（拖拽实时调用，不记录撤销）。</summary>
+    /// <summary>移动当前选中控件（拖拽实时调用，不记录撤销）；自动吸附到网格。</summary>
     public void MoveSelectedWidget(double x, double y)
     {
         if (SelectedWidget is null) return;
-        _widgetEditor.MoveWidget(SelectedWidget, x, y);
+        _widgetEditor.MoveWidget(SelectedWidget, SnapValue(x), SnapValue(y));
         MarkPageEdited();
     }
 
@@ -667,6 +908,27 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         {
             SaveStatus = "发布失败";
             Log.Error(ex, "DesignerEditor: 发布工程失败");
+        }
+    }
+
+    /// <summary>预览：保存当前工程并切到 Tab 10 加载当前编辑页（不影响运行模式 IsRuntimeMode）。</summary>
+    [RelayCommand]
+    private async Task PreviewAsync()
+    {
+        if (SelectedPage is null) return;
+        try
+        {
+            _runtimeProjectService.Save(Document);
+            if (Shell is MainWindowViewModel mvm)
+            {
+                await mvm.NavigateToRuntimePageAsync(SelectedPage.RouteKey);
+                mvm.NavigateCommand.Execute("运行页面");
+            }
+            Log.Information("DesignerEditor: 预览页面 {Route}", SelectedPage.RouteKey);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "DesignerEditor: 预览失败");
         }
     }
 

@@ -209,6 +209,9 @@ public sealed partial class MainWindowViewModel : MainViewModel
     {
         RuntimePage = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
         ManualPage  = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
+        // 顶部页面标签栏：点击切换 Tab 10 当前页
+        RuntimePage.RequestLoadPage = key => _ = NavigateToRuntimePageAsync(key);
+        ManualPage.RequestLoadPage  = key => _ = NavigateToRuntimePageAsync(key);
         var project = _runtimeProjectService.LoadDefault();
         var defaultPage = project.Pages.FirstOrDefault(p =>
             string.Equals(p.RouteKey, project.DefaultPageRouteKey, StringComparison.OrdinalIgnoreCase))
@@ -260,6 +263,9 @@ public sealed partial class MainWindowViewModel : MainViewModel
             if (page is null) return;
 
             RuntimePage.LoadPage(page);
+            // 同步顶部页签可用列表（按角色过滤）
+            var visiblePages = RoleBasedAccessGuard.FilterAccessible(CurrentUserRole, project.Pages);
+            RuntimePage.SetAvailablePages(visiblePages);
             await _dataBindingService.AttachAsync(RuntimePage);
         }
         catch (Exception ex)

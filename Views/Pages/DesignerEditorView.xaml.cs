@@ -16,6 +16,22 @@ public partial class DesignerEditorView : UserControl
     {
         InitializeComponent();
         ToolboxItemsControl.ItemsSource = DesignerEditorViewModel.ToolboxTypes;
+        Focusable = true;
+        Loaded += (_, _) => Focus();
+        PreviewKeyDown += DesignerEditorView_PreviewKeyDown;
+    }
+
+    private void DesignerEditorView_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        var vm = GetViewModel();
+        if (vm is null) return;
+
+        var ctrl = (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+        if (ctrl && e.Key == Key.C) { vm.CopySelectedCommand.Execute(null); e.Handled = true; }
+        else if (ctrl && e.Key == Key.V) { vm.PasteClipboardCommand.Execute(null); e.Handled = true; }
+        else if (e.Key == Key.Delete) { vm.DeleteSelectedWidgetsCommand.Execute(null); e.Handled = true; }
+        else if (ctrl && e.Key == Key.Z) { vm.UndoCommand.Execute(null); e.Handled = true; }
+        else if (ctrl && e.Key == Key.Y) { vm.RedoCommand.Execute(null); e.Handled = true; }
     }
 
     private DesignerEditorViewModel? GetViewModel()
@@ -28,6 +44,26 @@ public partial class DesignerEditorView : UserControl
         if (e.LeftButton != MouseButtonState.Pressed) return;
         if (sender is FrameworkElement element && element.DataContext is string tool)
             DragDrop.DoDragDrop(element, tool, DragDropEffects.Copy);
+    }
+
+    private void DesignerCanvas_MouseMoveCoord(object sender, MouseEventArgs e)
+    {
+        if (sender is Canvas canvas)
+        {
+            var pt = e.GetPosition(canvas);
+            GetViewModel()?.UpdateMouseCoord(pt.X, pt.Y);
+        }
+    }
+
+    private void DesignerCanvas_BackgroundClick(object sender, MouseButtonEventArgs e)
+    {
+        // 点击空白处清空选中
+        if (e.OriginalSource is Canvas)
+        {
+            var vm = GetViewModel();
+            if (vm is not null)
+                vm.SelectedWidget = null;
+        }
     }
 
     private void DesignerCanvas_DragOver(object sender, DragEventArgs e)
@@ -66,7 +102,18 @@ public partial class DesignerEditorView : UserControl
         };
         if (widget is null) return;
 
-        GetViewModel()?.SelectWidgetCommand.Execute(widget);
+        var vm = GetViewModel();
+        if (vm is null) return;
+
+        // Ctrl+点击 → 多选切换；其它情况 → 单选
+        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+        {
+            vm.ToggleWidgetSelection(widget);
+        }
+        else
+        {
+            vm.SelectSingleWidget(widget);
+        }
 
         _isDragging = true;
         _widgetStartX = widget.X;
