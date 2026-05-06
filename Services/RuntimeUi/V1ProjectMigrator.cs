@@ -40,7 +40,7 @@ public static class V1ProjectMigrator
         {
             SchemaVersion = 1,
             ProjectName = v1Project.ProjectName,
-            Pages = new List<PageDefinition>()
+            Pages = new System.Collections.ObjectModel.ObservableCollection<PageDefinition>()
         };
 
         foreach (var v1Page in v1Project.Pages)

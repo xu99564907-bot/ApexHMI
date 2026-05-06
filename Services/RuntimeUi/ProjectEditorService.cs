@@ -81,7 +81,7 @@ public sealed class ProjectEditorService : IProjectEditorService
         // 不在顺序列表中的页追加到末尾
         ordered.AddRange(lookup.Values);
         doc.Pages.Clear();
-        doc.Pages.AddRange(ordered);
+        foreach (var p in ordered) doc.Pages.Add(p);
         Log.Information("ProjectEditor: 页面重排完成 count={Count}", ordered.Count);
     }
 

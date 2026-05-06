@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ApexHMI.Models.RuntimeUi;
 
@@ -19,5 +19,9 @@ public class ProjectDocument
     /// <summary>P3.1 模板页 RouteKey：所有页面运行时叠加显示其控件（页眉/页脚/Logo 等）。</summary>
     public string? TemplatePageRouteKey { get; set; }
 
-    public List<PageDefinition> Pages { get; set; } = new();
+    /// <summary>
+    /// 页面集合（ObservableCollection 让设计器列表/下拉框增删能即时刷新）。
+    /// JSON 反序列化兼容 List。
+    /// </summary>
+    public ObservableCollection<PageDefinition> Pages { get; set; } = new();
 }

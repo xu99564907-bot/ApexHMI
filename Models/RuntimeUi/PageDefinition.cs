@@ -49,4 +49,10 @@ public partial class PageDefinition : ObservableObject
     /// </summary>
     [ObservableProperty]
     private bool _isUserEdited;
+
+    /// <summary>
+    /// 父页面 RouteKey（页面层级关系，用于侧栏分组显示等）。null = 顶层页面。
+    /// </summary>
+    [ObservableProperty]
+    private string? _parentRouteKey;
 }

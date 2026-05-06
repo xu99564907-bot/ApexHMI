@@ -510,13 +510,26 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
     // ========== 页面命令 ==========
 
+    /// <summary>新建页面时使用的标题（默认自动）。</summary>
+    [ObservableProperty]
+    private string _newPageTitle = string.Empty;
+
+    /// <summary>新建页面时挂载的父页面 RouteKey（null = 顶层页）。</summary>
+    [ObservableProperty]
+    private string? _newPageParentRouteKey;
+
     [RelayCommand]
     private void AddPage()
     {
-        var title = $"页面{Document.Pages.Count + 1}";
+        var title = string.IsNullOrWhiteSpace(NewPageTitle)
+            ? $"页面{Document.Pages.Count + 1}"
+            : NewPageTitle.Trim();
         var page = _projectEditor.AddPage(Document, title);
+        page.ParentRouteKey = string.IsNullOrWhiteSpace(NewPageParentRouteKey) ? null : NewPageParentRouteKey;
+        NewPageTitle = string.Empty;
         SelectedPage = page;
-        Log.Information("DesignerEditor: 已添加页面 title={Title} routeKey={RouteKey}", title, page.RouteKey);
+        Log.Information("DesignerEditor: 已添加页面 title={Title} routeKey={RouteKey} parent={Parent}",
+            title, page.RouteKey, page.ParentRouteKey ?? "(顶层)");
     }
 
     [RelayCommand]

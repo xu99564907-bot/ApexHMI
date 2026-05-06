@@ -96,24 +96,38 @@
                                   IsEditable="True" Margin="0,4,0,10" FontSize="12"
                                   ToolTip="选一个页面作为全局模板;留空 = 无模板"/>
 
-                        <!-- 页面列表 -->
-                        <TextBlock Text="页面列表" FontSize="14" FontWeight="SemiBold" 
+                        <!-- 页面下拉框 -->
+                        <TextBlock Text="当前页面" FontSize="14" FontWeight="SemiBold"
                                    Foreground="#0F172A" Margin="0,0,0,8"/>
-                        <ListBox ItemsSource="{Binding Document.Pages}" 
-                                 SelectedItem="{Binding SelectedPage}"
-                                 DisplayMemberPath="Title"
-                                 MaxHeight="240"
-                                 BorderBrush="#D7DFEA"
-                                 Background="#FFFFFF"
-                                 Margin="0,0,0,8"/>
-                        <WrapPanel Margin="0,0,0,10">
-                            <Button Content="新建页面" Command="{Binding AddPageCommand}"
-                                    Background="#374151" Foreground="White" BorderBrush="#374151"
-                                    Padding="10,6" Margin="0,0,6,6"/>
-                            <Button Content="删除页面" Command="{Binding RemovePageCommand}"
-                                    Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
-                                    Padding="10,6" Margin="0,0,6,6"/>
-                        </WrapPanel>
+                        <ComboBox ItemsSource="{Binding Document.Pages}"
+                                  SelectedItem="{Binding SelectedPage}"
+                                  DisplayMemberPath="Title"
+                                  BorderBrush="#D7DFEA"
+                                  Background="#FFFFFF"
+                                  Margin="0,0,0,8"/>
+
+                        <!-- 新建页面 -->
+                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                                CornerRadius="6" Padding="8" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="新建页面" Foreground="#0F172A" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="标题 (留空 = 自动)" Foreground="#475569" FontSize="11" Margin="0,6,0,2"/>
+                                <TextBox Text="{Binding NewPageTitle, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="12"/>
+                                <TextBlock Text="挂到父页面 (留空 = 顶层)" Foreground="#475569" FontSize="11" Margin="0,6,0,2"/>
+                                <ComboBox ItemsSource="{Binding Document.Pages}"
+                                          DisplayMemberPath="Title" SelectedValuePath="RouteKey"
+                                          SelectedValue="{Binding NewPageParentRouteKey}"
+                                          IsEditable="True" FontSize="12"/>
+                                <Button Content="+ 新建页面" Command="{Binding AddPageCommand}"
+                                        Background="#374151" Foreground="White" BorderBrush="#374151"
+                                        Padding="10,6" Margin="0,8,0,0" HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Button Content="🗑 删除当前页面" Command="{Binding RemovePageCommand}"
+                                Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                Padding="10,6" Margin="0,0,0,10" HorizontalAlignment="Left"/>
 
                         <!-- 当前页面属性 -->
                         <TextBlock Text="页面设置" FontSize="14" FontWeight="SemiBold"
@@ -124,6 +138,12 @@
                         <TextBlock Text="路由键" Foreground="#475569"/>
                         <TextBox Text="{Binding SelectedPage.RouteKey, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,8"/>
+                        <TextBlock Text="父页面 (留空 = 顶层)" Foreground="#475569" FontSize="11"/>
+                        <ComboBox ItemsSource="{Binding Document.Pages}"
+                                  DisplayMemberPath="Title" SelectedValuePath="RouteKey"
+                                  SelectedValue="{Binding SelectedPage.ParentRouteKey}"
+                                  IsEditable="True" Margin="0,4,0,8" FontSize="12"
+                                  ToolTip="把当前页挂到另一页面之下;留空表示独立顶层页"/>
                         <TextBlock Text="画布尺寸" Foreground="#475569"/>
                         <UniformGrid Columns="2" Margin="0,4,0,10">
                             <TextBox Text="{Binding SelectedPage.CanvasWidth, UpdateSourceTrigger=PropertyChanged}"
