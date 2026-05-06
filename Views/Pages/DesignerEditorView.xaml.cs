@@ -46,24 +46,78 @@ public partial class DesignerEditorView : UserControl
             DragDrop.DoDragDrop(element, tool, DragDropEffects.Copy);
     }
 
+    // ===== 框选状态 =====
+    private bool _isMarqueeing;
+    private Point _marqueeStart;
+
     private void DesignerCanvas_MouseMoveCoord(object sender, MouseEventArgs e)
     {
-        if (sender is Canvas canvas)
+        if (sender is not Canvas canvas) return;
+        var pt = e.GetPosition(canvas);
+        var vm = GetViewModel();
+        if (vm is null) return;
+
+        vm.UpdateMouseCoord(pt.X, pt.Y);
+
+        // 进行中的框选 → 更新矩形可视化
+        if (_isMarqueeing && e.LeftButton == MouseButtonState.Pressed)
         {
-            var pt = e.GetPosition(canvas);
-            GetViewModel()?.UpdateMouseCoord(pt.X, pt.Y);
+            var x = System.Math.Min(_marqueeStart.X, pt.X);
+            var y = System.Math.Min(_marqueeStart.Y, pt.Y);
+            vm.MarqueeX = x;
+            vm.MarqueeY = y;
+            vm.MarqueeWidth = System.Math.Abs(pt.X - _marqueeStart.X);
+            vm.MarqueeHeight = System.Math.Abs(pt.Y - _marqueeStart.Y);
+            vm.IsMarqueeActive = vm.MarqueeWidth > 2 && vm.MarqueeHeight > 2;
         }
     }
 
     private void DesignerCanvas_BackgroundClick(object sender, MouseButtonEventArgs e)
     {
-        // 点击空白处清空选中
-        if (e.OriginalSource is Canvas)
+        // 在画布空白处按下：开始框选 + 清空当前选中
+        if (sender is not Canvas canvas) return;
+
+        // 仅当原始源是 Canvas 自身或其网格背景 Rectangle 时才视作"空白处"
+        var orig = e.OriginalSource;
+        if (orig is not Canvas && orig is not System.Windows.Shapes.Rectangle) return;
+
+        var vm = GetViewModel();
+        if (vm is null) return;
+
+        vm.SelectSingleWidget(null);
+
+        _isMarqueeing = true;
+        _marqueeStart = e.GetPosition(canvas);
+        vm.MarqueeX = _marqueeStart.X;
+        vm.MarqueeY = _marqueeStart.Y;
+        vm.MarqueeWidth = 0;
+        vm.MarqueeHeight = 0;
+        canvas.CaptureMouse();
+        e.Handled = true;
+    }
+
+    private void DesignerCanvas_BackgroundMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (!_isMarqueeing) return;
+        if (sender is not Canvas canvas) return;
+
+        var vm = GetViewModel();
+        canvas.ReleaseMouseCapture();
+        _isMarqueeing = false;
+
+        if (vm is not null && vm.IsMarqueeActive)
         {
-            var vm = GetViewModel();
-            if (vm is not null)
-                vm.SelectedWidget = null;
+            var endX = vm.MarqueeX + vm.MarqueeWidth;
+            var endY = vm.MarqueeY + vm.MarqueeHeight;
+            vm.SelectInRectangle(vm.MarqueeX, vm.MarqueeY, endX, endY);
         }
+        if (vm is not null)
+        {
+            vm.IsMarqueeActive = false;
+            vm.MarqueeWidth = 0;
+            vm.MarqueeHeight = 0;
+        }
+        e.Handled = true;
     }
 
     private void DesignerCanvas_DragOver(object sender, DragEventArgs e)

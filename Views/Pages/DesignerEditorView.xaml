@@ -270,6 +270,7 @@
                                 AllowDrop="True"
                                 MouseMove="DesignerCanvas_MouseMoveCoord"
                                 MouseLeftButtonDown="DesignerCanvas_BackgroundClick"
+                                MouseLeftButtonUp="DesignerCanvas_BackgroundMouseUp"
                                 DragOver="DesignerCanvas_DragOver"
                                 Drop="DesignerCanvas_Drop">
                             <!-- 网格背景层 -->
@@ -297,6 +298,14 @@
                                     </DrawingBrush>
                                 </Rectangle.Fill>
                             </Rectangle>
+                            <!-- 框选矩形可视化 -->
+                            <Rectangle Canvas.Left="{Binding MarqueeX}" Canvas.Top="{Binding MarqueeY}"
+                                       Width="{Binding MarqueeWidth}" Height="{Binding MarqueeHeight}"
+                                       Stroke="#3B82F6" StrokeThickness="1" StrokeDashArray="4,2"
+                                       Fill="#3B82F6" Opacity="0.15"
+                                       IsHitTestVisible="False"
+                                       Visibility="{Binding IsMarqueeActive, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                       Panel.ZIndex="1000"/>
                             <ListBox ItemsSource="{Binding CurrentWidgetItems}"
                                      Background="Transparent"
                                      BorderThickness="0"

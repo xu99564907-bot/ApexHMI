@@ -56,6 +56,22 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
     public void UpdateMouseCoord(double x, double y) => MouseCoord = $"{(int)x}, {(int)y}";
 
+    // ========== 框选（Marquee）状态 ==========
+    [ObservableProperty]
+    private bool _isMarqueeActive;
+
+    [ObservableProperty]
+    private double _marqueeX;
+
+    [ObservableProperty]
+    private double _marqueeY;
+
+    [ObservableProperty]
+    private double _marqueeWidth;
+
+    [ObservableProperty]
+    private double _marqueeHeight;
+
     // ========== P1.3 多选 + 对齐 ==========
 
     /// <summary>多选集合（包含 SelectedWidget；空时表示无多选）。</summary>
@@ -354,8 +370,13 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>已订阅 PropertyChanged 的 widget → 处理器映射，便于解订避免内存泄漏。</summary>
     private readonly Dictionary<WidgetInstance, PropertyChangedEventHandler> _widgetHandlers = new();
 
-    private FrameworkElement BuildWidgetView(WidgetInstance widget) =>
-        WidgetViewFactory.Create(widget, DesignModeContext);
+    private FrameworkElement BuildWidgetView(WidgetInstance widget)
+    {
+        var view = WidgetViewFactory.Create(widget, DesignModeContext);
+        // 设计模式：禁止 widget 自身响应鼠标，所有点击穿透到上层选中层 Border
+        view.IsHitTestVisible = false;
+        return view;
+    }
 
     private void RefreshCurrentWidgetItems()
     {
