@@ -628,6 +628,21 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
                 return;
             }
 
+            // 把目标 .project 路径写到脚本同目录的 sidecar 文件，
+            // 脚本启动后优先读这个文件来定位工程，避免同目录多 .project 时
+            // 触发 "Multiple .project files found" 早退。
+            try
+            {
+                var sidecarPath = Path.Combine(
+                    Path.GetDirectoryName(scriptPath) ?? string.Empty,
+                    "_import_target.txt");
+                File.WriteAllText(sidecarPath, projectFilePath);
+            }
+            catch (Exception ex)
+            {
+                Shell.AddLog("InProShop", $"写入 _import_target.txt 失败：{ex.Message}", "Warning");
+            }
+
             var argsParts = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(profileArg))
@@ -647,7 +662,7 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
             };
 
             Process.Start(psi);
-            Shell.AddLog("InProShop", $"已执行导入脚本（脚本会自行打开同目录 .project）：{Path.GetFileName(scriptPath)}", "Info");
+            Shell.AddLog("InProShop", $"已执行导入脚本：{Path.GetFileName(scriptPath)}（目标工程 {Path.GetFileName(projectFilePath)}）", "Info");
         });
     }
 
