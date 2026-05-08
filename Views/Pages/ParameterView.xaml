@@ -115,9 +115,11 @@
                          BorderBrush="#CBD5E1" BorderThickness="1"
                          ToolTip="搜索 HMI 变量名 / PLC 变量值 / 说明"/>
 
-                <!-- P2 分组折叠 chips -->
-                <TextBlock Grid.Column="2" Text="分组：" FontSize="13" Foreground="#64748B"
-                           VerticalAlignment="Center" Margin="16,0,4,0"/>
+                <!-- P2 分组折叠 chips：每个分组一个 ToggleButton，IsChecked=折叠态（灰），未选=展开态（蓝） -->
+                <TextBlock Grid.Column="2" Text="折叠分组：" FontSize="13" FontWeight="SemiBold"
+                           Foreground="#0F172A"
+                           VerticalAlignment="Center" Margin="16,0,6,0"
+                           ToolTip="点击下方分组按钮可隐藏 / 展开该分组下的所有参数行"/>
                 <ItemsControl Grid.Column="3"
                               ItemsSource="{Binding ShellViewModel.ParameterCategoryChips}"
                               VerticalAlignment="Center">
@@ -128,13 +130,10 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <ToggleButton IsChecked="{Binding IsCollapsed}"
+                            <ToggleButton IsChecked="{Binding IsCollapsed, Mode=TwoWay}"
                                           Content="{Binding Name}"
                                           Style="{StaticResource CategoryChipStyle}"
-                                          Command="{Binding DataContext.ShellViewModel.ToggleParameterCategoryCollapseCommand,
-                                                            RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                          CommandParameter="{Binding Name}"
-                                          ToolTip="点击折叠/展开该分组"/>
+                                          ToolTip="点击折叠 / 展开该分组（折叠后该分组所有行被隐藏）"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

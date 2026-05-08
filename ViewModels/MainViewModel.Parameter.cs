@@ -46,22 +46,12 @@ public partial class MainViewModel
         }
     }
 
-    [RelayCommand]
-    private void ToggleParameterCategoryCollapse(string? category)
+    private void OnParameterCategoryChipChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (string.IsNullOrEmpty(category))
+        if (e.PropertyName == nameof(ParameterCategoryChip.IsCollapsed))
         {
-            return;
+            ParametersView.Refresh();
         }
-
-        var chip = ParameterCategoryChips.FirstOrDefault(c => string.Equals(c.Name, category, StringComparison.Ordinal));
-        if (chip is null)
-        {
-            return;
-        }
-
-        chip.IsCollapsed = !chip.IsCollapsed;
-        ParametersView.Refresh();
     }
 
     [RelayCommand]
@@ -317,14 +307,22 @@ public partial class MainViewModel
             .Select(c => c.Name)
             .ToHashSet(StringComparer.Ordinal);
 
+        // 解除旧 chip 的 PropertyChanged 订阅，避免泄漏
+        foreach (var oldChip in ParameterCategoryChips)
+        {
+            oldChip.PropertyChanged -= OnParameterCategoryChipChanged;
+        }
+
         ParameterCategoryChips.Clear();
         foreach (var c in visible)
         {
-            ParameterCategoryChips.Add(new ParameterCategoryChip
+            var chip = new ParameterCategoryChip
             {
                 Name = c,
                 IsCollapsed = collapsed.Contains(c)
-            });
+            };
+            chip.PropertyChanged += OnParameterCategoryChipChanged;
+            ParameterCategoryChips.Add(chip);
         }
     }
 

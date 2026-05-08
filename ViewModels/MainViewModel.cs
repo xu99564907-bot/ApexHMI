@@ -749,22 +749,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         };
     }
 
-    // MA6 双击气缸名 → 跳到参数设定页（后续 P1 完成后会自动按设备名过滤参数表）
-    [RelayCommand]
-    private void JumpToParameterByDevice(object? device)
-    {
-        var deviceName = device switch
-        {
-            Models.ManualCylinderBlockItem cyl => cyl.DisplayName,
-            Models.ManualAxisBlockItem axis => axis.DisplayName,
-            string s => s,
-            _ => string.Empty,
-        };
-        Navigate("参数设定");
-        if (!string.IsNullOrWhiteSpace(deviceName))
-            SystemMessage = $"已跳转到参数页：{deviceName}";
-    }
-
     // H4 重点报警跳转：点击主界面"重点报警"卡 → 跳报警页对应记录
     [RelayCommand]
     private void JumpToFocusAlarm()
