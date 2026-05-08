@@ -98,6 +98,8 @@ public partial class MainViewModel
     {
         try
         {
+            // H2 主界面班次倒计时每 tick 刷新文本（计算属性，仅触发 binding 更新）
+            OnPropertyChanged(nameof(ShiftRemainingText));
             await AutoRefreshTickAsync();
         }
         catch (Exception ex)

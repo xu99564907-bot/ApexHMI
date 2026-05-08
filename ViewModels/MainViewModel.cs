@@ -133,6 +133,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string currentSection = "主界面";
     [ObservableProperty] private string systemMessage = "系统就绪";
     [ObservableProperty] private string loginUser = "操作员";
+    // H6 / H7 主界面流程日志过滤 + 搜索（FlowStepsView Filter 应用）
+    [ObservableProperty] private bool flowLogShowInfo = true;
+    [ObservableProperty] private bool flowLogShowWarn = true;
+    [ObservableProperty] private bool flowLogShowError = true;
+    [ObservableProperty] private string flowLogSearchText = string.Empty;
     /// <summary>UI 全局缩放因子，应用到主窗口 LayoutTransform。范围 0.7 ~ 1.5。</summary>
     [ObservableProperty] private double uiScale = 1.0;
     [ObservableProperty] private string manualWriteTagName = string.Empty;
@@ -443,6 +448,53 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public string ProductionTrendPath => BuildSparklinePath(new double[] { Math.Max(0, ShiftProductionCount * 0.35), ShiftProductionCount * 0.5, ShiftProductionCount * 0.68, ShiftProductionCount * 0.8, ShiftProductionCount * 0.92, ShiftProductionCount });
     public string OeeTrendPath => BuildSparklinePath(new double[] { Math.Max(0, OeeRate - 9), OeeRate - 5, OeeRate - 3, OeeRate - 1, OeeRate + 1, OeeRate });
     public string AlarmTrendPath => BuildSparklinePath(new double[] { ActiveAlarmCount + 4, ActiveAlarmCount + 3, ActiveAlarmCount + 2, ActiveAlarmCount + 2, ActiveAlarmCount + 1, Math.Max(1, ActiveAlarmCount) });
+
+    // ===== Phase 2.1 主界面 =====
+    // H3 KPI mini sparkline（OEE 复用 OeeTrendPath；新加节拍 / UPH）
+    public string CycleTimeTrendPath => BuildSparklinePath(new double[] { CycleTimeSeconds + 0.5, CycleTimeSeconds + 0.3, CycleTimeSeconds + 0.1, CycleTimeSeconds - 0.1, CycleTimeSeconds, CycleTimeSeconds + 0.1 });
+    public string HourlyThroughputTrendPath => BuildSparklinePath(new double[] { Math.Max(0, HourlyThroughput * 0.85), HourlyThroughput * 0.9, HourlyThroughput * 0.95, HourlyThroughput * 0.98, HourlyThroughput, HourlyThroughput });
+
+    // H1 目标完成度
+    public double ProductionProgressPercent => TargetCount > 0 ? Math.Min(100, (double)ShiftProductionCount * 100 / TargetCount) : 0;
+    public string ProductionProgressText => $"{ShiftProductionCount} / {TargetCount}";
+    public string ProductionProgressPercentText => $"{ProductionProgressPercent:F1}%";
+
+    // H2 班次倒计时（每次 _subscriptionTimer Tick 触发刷新）
+    private (DateTime Start, DateTime End, string Label) ResolveCurrentShiftInfo()
+    {
+        // 默认 08:30 / 20:30；后续扩展从 IOptions<AppOptions>.Shift 读
+        var dayStart = DateTime.Today.AddHours(8).AddMinutes(30);
+        var nightStart = DateTime.Today.AddHours(20).AddMinutes(30);
+        var now = DateTime.Now;
+        if (now < dayStart) return (nightStart.AddDays(-1), dayStart, "夜班");
+        if (now < nightStart) return (dayStart, nightStart, "白班");
+        return (nightStart, dayStart.AddDays(1), "夜班");
+    }
+    public string CurrentShiftLabel => ResolveCurrentShiftInfo().Label;
+    public string ShiftRemainingText
+    {
+        get
+        {
+            var info = ResolveCurrentShiftInfo();
+            var remaining = info.End - DateTime.Now;
+            if (remaining <= TimeSpan.Zero) return $"{info.Label} 切换中";
+            var h = (int)remaining.TotalHours;
+            return $"{info.Label}还剩 {h:D2}:{remaining.Minutes:D2}:{remaining.Seconds:D2}";
+        }
+    }
+
+    // H5 启动条件 unmet 时显示哪条没过
+    public string StartReadyDetail
+    {
+        get
+        {
+            var lines = new System.Collections.Generic.List<string>(3);
+            lines.Add(StartModeReady ? "✓ 模式：已选择 (手动 / 自动)" : "✗ 模式：当前为调试 / 空运行 / 旁路，未选 手动 / 自动");
+            lines.Add(StartAlarmReady ? "✓ 报警：无活动报警" : $"✗ 报警：存在 {ActiveAlarmCount} 个活动报警，需先复位");
+            lines.Add(StartInterlockReady ? "✓ 联锁：条件满足" : "✗ 联锁：模式 / 报警未通过");
+            return string.Join("\n", lines);
+        }
+    }
     public string ProgramMonitorMainFlowTracePath => BuildTracePath("F1", "主线1");
     public string ProgramMonitorSubFlow2TracePath => BuildTracePath("F2", "主线2");
     public string ProgramMonitorSubFlow3TracePath => BuildTracePath("F3", "主线3");
@@ -569,6 +621,52 @@ public partial class MainViewModel : ObservableObject, IDisposable
             NavigateCommand.Execute("主界面");
         }
         _ = UpdateAutoRefreshStateAsync();
+    }
+
+    // H6 / H7 流程日志 Filter 应用
+    partial void OnFlowLogShowInfoChanged(bool value) => ApplyFlowLogFilter();
+    partial void OnFlowLogShowWarnChanged(bool value) => ApplyFlowLogFilter();
+    partial void OnFlowLogShowErrorChanged(bool value) => ApplyFlowLogFilter();
+    partial void OnFlowLogSearchTextChanged(string value) => ApplyFlowLogFilter();
+
+    private void ApplyFlowLogFilter()
+    {
+        if (FlowStepsView is null) return;
+        FlowStepsView.Filter = obj =>
+        {
+            if (obj is not Models.FlowStepRecord step) return true;
+            var resultLower = (step.Result ?? string.Empty).ToLowerInvariant();
+            var commentLower = (step.Comment ?? string.Empty).ToLowerInvariant();
+            var isError = resultLower.Contains("error") || resultLower.Contains("超时") || resultLower.Contains("失败")
+                          || resultLower.Contains("ng") || commentLower.Contains("失败") || commentLower.Contains("超时");
+            var isWarn = !isError && (resultLower.Contains("warn") || resultLower.Contains("warning")
+                          || resultLower.Contains("慢") || commentLower.Contains("等待") || resultLower.Contains("运行中"));
+            var isInfo = !isError && !isWarn;
+            if (isError && !FlowLogShowError) return false;
+            if (isWarn && !FlowLogShowWarn) return false;
+            if (isInfo && !FlowLogShowInfo) return false;
+            if (!string.IsNullOrEmpty(FlowLogSearchText))
+            {
+                var s = FlowLogSearchText.ToLowerInvariant();
+                var combined = $"{step.FlowName} {step.StepNo} {step.Result} {step.RelatedAlarm} {step.Comment} {step.Title}".ToLowerInvariant();
+                if (!combined.Contains(s)) return false;
+            }
+            return true;
+        };
+    }
+
+    // H4 重点报警跳转：点击主界面"重点报警"卡 → 跳报警页对应记录
+    [RelayCommand]
+    private void JumpToFocusAlarm()
+    {
+        var alarm = AlarmStatistics.FirstOrDefault();
+        var keyword = alarm?.Source ?? alarm?.Message ?? string.Empty;
+        if (string.IsNullOrEmpty(keyword))
+        {
+            Navigate("报警画面");
+            return;
+        }
+        JumpToAlarmByKeyword(keyword);
     }
 
     partial void OnCurrentUserRoleChanged(UserRole value)
