@@ -7,6 +7,8 @@
         <converters:StringToBrushConverter x:Key="StringToBrushConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <converters:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter"/>
+        <converters:NormalizedHeightConverter x:Key="NormalizedHeightConverter"/>
         <Style x:Key="SparklinePathStyle" TargetType="Path">
             <Setter Property="StrokeThickness" Value="2.5"/>
             <Setter Property="Stretch" Value="Fill"/>

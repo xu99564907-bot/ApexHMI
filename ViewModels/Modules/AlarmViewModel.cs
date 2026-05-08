@@ -66,6 +66,50 @@ public sealed class AlarmViewModel : ModuleViewModelBase
         set => Shell.ShowOnlyFocusAlarms = value;
     }
 
+    // A2/A9: 当前 + 历史共用的过滤
+    public ICollectionView CurrentAlarmsView => Shell.CurrentAlarmsView;
+    public ICollectionView AlarmHistoryView => Shell.AlarmHistoryView;
+    public ObservableCollection<string> AlarmListLevelOptions => Shell.AlarmListLevelOptions;
+    public ObservableCollection<string> AlarmListTimeRangeOptions => Shell.AlarmListTimeRangeOptions;
+    public ObservableCollection<string> AlarmSourceOptions => Shell.AlarmSourceOptions;
+    public string AlarmListLevelFilter
+    {
+        get => Shell.AlarmListLevelFilter;
+        set => Shell.AlarmListLevelFilter = value;
+    }
+    public string AlarmListSourceFilter
+    {
+        get => Shell.AlarmListSourceFilter;
+        set => Shell.AlarmListSourceFilter = value;
+    }
+    public string AlarmListKeyword
+    {
+        get => Shell.AlarmListKeyword;
+        set => Shell.AlarmListKeyword = value;
+    }
+    public string AlarmListTimeRange
+    {
+        get => Shell.AlarmListTimeRange;
+        set => Shell.AlarmListTimeRange = value;
+    }
+
+    // A3 详情侧边栏当前选中
+    public AlarmRecord? SelectedAlarmDetail
+    {
+        get => Shell.SelectedAlarmDetail;
+        set => Shell.SelectedAlarmDetail = value;
+    }
+
+    // A1 顶部高级别红条
+    public string HighAlarmBannerText => Shell.HighAlarmBannerText;
+    public IRelayCommand DismissHighAlarmBannerCommand => Shell.DismissHighAlarmBannerCommand;
+
+    // A4 导出筛选 / A8 跳流程
+    public IAsyncRelayCommand ExportFilteredAlarmsCommand => Shell.ExportFilteredAlarmsCommand;
+
+    // A5 频率直方图
+    public ObservableCollection<AlarmHistogramBar> AlarmFrequencyBars => Shell.AlarmFrequencyBars;
+
     public void AcknowledgeAllAlarms()
     {
         if (!Shell.CanOperateDevices)

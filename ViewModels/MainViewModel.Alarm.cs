@@ -24,6 +24,50 @@ namespace ApexHMI.ViewModels;
 public partial class MainViewModel
 {
     private int _suppressAlarmStatisticsRefreshDepth;
+    private readonly AlarmNotificationService _alarmNotificationService = new();
+
+    // ========== A2/A9: 报警过滤（当前 + 历史共用一组过滤条件） ==========
+    [ObservableProperty]
+    private string alarmListLevelFilter = "全部";  // 全部 / Alarm / Error / Warning / Info
+
+    [ObservableProperty]
+    private string alarmListSourceFilter = "全部"; // 全部 / 各 source 名
+
+    [ObservableProperty]
+    private string alarmListKeyword = string.Empty; // A9 关键字搜索
+
+    [ObservableProperty]
+    private string alarmListTimeRange = "全部";    // A9 时间段：全部 / 近1h / 近8h / 今日 / 近7天
+
+    [ObservableProperty]
+    private AlarmRecord? selectedAlarmDetail;       // A3 详情侧边栏当前选中
+
+    // A2 来源下拉来源（动态根据 CurrentAlarms+AlarmHistory 推导出来）
+    public ObservableCollection<string> AlarmSourceOptions { get; } = new() { "全部" };
+
+    public ObservableCollection<string> AlarmListLevelOptions { get; } =
+        new() { "全部", "Alarm", "Error", "Warning", "Info" };
+
+    public ObservableCollection<string> AlarmListTimeRangeOptions { get; } =
+        new() { "全部", "近1h", "近8h", "今日", "近7天" };
+
+    // A5 频率直方图：24 个 bar（最近 24h，每小时一个）按级别分桶
+    public ObservableCollection<AlarmHistogramBar> AlarmFrequencyBars { get; } = new();
+
+    public ICollectionView CurrentAlarmsView => CollectionViewSource.GetDefaultView(CurrentAlarms);
+    public ICollectionView AlarmHistoryView => CollectionViewSource.GetDefaultView(AlarmHistory);
+
+    // A1 高级别报警未确认时的浮动横幅（顶部红条），点击 × 后清空
+    [ObservableProperty]
+    private string highAlarmBannerText = string.Empty;
+
+    [RelayCommand]
+    private void DismissHighAlarmBanner() => HighAlarmBannerText = string.Empty;
+
+    partial void OnAlarmListLevelFilterChanged(string value) => RefreshAlarmListView();
+    partial void OnAlarmListSourceFilterChanged(string value) => RefreshAlarmListView();
+    partial void OnAlarmListKeywordChanged(string value) => RefreshAlarmListView();
+    partial void OnAlarmListTimeRangeChanged(string value) => RefreshAlarmListView();
 
     // ========== 报警/审计/流程分析 ==========
 
@@ -31,6 +75,11 @@ public partial class MainViewModel
     private void AcknowledgeAllAlarms()
     {
         if (!CanOperateDevices) { SystemMessage = "当前权限不足，无法确认报警"; return; }
+        // A6: 二次确认（避免误点清掉整页未读）
+        if (CurrentAlarms.Count > 0 && !RequestConfirmation("确认全部报警", $"确定要确认当前全部 {CurrentAlarms.Count} 条报警吗？此操作将把所有报警标记为已确认。"))
+        {
+            return;
+        }
         foreach (var alarm in CurrentAlarms)
         {
             alarm.Acknowledged = true;
@@ -154,6 +203,19 @@ public partial class MainViewModel
         Logs.Insert(0, new AlarmRecord { Time = DateTime.Now, Level = "Warning", Source = source, Message = $"报警触发：{alarm.Message}", Active = false, Acknowledged = true, State = "Logged", Count = 1 });
         OnPropertyChanged(nameof(AlarmCount));
         RequestAlarmStatisticsRefresh();
+
+        // A1: 高级别 + 未确认 → 播声音 + 顶部红条横幅
+        if (level is "Alarm" or "Error")
+        {
+            _alarmNotificationService.PlaySoundForLevel(level);
+            HighAlarmBannerText = $"[{level}] {alarm.Source} - {alarm.Message}";
+            // A10: 异步推送到 alarm-notifications.log（外部 SMTP/IM 网关可监听该文件）
+            _ = _alarmNotificationService.PushAsync(GetProjectRoot(), alarm);
+        }
+        else if (level == "Warning")
+        {
+            _alarmNotificationService.PlaySoundForLevel(level);
+        }
     }
 
     private void ClearAlarm(string source)
@@ -249,6 +311,11 @@ public partial class MainViewModel
         };
         AlarmStatisticsView.Refresh();
         OnPropertyChanged(nameof(FocusAlarmHint));
+
+        // A2/A5: 来源下拉 + 频率直方图同步刷新
+        RefreshAlarmSourceOptions();
+        RefreshAlarmFrequencyBars();
+        RefreshAlarmListView();
     }
 
     [RelayCommand]
@@ -752,4 +819,138 @@ public partial class MainViewModel
         var s when s.Contains("Vacuum", StringComparison.OrdinalIgnoreCase) => "真空建立失败/吸附不良/工件偏移",
         _ => "待补充归档原因"
     };
+
+    // ========== A2/A3/A5/A9: 视图刷新与辅助 ==========
+
+    /// <summary>A2/A9: 刷新当前报警 + 历史报警两个 ICollectionView 的 Filter（共用同一组过滤条件）。</summary>
+    public void RefreshAlarmListView()
+    {
+        var now = DateTime.Now;
+        bool predicate(object item)
+        {
+            if (item is not AlarmRecord a) return false;
+            if (!string.Equals(AlarmListLevelFilter, "全部", StringComparison.Ordinal)
+                && !string.Equals(a.Level, AlarmListLevelFilter, StringComparison.OrdinalIgnoreCase)) return false;
+            if (!string.Equals(AlarmListSourceFilter, "全部", StringComparison.Ordinal)
+                && !string.Equals(a.Source, AlarmListSourceFilter, StringComparison.OrdinalIgnoreCase)) return false;
+            if (AlarmListTimeRange == "近1h" && a.Time < now.AddHours(-1)) return false;
+            if (AlarmListTimeRange == "近8h" && a.Time < now.AddHours(-8)) return false;
+            if (AlarmListTimeRange == "今日" && a.Time.Date != now.Date) return false;
+            if (AlarmListTimeRange == "近7天" && a.Time < now.AddDays(-7)) return false;
+            var keyword = AlarmListKeyword?.Trim();
+            if (!string.IsNullOrEmpty(keyword)
+                && a.Source.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0
+                && a.Message.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0
+                && (a.Note ?? string.Empty).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) < 0) return false;
+            return true;
+        }
+
+        CurrentAlarmsView.Filter = predicate;
+        AlarmHistoryView.Filter = predicate;
+        CurrentAlarmsView.Refresh();
+        AlarmHistoryView.Refresh();
+    }
+
+    /// <summary>A2: 根据 CurrentAlarms+AlarmHistory 推导出可用 source 列表。</summary>
+    public void RefreshAlarmSourceOptions()
+    {
+        var sources = CurrentAlarms.Concat(AlarmHistory)
+            .Select(a => a.Source)
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(s => s, StringComparer.Ordinal)
+            .ToList();
+
+        AlarmSourceOptions.Clear();
+        AlarmSourceOptions.Add("全部");
+        foreach (var s in sources) AlarmSourceOptions.Add(s);
+
+        // 选中的 source 不在新列表中 → 重置
+        if (!AlarmSourceOptions.Contains(AlarmListSourceFilter, StringComparer.Ordinal))
+        {
+            AlarmListSourceFilter = "全部";
+        }
+    }
+
+    /// <summary>A5: 刷新最近 24h 频率直方图（24 个 bin，按级别分桶）。</summary>
+    public void RefreshAlarmFrequencyBars()
+    {
+        var now = DateTime.Now;
+        var hourStart = new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0);
+        var bars = new List<AlarmHistogramBar>();
+
+        // 23 小时前的整点 → 当前小时，共 24 个 bin
+        for (var i = 23; i >= 0; i--)
+        {
+            var binStart = hourStart.AddHours(-i);
+            var binEnd = binStart.AddHours(1);
+            bars.Add(new AlarmHistogramBar { Label = binStart.ToString("HH") });
+
+            foreach (var a in AlarmHistory.Concat(CurrentAlarms))
+            {
+                if (a.Time < binStart || a.Time >= binEnd) continue;
+                var bar = bars[bars.Count - 1];
+                if (string.Equals(a.Level, "Alarm", StringComparison.OrdinalIgnoreCase)) bar.AlarmCount++;
+                else if (string.Equals(a.Level, "Error", StringComparison.OrdinalIgnoreCase)) bar.ErrorCount++;
+                else if (string.Equals(a.Level, "Warning", StringComparison.OrdinalIgnoreCase)) bar.WarningCount++;
+            }
+        }
+
+        var max = bars.Max(b => b.Total);
+        if (max <= 0) max = 1;
+        foreach (var b in bars)
+        {
+            b.NormalizedHeight = (double)b.Total / max;
+        }
+
+        AlarmFrequencyBars.Clear();
+        foreach (var b in bars) AlarmFrequencyBars.Add(b);
+    }
+
+    /// <summary>A4: 导出当前筛选结果为 CSV（CurrentAlarms 和 AlarmHistory 合并的过滤后视图）。</summary>
+    [RelayCommand]
+    private async Task ExportFilteredAlarmsAsync()
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "CSV 文件|*.csv",
+            FileName = $"alarms-filtered-{DateTime.Now:yyyyMMdd-HHmmss}.csv"
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        var sb = new StringBuilder();
+        sb.AppendLine("时间,级别,来源,内容,状态,次数,确认人,备注,处理建议,关联流程");
+
+        IEnumerable<AlarmRecord> Combine()
+        {
+            foreach (var a in CurrentAlarmsView.Cast<AlarmRecord>()) yield return a;
+            foreach (var a in AlarmHistoryView.Cast<AlarmRecord>()) yield return a;
+        }
+
+        foreach (var a in Combine())
+        {
+            sb.AppendLine(string.Join(",",
+                a.Time.ToString("yyyy-MM-dd HH:mm:ss"),
+                EscapeAlarmCsvField(a.Level),
+                EscapeAlarmCsvField(a.Source),
+                EscapeAlarmCsvField(a.Message),
+                EscapeAlarmCsvField(a.State),
+                a.Count.ToString(CultureInfo.InvariantCulture),
+                EscapeAlarmCsvField(a.AcknowledgedBy),
+                EscapeAlarmCsvField(a.Note),
+                EscapeAlarmCsvField(a.HandlingSuggestion),
+                EscapeAlarmCsvField(a.RelatedFlowStep)));
+        }
+
+        await Compat.WriteAllTextAsync(dialog.FileName, sb.ToString(), Encoding.UTF8);
+        SystemMessage = $"已导出筛选结果：{dialog.FileName}";
+        AddLog("报警", SystemMessage, "Info");
+    }
+
+    private static string EscapeAlarmCsvField(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return string.Empty;
+        if (value.IndexOfAny(new[] { ',', '"', '\n', '\r' }) < 0) return value;
+        return "\"" + value.Replace("\"", "\"\"") + "\"";
+    }
 }
