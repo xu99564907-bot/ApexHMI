@@ -111,6 +111,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<ParameterItem> ActiveRecipeParameters { get; } = new();
     public ObservableCollection<TrendSample> TrendSamples { get; } = new();
     public ObservableCollection<OpcUaBrowseNode> OpcUaBrowserNodes { get; } = new();
+
+    // M17 OPC UA 节点搜索 (高亮所有 DisplayName / NodeId 包含搜索词的节点)
+    [ObservableProperty] private string opcUaBrowserSearchText = string.Empty;
+
+    // M19 OPC UA 节点订阅 quality 变化日志 (短期内存保留，用于诊断断连)
+    public ObservableCollection<string> OpcUaQualityLog { get; } = new();
     public ObservableCollection<IoTableRow> IoTableRows { get; } = new();
     public ObservableCollection<ManualCylinderBlockItem> ManualCylinderBlocks { get; } = new();
     public ObservableCollection<ManualAxisBlockItem> ManualAxisBlocks { get; } = new();

@@ -16,6 +16,9 @@ public partial class OpcUaBrowseNode : ObservableObject
     [ObservableProperty] private bool isLoaded;
     [ObservableProperty] private bool isPlaceholder;
 
+    // M17 节点搜索高亮标记（OpcUaBrowserSearchText 命中时为 true，TreeView DataTrigger 高亮）
+    [ObservableProperty] private bool isSearchHit;
+
     public static OpcUaBrowseNode CreatePlaceholder()
     {
         return new OpcUaBrowseNode

@@ -449,6 +449,34 @@ public partial class MainViewModel
 
     partial void OnIoMonitorSearchTextChanged(string value) => RefreshIoMonitorPagedItems();
 
+    // M17 OPC UA 节点搜索：递归标记 IsSearchHit, TreeView DataTrigger 高亮
+    partial void OnOpcUaBrowserSearchTextChanged(string value)
+    {
+        var keyword = value?.Trim() ?? string.Empty;
+        foreach (var n in OpcUaBrowserNodes)
+            ApplyOpcUaNodeSearchHighlight(n, keyword);
+    }
+
+    private static void ApplyOpcUaNodeSearchHighlight(OpcUaBrowseNode node, string keyword)
+    {
+        node.IsSearchHit = !string.IsNullOrEmpty(keyword) && (
+            (node.DisplayName?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
+            || (node.NodeId?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0);
+        foreach (var child in node.Children)
+            ApplyOpcUaNodeSearchHighlight(child, keyword);
+    }
+
+    // M19 quality 日志（最近 50 条，FIFO）
+    internal void AppendOpcUaQualityLog(string message)
+    {
+        var line = $"{DateTime.Now:HH:mm:ss} {message}";
+        Application.Current?.Dispatcher.BeginInvoke(new Action(() =>
+        {
+            OpcUaQualityLog.Insert(0, line);
+            while (OpcUaQualityLog.Count > 50) OpcUaQualityLog.RemoveAt(OpcUaQualityLog.Count - 1);
+        }));
+    }
+
     private void RefreshIoMonitorPagedItems()
     {
         IoMonitorLeftItems.Clear();
@@ -1025,6 +1053,40 @@ public partial class MainViewModel
         var deltaTime = (_programMonitorCursorBSample.Time - _programMonitorCursorASample.Time).Duration();
         var deltaStep = Math.Abs(_programMonitorCursorBSample.StepNo - _programMonitorCursorASample.StepNo);
         var sameFlow = string.Equals(_programMonitorCursorASample.FlowId, _programMonitorCursorBSample.FlowId, StringComparison.OrdinalIgnoreCase);
+
+        // M21 双光标统计：在 A↔B 之间加平均/最大/最小节拍（仅同流程时计算）
+        if (sameFlow && deltaStep > 0)
+        {
+            var avgPerStep = deltaTime.TotalSeconds / deltaStep;
+            // 取 A↔B 区间内的 samples 算 step→step 的最大/最小间隔
+            var fromTime = _programMonitorCursorASample.Time < _programMonitorCursorBSample.Time
+                ? _programMonitorCursorASample.Time : _programMonitorCursorBSample.Time;
+            var toTime = _programMonitorCursorASample.Time < _programMonitorCursorBSample.Time
+                ? _programMonitorCursorBSample.Time : _programMonitorCursorBSample.Time;
+            var samplesInRange = _programMonitorTraceHistory
+                .Where(s => string.Equals(s.FlowId, _programMonitorCursorASample.FlowId, StringComparison.OrdinalIgnoreCase)
+                            && s.Time >= fromTime && s.Time <= toTime)
+                .OrderBy(s => s.Time)
+                .ToList();
+            if (samplesInRange.Count >= 2)
+            {
+                var intervals = new System.Collections.Generic.List<double>();
+                for (var i = 1; i < samplesInRange.Count; i++)
+                {
+                    var dt = (samplesInRange[i].Time - samplesInRange[i - 1].Time).TotalSeconds;
+                    if (dt > 0) intervals.Add(dt);
+                }
+                if (intervals.Count > 0)
+                {
+                    ProgramMonitorCursorDeltaText =
+                        $"Δ：{deltaTime.TotalSeconds:F1}s / {deltaStep} step / 平均 {avgPerStep:F2}s/step / 最大 {intervals.Max():F2}s / 最小 {intervals.Min():F2}s";
+                    return;
+                }
+            }
+            ProgramMonitorCursorDeltaText = $"Δ：{deltaTime.TotalSeconds:F1}s / {deltaStep} step / 平均 {avgPerStep:F2}s/step";
+            return;
+        }
+
         ProgramMonitorCursorDeltaText = sameFlow
             ? $"Δ：{deltaTime.TotalSeconds:F1}s / {deltaStep} step"
             : $"Δ：{deltaTime.TotalSeconds:F1}s / 跨流程";

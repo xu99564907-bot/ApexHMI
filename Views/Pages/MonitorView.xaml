@@ -250,7 +250,14 @@
                                                 <Button Content="加入变量表" Command="{Binding AddSelectedOpcUaNodeAsTagCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,6"/>
                                             </WrapPanel>
                                         </DockPanel>
-                                        <TextBlock Grid.Row="1" Text="{Binding OpcUaBrowserStatus}" Foreground="#64748B" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                                        <!-- M17 节点搜索框 -->
+                                        <DockPanel Grid.Row="1" Margin="0,0,0,10">
+                                            <TextBlock Text="搜索：" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBox DockPanel.Dock="Left" Text="{Binding OpcUaBrowserSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                                     Width="240" BorderBrush="#D7DFEA" Padding="6,4"
+                                                     ToolTip="按 DisplayName / NodeId 模糊匹配，命中节点黄底高亮（不展开节点）"/>
+                                            <TextBlock Text="{Binding OpcUaBrowserStatus}" Foreground="#64748B" Margin="12,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                        </DockPanel>
                                         <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" MinHeight="320">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -263,6 +270,13 @@
                                                             <Style TargetType="TreeViewItem">
                                                                 <EventSetter Event="Expanded" Handler="OpcUaBrowserTreeViewItem_Expanded"/>
                                                                 <Setter Property="Foreground" Value="#0F172A"/>
+                                                                <!-- M17 搜索命中黄底高亮 -->
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSearchHit}" Value="True">
+                                                                        <Setter Property="Background" Value="#FEF3C7"/>
+                                                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
                                                             </Style>
                                                         </TreeView.ItemContainerStyle>
                                                         <TreeView.Resources>
@@ -276,24 +290,40 @@
                                                         </TreeView.Resources>
                                                     </TreeView>
                                                 </Border>
+                                                <!-- M20 节点详情面板配色统一为浅色（之前白底白字看不清）-->
                                                 <Border Grid.Column="1" Margin="0,12,12,12" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" Padding="12">
-                                                    <StackPanel>
-                                                        <TextBlock Text="节点详情" FontSize="15" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
-                                                        <TextBlock Text="显示名" Foreground="#94A3B8"/>
-                                                        <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DisplayName}" Foreground="White" Margin="0,4,0,10" TextWrapping="Wrap"/>
-                                                        <TextBlock Text="NodeId" Foreground="#94A3B8"/>
-                                                        <TextBlock Text="{Binding SelectedOpcUaBrowseNode.NodeId}" Foreground="#BFDBFE" Margin="0,4,0,10" TextWrapping="Wrap"/>
-                                                        <TextBlock Text="节点类型" Foreground="#94A3B8"/>
-                                                        <TextBlock Text="{Binding SelectedOpcUaBrowseNode.NodeClass}" Foreground="White" Margin="0,4,0,10"/>
-                                                        <TextBlock Text="数据类型" Foreground="#94A3B8"/>
-                                                        <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DataType}" Foreground="White" Margin="0,4,0,10"/>
-                                                        <TextBlock Text="当前值" Foreground="#94A3B8"/>
-                                                        <TextBlock Text="{Binding SelectedOpcUaNodeValue}" Foreground="#86EFAC" Margin="0,4,0,10" TextWrapping="Wrap"/>
-                                                        <TextBlock Text="状态" Foreground="#94A3B8"/>
-                                                        <TextBlock Text="{Binding SelectedOpcUaNodeStatus}" Foreground="White" Margin="0,4,0,10"/>
-                                                        <TextBlock Text="时间戳" Foreground="#94A3B8"/>
-                                                        <TextBlock Text="{Binding SelectedOpcUaNodeTimestamp}" Foreground="White" Margin="0,4,0,0"/>
-                                                    </StackPanel>
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                        </Grid.RowDefinitions>
+                                                        <StackPanel Grid.Row="0">
+                                                            <TextBlock Text="节点详情" FontSize="15" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,10"/>
+                                                            <TextBlock Text="显示名" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DisplayName}" Foreground="#0F172A" Margin="0,4,0,10" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="NodeId" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.NodeId}" Foreground="#1D4ED8" Margin="0,4,0,10" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="节点类型" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.NodeClass}" Foreground="#0F172A" Margin="0,4,0,10"/>
+                                                            <TextBlock Text="数据类型" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DataType}" Foreground="#0F172A" Margin="0,4,0,10"/>
+                                                            <TextBlock Text="当前值" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaNodeValue}" Foreground="#16A34A" FontWeight="SemiBold" Margin="0,4,0,10" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="状态" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaNodeStatus}" Foreground="#0F172A" Margin="0,4,0,10"/>
+                                                            <TextBlock Text="时间戳" Foreground="#64748B"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaNodeTimestamp}" Foreground="#0F172A" Margin="0,4,0,10"/>
+                                                        </StackPanel>
+                                                        <!-- M19 OPC UA 订阅 quality 变化日志 -->
+                                                        <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,8,0,0">
+                                                            <DockPanel>
+                                                                <TextBlock DockPanel.Dock="Top" Text="订阅 quality 日志（最近 50 条）" Foreground="#64748B" FontSize="11" Margin="0,0,0,6"/>
+                                                                <ListBox ItemsSource="{Binding OpcUaQualityLog}" Background="Transparent" BorderThickness="0"
+                                                                         FontFamily="Consolas" FontSize="11" Foreground="#475569"
+                                                                         MaxHeight="120" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                                                            </DockPanel>
+                                                        </Border>
+                                                    </Grid>
                                                 </Border>
                                             </Grid>
                                         </Border>
@@ -418,7 +448,10 @@
                                                         <Button Content="继续采样" Command="{Binding ResumeProgramMonitorTraceCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,4" Margin="0,0,8,0"/>
                                                         <Button Content="历史回放" Command="{Binding EnterProgramMonitorTraceReplayCommand}" Background="#1D4ED8" Foreground="White" BorderBrush="#1D4ED8" Padding="10,4" Margin="0,0,8,0"/>
                                                         <Button Content="回到实时" Command="{Binding ReturnProgramMonitorTraceToRealtimeCommand}" Background="#475569" Foreground="White" BorderBrush="#475569" Padding="10,4" Margin="0,0,16,0"/>
-                                                        <Button Content="导出CSV" Command="{Binding ExportProgramMonitorTraceCsvCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,4" Margin="0,0,16,0"/>
+                                                        <Button Content="导出CSV" Command="{Binding ExportProgramMonitorTraceCsvCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,4" Margin="0,0,8,0"/>
+                                                        <!-- M22 导出 trace 图为 PNG -->
+                                                        <Button Content="导出PNG" Click="ExportProgramTracePng_Click" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,4" Margin="0,0,16,0"
+                                                                ToolTip="把 trace 图当前可视区域保存为 PNG（便于汇报）"/>
                                                         <Button Content="保存会话" Command="{Binding SaveProgramMonitorTraceSessionCommand}" Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="10,4" Margin="0,0,8,0"/>
                                                         <Button Content="加载会话" Command="{Binding LoadProgramMonitorTraceSessionCommand}" Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED" Padding="10,4" Margin="0,0,16,0"/>
                                                         <TextBlock Text="定位时间" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0"/>

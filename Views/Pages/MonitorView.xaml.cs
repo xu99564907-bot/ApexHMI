@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using ApexHMI.Models;
 using ApexHMI.ViewModels;
@@ -19,6 +22,41 @@ public partial class MonitorView : UserControl
     public MonitorView()
     {
         InitializeComponent();
+    }
+
+    /// <summary>M22 程序监控 trace 图导出 PNG 截图（保存当前可视区域）。</summary>
+    private void ExportProgramTracePng_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var element = ProgramTraceChartHost;
+            if (element == null || element.ActualWidth < 1 || element.ActualHeight < 1)
+            {
+                MessageBox.Show("trace 图未渲染完成，无法导出。", "ApexHMI", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "PNG 文件|*.png",
+                FileName = $"program-trace-{DateTime.Now:yyyyMMdd-HHmmss}.png"
+            };
+            if (dlg.ShowDialog() != true) return;
+            var rtb = new RenderTargetBitmap(
+                (int)Math.Ceiling(element.ActualWidth),
+                (int)Math.Ceiling(element.ActualHeight),
+                96, 96, PixelFormats.Pbgra32);
+            rtb.Render(element);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+            using var fs = File.Create(dlg.FileName);
+            encoder.Save(fs);
+            var shell = GetShell();
+            if (shell != null) shell.SystemMessage = $"已导出 trace PNG：{dlg.FileName}";
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"导出 PNG 失败：{ex.Message}", "ApexHMI", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private MainViewModel? GetShell()
