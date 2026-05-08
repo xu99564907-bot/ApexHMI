@@ -1,0 +1,31 @@
+<UserControl x:Class="ApexHMI.Views.Controls.RingProgressBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Self">
+    <Grid Width="{Binding ElementName=Self, Path=Diameter}"
+          Height="{Binding ElementName=Self, Path=Diameter}">
+        <!-- 背景圆环 -->
+        <Ellipse Stroke="{Binding ElementName=Self, Path=TrackBrush}"
+                 StrokeThickness="{Binding ElementName=Self, Path=Thickness}"
+                 Fill="Transparent"/>
+        <!-- 进度弧 -->
+        <Path x:Name="ArcPath"
+              Stroke="{Binding ElementName=Self, Path=ArcBrush}"
+              StrokeThickness="{Binding ElementName=Self, Path=Thickness}"
+              StrokeStartLineCap="Round"
+              StrokeEndLineCap="Round"
+              Data="{Binding ElementName=Self, Path=ArcGeometry}"/>
+        <!-- 中心文字 -->
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="{Binding ElementName=Self, Path=PercentText}"
+                       HorizontalAlignment="Center"
+                       FontSize="{Binding ElementName=Self, Path=ValueFontSize}"
+                       FontWeight="Bold"
+                       Foreground="{Binding ElementName=Self, Path=ValueBrush}"/>
+            <TextBlock Text="{Binding ElementName=Self, Path=Caption}"
+                       HorizontalAlignment="Center"
+                       FontSize="11"
+                       Foreground="{StaticResource Brush.TextMuted}"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -3,6 +3,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:ApexHMI.Converters">
     <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Phase 3 视觉重构基础 -->
+                <ResourceDictionary Source="/Themes/Theme.xaml"/>
+                <ResourceDictionary Source="/Themes/Buttons.xaml"/>
+                <ResourceDictionary Source="/Themes/Cards.xaml"/>
+                <ResourceDictionary Source="/Themes/DataGrid.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
         <!-- 通用转换器 -->
         <converters:StringToBrushConverter x:Key="StringToBrushConverter"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -105,5 +114,6 @@
         <converters:BoolToStatusMessageColorConverter x:Key="BoolToStatusMessageColorConverter"/>
         <converters:BoolToErrorBorderBrushConverter x:Key="BoolToErrorBorderBrushConverter"/>
         <converters:ErrorToTextColorConverter x:Key="ErrorToTextColorConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

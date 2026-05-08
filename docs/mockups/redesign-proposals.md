@@ -37,9 +37,10 @@
 | **2.6** | **配方 R1/R2/R3/R4/R5/R6/R7/R8/R9** | `298f96d` | **9** |
 | **2.7** | **程序生成 D1/D2/D3/D6/D8/D9** | `a6327e5` | **6** |
 | **2.8** | **履历 AU1-AU8** | (本次) | **8** |
-| **2.9** | **登录 L4/L5/L6** | (本次) | **3** |
+| **2.9** | **登录 L4/L5/L6** | `1d90c5f` | **3** |
+| **3.0** | **视觉重构骨架** (Themes/Theme/Buttons/Cards/DataGrid + RingProgressBar + KpiCard) | (本次) | 骨架 |
 
-**累计完成：约 82 项 / 17 commit · Phase 2 全部完成 ✅**
+**累计完成：约 82 项 / 18 commit · Phase 2 全部完成 ✅ · Phase 3 骨架就位**
 
 ### ⏸ 推迟到 Phase 3 / 4（设计复杂或视觉重构相关）
 
@@ -72,7 +73,8 @@
 ### git 历史
 
 ```
-(本次) [OP-Phase-2.8-2.9] 履历 AU1-AU8 + 登录 L4/L5/L6
+(本次) [OP-Phase-3.0] 视觉重构骨架（Themes 资源字典 + RingProgressBar + KpiCard）
+1d90c5f [OP-Phase-2.8-2.9] 履历 AU1-AU8 + 登录 L4/L5/L6
 a6327e5 [OP-Phase-2.7] 程序生成 D1/D2/D3/D6/D8/D9
 298f96d [OP-Phase-2.6] 配方页 R1-R9
 5337db3 [OP-Phase-2.5] 报警页 A1-A10
