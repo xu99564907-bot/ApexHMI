@@ -5,17 +5,17 @@
                   HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="12">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="380"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,10,0">
                 <StackPanel>
-                    <TextBlock Text="登录权限" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
-                    <TextBlock Text="当前身份" Foreground="#CBD5E1"/>
-                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,4,0,4"/>
+                    <TextBlock Text="登录权限" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                    <TextBlock Text="当前身份" Foreground="#64748B"/>
+                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="24" FontWeight="Bold" Foreground="#0F172A" Margin="0,4,0,4"/>
                     <TextBlock Text="{Binding ShellViewModel.LastLoginText}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
-                    <TextBlock Text="{Binding ShellViewModel.FailedAttemptsText}" Foreground="#FCA5A5" FontSize="12" Margin="0,0,0,12">
+                    <TextBlock Text="{Binding ShellViewModel.FailedAttemptsText}" Foreground="#DC2626" FontSize="12" Margin="0,0,0,12">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Visible"/>
@@ -27,29 +27,77 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Text="密码" Foreground="#CBD5E1"/>
+                    <TextBlock Text="密码" Foreground="#64748B"/>
                     <PasswordBox PasswordChanged="RolePasswordBox_PasswordChanged" Margin="0,4,0,12"/>
                     <WrapPanel>
                         <Button Content="操作员" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Operator" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
                         <Button Content="工程师" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Engineer" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
                         <Button Content="管理员" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Administrator" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
                     </WrapPanel>
-                    <Button Content="退出登录" Command="{Binding ShellViewModel.LogoutCommand}" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C" Padding="12,8" Width="120"/>
-                    <TextBlock Text="默认账号见运维内部文档；首次登录后请尽快修改密码。" Margin="0,12,0,0" Foreground="#94A3B8" TextWrapping="Wrap"/>
+
+                    <!-- L4: 切换用户但不退出会话 -->
+                    <WrapPanel Margin="0,4,0,0">
+                        <Button Content="切换用户（保留会话）"
+                                Command="{Binding SwitchUserCommand}"
+                                Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                Padding="12,8" Margin="0,0,8,8"
+                                ToolTip="L4: 弹层切换登录身份，不离开当前页面"/>
+                        <Button Content="退出登录"
+                                Command="{Binding ShellViewModel.LogoutCommand}"
+                                Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                Padding="12,8" Margin="0,0,0,8"/>
+                    </WrapPanel>
+
+                    <TextBlock Text="L5 临时提权：当某项操作权限不足时，调用方会自动弹层让工程师/管理员一次性输入密码授权完成。"
+                               Margin="0,12,0,0" Foreground="#64748B" TextWrapping="Wrap" FontSize="11"/>
+                    <TextBlock Text="默认账号见运维内部文档；首次登录后请尽快修改密码。"
+                               Margin="0,8,0,0" Foreground="#94A3B8" TextWrapping="Wrap" FontSize="11"/>
                 </StackPanel>
             </Border>
 
+            <!-- L6: 权限说明可编辑表（仅管理员能保存） -->
             <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="16">
-                <StackPanel>
-                    <TextBlock Text="权限说明" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
-                    <TextBlock Text="操作员：查看、监控、设备操作。" Foreground="#CBD5E1" Margin="0,0,0,8"/>
-                    <TextBlock Text="工程师：可修改大部分工艺与设备参数。" Foreground="#CBD5E1" Margin="0,0,0,8"/>
-                    <TextBlock Text="管理员：最高权限，可维护系统级参数和报警复位。" Foreground="#CBD5E1" Margin="0,0,0,8"/>
-                    <TextBlock Text="当前参数页是否允许编辑：" Foreground="#CBD5E1" Margin="0,12,0,4"/>
-                    <TextBlock Text="{Binding CanEditParameters}" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                    <TextBlock Text="当前是否允许报警复位：" Foreground="#CBD5E1" Margin="0,12,0,4"/>
-                    <TextBlock Text="{Binding CanAdmin}" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                </StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                        <TextBlock Text="权限说明" FontSize="18" FontWeight="Bold" Foreground="#0F172A"/>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Content="重新加载" Command="{Binding ReloadPermissionsCommand}"
+                                    Background="#374151" Foreground="White" BorderBrush="#374151"
+                                    Padding="10,4" Margin="0,0,8,0"/>
+                            <Button Content="保存（仅管理员）" Command="{Binding SavePermissionsCommand}"
+                                    IsEnabled="{Binding CanAdmin}"
+                                    Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
+                                    Padding="10,4"
+                                    ToolTip="L6: 持久化到 config/permissions.json"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding Permissions}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="True" CanUserDeleteRows="True"
+                              IsReadOnly="False"
+                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#E2E8F0"
+                              RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="角色" Binding="{Binding Role, UpdateSourceTrigger=LostFocus}" Width="160"/>
+                            <DataGridTextColumn Header="说明（可编辑）" Binding="{Binding Description, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Grid.Row="2" Text="提示：管理员可在此添加 / 修改自定义角色（需保证 config/users.json 中存在同名 Role）。"
+                               Foreground="#64748B" Margin="0,8,0,4" TextWrapping="Wrap" FontSize="11"/>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="当前可编辑参数：" Foreground="#64748B" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding CanEditParameters}" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,16,0"/>
+                        <TextBlock Text="当前可复位报警：" Foreground="#64748B" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding CanAdmin}" FontWeight="Bold" Foreground="#0F172A"/>
+                    </StackPanel>
+                </Grid>
             </Border>
         </Grid>
     </ScrollViewer>

@@ -1384,6 +1384,65 @@ public partial class MainViewModel : ObservableObject, IDisposable
         AddAudit("登录", CurrentRoleText, "成功", SystemMessage);
     }
 
+    /// <summary>L4: 弹层切换用户，不退出会话（不离开当前页面）。</summary>
+    [RelayCommand]
+    private void SwitchUser()
+    {
+        var dlg = new ApexHMI.Views.Dialogs.SwitchUserDialog
+        {
+            Owner = System.Windows.Application.Current?.MainWindow,
+            DataContext = new ApexHMI.Views.Dialogs.SwitchUserDialog.SwitchUserViewModel
+            {
+                Title = $"切换登录身份（当前：{CurrentRoleText}）",
+                Hint = "成功后立即生效，当前页面状态保留。"
+            }
+        };
+        if (dlg.ShowDialog() != true) return;
+        LoginPassword = dlg.Password;
+        Login(dlg.SelectedRole);
+    }
+
+    /// <summary>
+    /// L5: 临时提权（UAC 风格）。把 newRole 凭证一次性升级到 newRole 完成 action 后再回滚。
+    /// 调用方在权限不足时使用，避免必须切换角色。
+    /// </summary>
+    public bool TryElevateAndRun(UserRole requiredRole, System.Action action)
+    {
+        if (CurrentUserRole >= requiredRole)
+        {
+            action(); return true;
+        }
+        var dlg = new ApexHMI.Views.Dialogs.SwitchUserDialog
+        {
+            Owner = System.Windows.Application.Current?.MainWindow,
+            DataContext = new ApexHMI.Views.Dialogs.SwitchUserDialog.SwitchUserViewModel
+            {
+                Title = $"需要 {requiredRole} 及以上权限，临时提权一次：",
+                Hint = "通过后仅本次操作生效，操作结束自动恢复原角色。"
+            }
+        };
+        if (dlg.ShowDialog() != true) return false;
+        var account = _userService.AuthenticateByRole(dlg.SelectedRole, dlg.Password);
+        if (account is null || account.Role < requiredRole)
+        {
+            ShowPopup("提权失败", "密码错误或角色权限不足", "Warning");
+            return false;
+        }
+        var saved = CurrentUserRole;
+        try
+        {
+            CurrentUserRole = account.Role;
+            AddAudit("临时提权", $"{saved} → {account.Role}", "成功", "一次性提权");
+            action();
+            return true;
+        }
+        finally
+        {
+            CurrentUserRole = saved;
+            AddLog("登录", $"临时提权结束，已恢复为 {saved}", "Info");
+        }
+    }
+
     [RelayCommand]
     private void Logout()
     {
@@ -2030,8 +2089,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
             Action = action,
             Target = target,
             Result = result,
-            Detail = detail
+            Detail = detail,
+            Category = ClassifyAuditAction(action)
         });
+    }
+
+    private static string ClassifyAuditAction(string action)
+    {
+        if (string.IsNullOrWhiteSpace(action)) return "其他";
+        if (action.Contains("登录", StringComparison.Ordinal) || action.Contains("提权", StringComparison.Ordinal) || action.Contains("切换用户", StringComparison.Ordinal)) return "登录类";
+        if (action.Contains("参数", StringComparison.Ordinal) || action.Contains("配方", StringComparison.Ordinal)) return "参数修改";
+        if (action.Contains("报警", StringComparison.Ordinal) || action.Contains("Alarm", StringComparison.OrdinalIgnoreCase)) return "报警处理";
+        if (action.Contains("气缸", StringComparison.Ordinal) || action.Contains("轴", StringComparison.Ordinal) || action.Contains("机械手", StringComparison.Ordinal) || action.Contains("启动", StringComparison.Ordinal) || action.Contains("停止", StringComparison.Ordinal) || action.Contains("回原", StringComparison.Ordinal)) return "设备操作";
+        if (action.Contains("弹窗", StringComparison.Ordinal) || action.Contains("确认框", StringComparison.Ordinal) || action.Contains("系统", StringComparison.Ordinal)) return "系统事件";
+        return "其他";
     }
 
     public void ShowPopup(string title, string message, string level = "Info")
