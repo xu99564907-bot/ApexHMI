@@ -52,4 +52,10 @@ public class GitPullSettings
     /// 生成程序后 auto commit 的消息模板，支持 {time} / {op} 占位符。留空则用默认模板。
     /// </summary>
     public string AutoCommitMessageTemplate { get; set; } = string.Empty;
+
+    /// <summary>
+    /// D6: HTTP/HTTPS 代理地址（场内代理需求）。形如 "http://proxy.local:8080"。
+    /// 留空则不启用代理。运行时通过 HTTP_PROXY / HTTPS_PROXY 环境变量传给 git 子进程。
+    /// </summary>
+    public string ProxyUrl { get; set; } = string.Empty;
 }

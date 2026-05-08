@@ -48,13 +48,36 @@
                                             <TextBlock Grid.Column="1" Text="小于 5 分钟时，重复保存会写入同一文件并追加履历" Foreground="#64748B" VerticalAlignment="Center" Margin="8,0,0,0" TextWrapping="Wrap"/>
                                         </Grid>
 
-                                        <WrapPanel Margin="0,0,0,12">
+                                        <WrapPanel Margin="0,0,0,4">
                                             <Button Content="导入 IO 表" Command="{Binding ImportIoTableCommand}" Style="{StaticResource PrimaryButtonStyle}" Padding="10,6" Margin="0,0,6,6"/>
                                             <Button Content="保存 IO 表" Command="{Binding SaveIoTableToSourceCommand}" IsEnabled="{Binding CanSaveIoTable}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,6" Margin="0,0,6,6"/>
-                                            <Button Content="生成程序" Command="{Binding GenerateIoProgramsCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,6" Margin="0,0,6,6"/>
+                                            <Button Content="生成程序" Command="{Binding GenerateIoProgramsCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,6" Margin="0,0,6,6"
+                                                    ToolTip="D1: 生成前自动校验，存在地址重复 / 类型不匹配会被阻止"/>
                                             <Button Content="打开目录" Command="{Binding OpenGeneratedIoFolderCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/>
                                             <Button Content="清空" Command="{Binding ClearIoTableCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,6" Margin="0,0,6,6"/>
                                         </WrapPanel>
+
+                                        <!-- D3: 多工位批量生成 -->
+                                        <Border Background="#EEF2F7" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,12">
+                                            <StackPanel>
+                                                <TextBlock Text="多工位批量生成 (D3)" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,4"/>
+                                                <TextBlock Text="工位号 CSV (e.g. OP30,OP40,OP50)" Foreground="#475569" FontSize="11"/>
+                                                <Grid Margin="0,4,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox Grid.Column="0"
+                                                             Text="{Binding IoBatchOperationNumbers, UpdateSourceTrigger=PropertyChanged}"
+                                                             Height="28" VerticalContentAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="批量生成"
+                                                            Command="{Binding BatchGenerateIoProgramsCommand}"
+                                                            Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
+                                                            Padding="10,4" Margin="6,0,0,0"
+                                                            ToolTip="逐个切换 IoOperationNumber 后跑生成"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
 
                                         <Border Background="#F8FAFC" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
                                             <StackPanel>
@@ -83,6 +106,12 @@
                                                 <TextBlock Text="项目文件夹 / 分支名" Foreground="#475569"/>
                                                 <TextBox Text="{Binding GitProjectFolderName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4" ToolTip="留空则直接拉到保存目录。若填写，将作为保存目录下的子文件夹名（总文件夹），并在拉取后自动 checkout 到同名本地分支（不存在则基于源分支创建）。"/>
                                                 <TextBlock Text="例如填写 OP80，将克隆到 保存目录/OP80，并自动切换到本地分支 OP80。" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
+
+                                                <!-- D6: 场内代理 (HTTP_PROXY / HTTPS_PROXY) -->
+                                                <TextBlock Text="代理地址 (可选, 场内代理需求)" Foreground="#475569"/>
+                                                <TextBox Text="{Binding GitProxyUrl, UpdateSourceTrigger=PropertyChanged}"
+                                                         Margin="0,4,0,8"
+                                                         ToolTip="形如 http://proxy.local:8080。运行时通过 HTTP_PROXY / HTTPS_PROXY 环境变量传给 git 子进程，留空则不启用代理。"/>
 
                                                 <Expander Header="认证 (可选 · 私有仓库)" Foreground="#475569" Margin="0,0,0,8">
                                                     <StackPanel Margin="0,6,0,0">
@@ -145,11 +174,24 @@
                                             </Button>
                                         </Grid>
                                         <DataGrid x:Name="IoPreviewDataGrid" Grid.Row="1" ItemsSource="{Binding IoTableRows}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserSortColumns="False" HeadersVisibility="Column" Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#D7DFEA" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC" PreviewMouseWheel="IoPreviewDataGrid_PreviewMouseWheel" ScrollViewer.CanContentScroll="True" MaxHeight="340" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                            <DataGrid.RowStyle>
+                                                <!-- D1: 校验失败行红底 + tooltip 显示原因 -->
+                                                <Style TargetType="DataGridRow">
+                                                    <Setter Property="Background" Value="#FFFFFF"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding HasError}" Value="True">
+                                                            <Setter Property="Background" Value="#FEE2E2"/>
+                                                            <Setter Property="ToolTip" Value="{Binding ValidationError}"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </DataGrid.RowStyle>
                                             <DataGrid.Columns>
-                                                <DataGridTextColumn Header="输入地址" Binding="{Binding InputAddress}" Width="*"/>
-                                                <DataGridTextColumn Header="输入注释" Binding="{Binding InputComment}" Width="*"/>
-                                                <DataGridTextColumn Header="输出地址" Binding="{Binding OutputAddress}" Width="*"/>
-                                                <DataGridTextColumn Header="输出注释" Binding="{Binding OutputComment}" Width="*"/>
+                                                <DataGridTextColumn Header="输入地址" Binding="{Binding InputAddress, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                                <!-- D8: 输入注释可直接编辑（不必导出再改 Excel 再导入） -->
+                                                <DataGridTextColumn Header="输入注释" Binding="{Binding InputComment, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                                <DataGridTextColumn Header="输出地址" Binding="{Binding OutputAddress, UpdateSourceTrigger=LostFocus}" Width="*"/>
+                                                <DataGridTextColumn Header="输出注释" Binding="{Binding OutputComment, UpdateSourceTrigger=LostFocus}" Width="*"/>
                                             </DataGrid.Columns>
                                         </DataGrid>
                                     </Grid>
@@ -171,6 +213,9 @@
                                             <TextBlock Text="程序预览" FontSize="18" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="3" Width="220" ItemsSource="{Binding GeneratedIoPrograms}" SelectedItem="{Binding SelectedGeneratedIoProgram}" DisplayMemberPath="DisplayName" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="4" Orientation="Horizontal">
+                                                <Button Content="对比 Git" Command="{Binding ShowGeneratedDiffCommand}" CommandParameter="{Binding SelectedGeneratedIoProgram}"
+                                                        Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="8,4" Margin="0,0,8,0"
+                                                        ToolTip="D2: 弹层 side-by-side 对比 Git 当前版本 vs 本次生成"/>
                                                 <Button Content="复制当前文件" Click="CopyCurrentIoProgramButton_Click" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,8,0"/>
                                                 <Button Content="打开当前文件" Command="{Binding OpenGeneratedIoFileCommand}" CommandParameter="{Binding SelectedGeneratedIoProgram}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4"/>
                                             </StackPanel>

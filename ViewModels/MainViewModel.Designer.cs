@@ -171,6 +171,15 @@ public partial class MainViewModel
             }
 
             await WarmupOpcNodeResolutionCacheAsync("导入IO后");
+
+            // D1: 导入后立即校验地址重复 / 类型不匹配
+            var errors = ValidateIoTable();
+            if (errors > 0)
+            {
+                ShowPopup("IO 表存在异常",
+                    $"已标记 {errors} 处异常行（红底）。请修复后再点【生成程序】，否则将被阻止。",
+                    "Warning");
+            }
         }
         catch (Exception ex)
         {
@@ -178,6 +187,178 @@ public partial class MainViewModel
             AddLog("IO 生成", SystemMessage, "Error");
             ShowPopup("导入失败", ex.Message, "Error");
         }
+    }
+
+    /// <summary>
+    /// D1 校验：地址重复 / 类型不匹配（DI 地址出现在 DO 列等）。
+    /// 返回标记的异常行数；同时把每行的 HasError + ValidationError 填好。
+    /// </summary>
+    internal int ValidateIoTable()
+    {
+        // 先清空旧标记
+        foreach (var row in IoTableRows)
+        {
+            row.HasError = false;
+            row.ValidationError = string.Empty;
+        }
+
+        // 收集所有非空地址 → 按地址索引到（行,角色 = "I"/"O"）
+        var inputMap = new Dictionary<string, List<IoTableRow>>(StringComparer.OrdinalIgnoreCase);
+        var outputMap = new Dictionary<string, List<IoTableRow>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in IoTableRows)
+        {
+            var ia = (row.InputAddress ?? string.Empty).Trim();
+            var oa = (row.OutputAddress ?? string.Empty).Trim();
+            if (!string.IsNullOrEmpty(ia))
+            {
+                if (!inputMap.TryGetValue(ia, out var list)) { list = new List<IoTableRow>(); inputMap[ia] = list; }
+                list.Add(row);
+            }
+            if (!string.IsNullOrEmpty(oa))
+            {
+                if (!outputMap.TryGetValue(oa, out var list)) { list = new List<IoTableRow>(); outputMap[oa] = list; }
+                list.Add(row);
+            }
+        }
+
+        var errorCount = 0;
+        // 输入地址重复
+        foreach (var kv in inputMap.Where(p => p.Value.Count > 1))
+        {
+            foreach (var r in kv.Value)
+            {
+                r.HasError = true;
+                r.ValidationError = AppendError(r.ValidationError, $"输入地址重复：{kv.Key}");
+                errorCount++;
+            }
+        }
+        // 输出地址重复
+        foreach (var kv in outputMap.Where(p => p.Value.Count > 1))
+        {
+            foreach (var r in kv.Value)
+            {
+                r.HasError = true;
+                r.ValidationError = AppendError(r.ValidationError, $"输出地址重复：{kv.Key}");
+                errorCount++;
+            }
+        }
+        // 类型不匹配：同一地址既出现在输入又出现在输出
+        foreach (var key in inputMap.Keys.Intersect(outputMap.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            foreach (var r in inputMap[key].Concat(outputMap[key]).Distinct())
+            {
+                r.HasError = true;
+                r.ValidationError = AppendError(r.ValidationError, $"地址 {key} 同时被用作输入和输出");
+                errorCount++;
+            }
+        }
+        return errorCount;
+    }
+
+    private static string AppendError(string existing, string add)
+        => string.IsNullOrEmpty(existing) ? add : existing + "; " + add;
+
+    /// <summary>
+    /// D2: 选中生成的 ST 文件，弹层 side-by-side 显示 Git 当前版本 vs 本次生成。
+    /// 在 Git 目录中按文件名递归查找匹配文件；找不到 Git 版本时左侧为空提示。
+    /// </summary>
+    [RelayCommand]
+    private void ShowGeneratedDiff(GeneratedProgramArtifact? artifact)
+    {
+        artifact ??= SelectedGeneratedIoProgram;
+        if (artifact is null)
+        {
+            ShowPopup("差异预览", "请先在程序预览下拉中选择一个 ST 文件", "Warning");
+            return;
+        }
+
+        var vm = new ApexHMI.Views.Dialogs.ProgramDiffDialog.DiffViewModel
+        {
+            RightPath = artifact.OutputPath,
+            RightContent = artifact.Content
+        };
+
+        var gitFolder = ResolveEffectiveGitFolder();
+        if (!string.IsNullOrWhiteSpace(gitFolder) && System.IO.Directory.Exists(gitFolder))
+        {
+            try
+            {
+                var match = System.IO.Directory
+                    .EnumerateFiles(gitFolder, artifact.FileName, System.IO.SearchOption.AllDirectories)
+                    .FirstOrDefault();
+                if (match is not null)
+                {
+                    vm.LeftPath = match;
+                    vm.LeftContent = System.IO.File.ReadAllText(match);
+                }
+                else
+                {
+                    vm.LeftPath = $"未在 Git 目录中找到 {artifact.FileName}";
+                    vm.LeftContent = "(Git 目录中没有同名文件，可能是首次生成或路径不匹配)";
+                }
+            }
+            catch (System.Exception ex)
+            {
+                vm.LeftContent = $"读取 Git 文件失败：{ex.Message}";
+            }
+        }
+        else
+        {
+            vm.LeftPath = "(Git 目录未配置)";
+            vm.LeftContent = "请先在 Git 拉取面板配置仓库目录，再使用差异预览。";
+        }
+
+        vm.Summary = string.Equals(vm.LeftContent, vm.RightContent, System.StringComparison.Ordinal)
+            ? "✅ 内容一致"
+            : $"⚠ 内容存在差异（左 {vm.LeftContent.Length} 字符 / 右 {vm.RightContent.Length} 字符）";
+
+        var dlg = new ApexHMI.Views.Dialogs.ProgramDiffDialog
+        {
+            Owner = System.Windows.Application.Current?.MainWindow,
+            DataContext = vm
+        };
+        dlg.ShowDialog();
+    }
+
+    // D3 多工位批量生成：CSV 输入（如 "OP30,OP40,OP50"），逐个设 IoOperationNumber 后跑生成
+    [ObservableProperty] private string ioBatchOperationNumbers = string.Empty;
+
+    [RelayCommand]
+    private async Task BatchGenerateIoProgramsAsync()
+    {
+        var raw = (IoBatchOperationNumbers ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(raw))
+        {
+            ShowPopup("批量生成", "请先填写工位号 CSV，例如：OP30,OP40,OP50", "Warning");
+            return;
+        }
+
+        var ops = raw.Split(new[] { ',', '，', ';', '；', ' ' }, System.StringSplitOptions.RemoveEmptyEntries)
+            .Select(s => s.Trim()).Where(s => !string.IsNullOrEmpty(s)).Distinct(System.StringComparer.OrdinalIgnoreCase).ToList();
+        if (ops.Count == 0) return;
+
+        var originalOp = IoOperationNumber;
+        var ok = 0;
+        var fail = 0;
+        foreach (var op in ops)
+        {
+            try
+            {
+                IoOperationNumber = op;
+                AddLog("IO 生成", $"批量生成 → 切换到 {op}", "Info");
+                await GenerateIoProgramsAsync();
+                ok++;
+            }
+            catch (System.Exception ex)
+            {
+                AddLog("IO 生成", $"工位 {op} 生成失败：{ex.Message}", "Error");
+                fail++;
+            }
+        }
+
+        IoOperationNumber = originalOp;
+        SystemMessage = $"批量生成完成：成功 {ok} 个，失败 {fail} 个";
+        AddLog("IO 生成", SystemMessage, fail > 0 ? "Warning" : "Info");
     }
 
     [RelayCommand]
@@ -419,6 +600,14 @@ public partial class MainViewModel
     {
         try
         {
+            // D1: 生成前重新校验，存在异常则阻止
+            var errs = ValidateIoTable();
+            if (errs > 0)
+            {
+                ShowPopup("生成被阻止", $"IO 表存在 {errs} 处异常（地址重复 / 类型不匹配），红底标记的行需要先修复。", "Error");
+                return;
+            }
+
             if (CanSaveIoTable)
             {
                 await SaveIoTableToSourceAsync();

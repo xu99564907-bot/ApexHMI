@@ -17,11 +17,24 @@ namespace ApexHMI.Services;
 /// </summary>
 public class GitPullService : IGitPullService
 {
+    // D6: 当前 Pull 操作绑定的代理；进入 PullAsync 时设置，所有静态子调用通过 ApplyProxyEnv 注入到 git 子进程
+    // 单例 service 一次只跑一个 Pull，简化为静态字段
+    private static string _currentProxyUrl = string.Empty;
+
+    private static void ApplyProxyEnv(ProcessStartInfo psi)
+    {
+        if (string.IsNullOrWhiteSpace(_currentProxyUrl)) return;
+        psi.EnvironmentVariables["HTTP_PROXY"] = _currentProxyUrl;
+        psi.EnvironmentVariables["HTTPS_PROXY"] = _currentProxyUrl;
+    }
+
     public async Task<GitPullResult> PullAsync(GitPullSettings settings, IProgress<string>? progress = null, CancellationToken cancellationToken = default)
     {
         using var _ = LogContext.PushProperty("CorrelationId", Guid.NewGuid().ToString("N"));
         var sw = Stopwatch.StartNew();
         if (settings is null) throw new ArgumentNullException(nameof(settings));
+
+        _currentProxyUrl = (settings.ProxyUrl ?? string.Empty).Trim();
 
         var repositoryUrl = (settings.RepositoryUrl ?? string.Empty).Trim();
         var baseFolder = (settings.TargetFolder ?? string.Empty).Trim();
@@ -290,6 +303,7 @@ public class GitPullService : IGitPullService
             WorkingDirectory = workingFolder
         };
         psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+        ApplyProxyEnv(psi);
         using var process = new Process { StartInfo = psi };
         process.Start();
         var stdoutTask = process.StandardOutput.ReadToEndAsync();
@@ -337,6 +351,7 @@ public class GitPullService : IGitPullService
             WorkingDirectory = workingDirectory
         };
         psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+        ApplyProxyEnv(psi);
         using var process = new Process { StartInfo = psi };
         process.Start();
         // 避免管道撑满阻塞。
@@ -413,6 +428,7 @@ public class GitPullService : IGitPullService
             WorkingDirectory = targetFolder
         };
         psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+        ApplyProxyEnv(psi);
 
         using var process = new Process { StartInfo = psi };
         process.Start();
@@ -528,6 +544,7 @@ public class GitPullService : IGitPullService
             WorkingDirectory = workingFolder
         };
         psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+        ApplyProxyEnv(psi);
 
         using var process = new Process { StartInfo = psi };
         process.Start();
@@ -651,6 +668,7 @@ public class GitPullService : IGitPullService
 
         // 避免交互式凭据弹窗卡住进程。
         psi.EnvironmentVariables["GIT_TERMINAL_PROMPT"] = "0";
+        ApplyProxyEnv(psi);
 
         using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
 

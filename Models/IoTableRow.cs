@@ -33,4 +33,11 @@ public partial class IoTableRow : ObservableObject
 
     [ObservableProperty]
     private string outputRemark = string.Empty;
+
+    // D1: 导入校验失败标记 + 错误描述（重复地址 / 类型不匹配）
+    [ObservableProperty]
+    private bool hasError;
+
+    [ObservableProperty]
+    private string validationError = string.Empty;
 }

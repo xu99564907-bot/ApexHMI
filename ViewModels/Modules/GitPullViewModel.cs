@@ -46,6 +46,8 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
     [ObservableProperty] private bool isPushProjectBranchToRemoteEnabled;
     [ObservableProperty] private bool isCommitAndPushAfterGenerateEnabled;
     [ObservableProperty] private string gitAutoCommitMessageTemplate = string.Empty;
+    // D6: 场内代理需求（HTTP_PROXY / HTTPS_PROXY 注入到 git 子进程）
+    [ObservableProperty] private string gitProxyUrl = string.Empty;
 
     // ========== Property-change side effects ==========
 
@@ -67,6 +69,7 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
     partial void OnIsPushProjectBranchToRemoteEnabledChanged(bool value) => ScheduleAutoSave();
     partial void OnIsCommitAndPushAfterGenerateEnabledChanged(bool value) => ScheduleAutoSave();
     partial void OnGitAutoCommitMessageTemplateChanged(string value) => ScheduleAutoSave();
+    partial void OnGitProxyUrlChanged(string value) => ScheduleAutoSave();
 
     // ========== Commands ==========
 
@@ -132,7 +135,8 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
             AccessToken = (GitAccessToken ?? string.Empty).Trim(),
             IncludeProjectFiles = IsIncludeProjectFilesOnPullEnabled,
             ForceResetLocal = IsForceResetLocalEnabled,
-            PushProjectBranchToRemote = IsPushProjectBranchToRemoteEnabled
+            PushProjectBranchToRemote = IsPushProjectBranchToRemoteEnabled,
+            ProxyUrl = (GitProxyUrl ?? string.Empty).Trim()
         };
 
         var logBuffer = new System.Text.StringBuilder();
@@ -253,6 +257,7 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
             IsPushProjectBranchToRemoteEnabled = settings.PushProjectBranchToRemote;
             IsCommitAndPushAfterGenerateEnabled = settings.CommitAndPushAfterGenerate;
             GitAutoCommitMessageTemplate = settings.AutoCommitMessageTemplate ?? string.Empty;
+            GitProxyUrl = settings.ProxyUrl ?? string.Empty;
         }
         finally
         {
@@ -275,7 +280,8 @@ public sealed partial class GitPullViewModel : ModuleViewModelBase
             ForceResetLocal = IsForceResetLocalEnabled,
             PushProjectBranchToRemote = IsPushProjectBranchToRemoteEnabled,
             CommitAndPushAfterGenerate = IsCommitAndPushAfterGenerateEnabled,
-            AutoCommitMessageTemplate = GitAutoCommitMessageTemplate ?? string.Empty
+            AutoCommitMessageTemplate = GitAutoCommitMessageTemplate ?? string.Empty,
+            ProxyUrl = GitProxyUrl ?? string.Empty
         };
     }
 
