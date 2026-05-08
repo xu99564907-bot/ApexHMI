@@ -15,6 +15,8 @@
         xmlns:l="clr-namespace:ApexHMI.Converters"
         mc:Ignorable="d"
         Title="PLC OPC UA HMI Designer" Height="1080" Width="1880" WindowStartupLocation="CenterScreen" Background="#F3F6FB" WindowStyle="None" ResizeMode="CanResize"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"
         PreviewMouseWheel="MainWindow_PreviewMouseWheel">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
@@ -185,13 +187,9 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="bd" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter TargetName="bd" Property="BorderThickness" Value="2"/>
                                 <Setter TargetName="bd" Property="Background" Value="#EEF4FF"/>
                                 <Setter Property="Foreground" Value="#1D4ED8"/>
-                                <Setter TargetName="bd" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#2563EB" Direction="270" ShadowDepth="3" BlurRadius="14" Opacity="0.30"/>
-                                    </Setter.Value>
-                                </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="bd" Property="Opacity" Value="0.85"/>
