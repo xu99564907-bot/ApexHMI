@@ -385,6 +385,11 @@
                         </MenuItem>
                         <MenuItem Header="{l:Loc Menu_Edit}">
                             <MenuItem Header="{l:Loc Menu_ExportReport}" Command="{Binding ExportProductionReportCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="语言 / Language">
+                                <MenuItem Header="中文 (zh-CN)" Command="{Binding SwitchLanguageCommand}" CommandParameter="zh-CN"/>
+                                <MenuItem Header="English (en-US)" Command="{Binding SwitchLanguageCommand}" CommandParameter="en-US"/>
+                            </MenuItem>
                         </MenuItem>
                         <MenuItem Header="{l:Loc Menu_Window}">
                             <MenuItem Header="{l:Loc Menu_ToggleRuntime}" Command="{Binding ToggleRuntimeModeCommand}"/>
@@ -699,21 +704,7 @@
                     </Border>
                     <TextBlock Text="{Binding SystemMessage}" Foreground="#0F172A" VerticalAlignment="Center"/>
                 </WrapPanel>
-                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="10" Padding="0" Margin="0,0,10,0"
-                                ToolTip="切换界面语言 / Switch UI language">
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="中" Command="{Binding SwitchLanguageCommand}" CommandParameter="zh-CN"
-                                        Background="Transparent" BorderThickness="0" Padding="10,2" Foreground="#475569"
-                                        Cursor="Hand" FontSize="12"/>
-                                <Border Width="1" Background="#CBD5E1"/>
-                                <Button Content="EN" Command="{Binding SwitchLanguageCommand}" CommandParameter="en-US"
-                                        Background="Transparent" BorderThickness="0" Padding="10,2" Foreground="#475569"
-                                        Cursor="Hand" FontSize="12"/>
-                            </StackPanel>
-                        </Border>
-                        <TextBlock Text="{l:Loc StatusBar_AppTagline}" Foreground="#64748B" VerticalAlignment="Center"/>
-                    </StackPanel>
+                    <TextBlock DockPanel.Dock="Right" Text="{l:Loc StatusBar_AppTagline}" Foreground="#64748B" VerticalAlignment="Center"/>
             </DockPanel>
         </Border>
         </Grid>
