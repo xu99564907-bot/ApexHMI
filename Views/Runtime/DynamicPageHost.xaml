@@ -31,7 +31,7 @@
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
         <Border Width="{Binding CurrentPage.CanvasWidth, FallbackValue=1280}"
                 Height="{Binding CurrentPage.CanvasHeight, FallbackValue=720}"
-                Background="#E2E8F0"
+                Background="#FFFFFF"
                 BorderBrush="#CBD5E1"
                 BorderThickness="1"
                 CornerRadius="8">

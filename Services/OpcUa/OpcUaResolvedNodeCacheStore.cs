@@ -31,10 +31,19 @@ public sealed class OpcUaResolvedNodeCacheStore
         string endpointKey,
         CancellationToken cancellationToken = default)
     {
+        var (resolved, _) = await LoadFullAsync(endpointKey, cancellationToken).ConfigureAwait(false);
+        return resolved;
+    }
+
+    public async Task<(IReadOnlyDictionary<string, NodeId> Resolved, IReadOnlyCollection<string> Unresolved)> LoadFullAsync(
+        string endpointKey,
+        CancellationToken cancellationToken = default)
+    {
         var resolved = new Dictionary<string, NodeId>(StringComparer.OrdinalIgnoreCase);
+        var unresolved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (string.IsNullOrWhiteSpace(endpointKey) || !File.Exists(_cachePath))
         {
-            return resolved;
+            return (resolved, unresolved);
         }
 
         await _ioLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -43,31 +52,47 @@ public sealed class OpcUaResolvedNodeCacheStore
             var json = await Compat.ReadAllTextAsync(_cachePath, cancellationToken).ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(json))
             {
-                return resolved;
+                return (resolved, unresolved);
             }
 
             var cache = JsonSerializer.Deserialize<ResolvedNodeCacheFile>(json);
-            if (cache?.Endpoints is null
-                || !cache.Endpoints.TryGetValue(endpointKey, out var map)
-                || map is null)
+            if (cache is null)
             {
-                return resolved;
+                return (resolved, unresolved);
             }
 
-            foreach (var pair in map)
+            if (cache.Endpoints is not null
+                && cache.Endpoints.TryGetValue(endpointKey, out var map)
+                && map is not null)
             {
-                if (string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value))
+                foreach (var pair in map)
                 {
-                    continue;
-                }
+                    if (string.IsNullOrWhiteSpace(pair.Key) || string.IsNullOrWhiteSpace(pair.Value))
+                    {
+                        continue;
+                    }
 
-                try
-                {
-                    resolved[pair.Key] = NodeId.Parse(pair.Value);
+                    try
+                    {
+                        resolved[pair.Key] = NodeId.Parse(pair.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Debug(ex, "OPC UA 解析缓存项失败，忽略缓存项。Key={CacheKey}, Value={CacheValue}", pair.Key, pair.Value);
+                    }
                 }
-                catch (Exception ex)
+            }
+
+            if (cache.UnresolvedEndpoints is not null
+                && cache.UnresolvedEndpoints.TryGetValue(endpointKey, out var unresolvedList)
+                && unresolvedList is not null)
+            {
+                foreach (var key in unresolvedList)
                 {
-                    Log.Debug(ex, "OPC UA 解析缓存项失败，忽略缓存项。Key={CacheKey}, Value={CacheValue}", pair.Key, pair.Value);
+                    if (!string.IsNullOrWhiteSpace(key))
+                    {
+                        unresolved.Add(key);
+                    }
                 }
             }
         }
@@ -80,12 +105,19 @@ public sealed class OpcUaResolvedNodeCacheStore
             _ioLock.Release();
         }
 
-        return resolved;
+        return (resolved, unresolved);
     }
+
+    public Task SaveAsync(
+        string endpointKey,
+        IReadOnlyDictionary<string, NodeId> resolvedNodeIds,
+        CancellationToken cancellationToken = default)
+        => SaveAsync(endpointKey, resolvedNodeIds, Array.Empty<string>(), cancellationToken);
 
     public async Task SaveAsync(
         string endpointKey,
         IReadOnlyDictionary<string, NodeId> resolvedNodeIds,
+        IReadOnlyCollection<string> unresolvedNodeIds,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(endpointKey))
@@ -128,6 +160,11 @@ public sealed class OpcUaResolvedNodeCacheStore
                     pair => pair.Value.ToString(),
                     StringComparer.OrdinalIgnoreCase);
 
+            file.UnresolvedEndpoints[endpointKey] = unresolvedNodeIds
+                .Where(key => !string.IsNullOrWhiteSpace(key))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
             var json = JsonSerializer.Serialize(file, new JsonSerializerOptions { WriteIndented = true });
             await Compat.WriteAllTextAsync(_cachePath, json, cancellationToken).ConfigureAwait(false);
         }
@@ -144,5 +181,7 @@ public sealed class OpcUaResolvedNodeCacheStore
     private sealed class ResolvedNodeCacheFile
     {
         public Dictionary<string, Dictionary<string, string>> Endpoints { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public Dictionary<string, List<string>> UnresolvedEndpoints { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     }
 }

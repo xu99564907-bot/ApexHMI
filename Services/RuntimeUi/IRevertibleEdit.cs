@@ -39,6 +39,40 @@ public sealed class MoveWidgetEdit : IRevertibleEdit
     public void Redo() => _editor.MoveWidget(_widget, _newX, _newY);
 }
 
+/// <summary>调整控件位置 + 尺寸（拖角缩放）。</summary>
+public sealed class ResizeWidgetEdit : IRevertibleEdit
+{
+    private readonly IWidgetEditorService _editor;
+    private readonly WidgetInstance _widget;
+    private readonly double _oldX, _oldY, _oldW, _oldH;
+    private readonly double _newX, _newY, _newW, _newH;
+
+    public string Description =>
+        $"调整尺寸 ({_oldW:F0}×{_oldH:F0}) → ({_newW:F0}×{_newH:F0})";
+
+    public ResizeWidgetEdit(IWidgetEditorService editor, WidgetInstance widget,
+        double oldX, double oldY, double oldW, double oldH,
+        double newX, double newY, double newW, double newH)
+    {
+        _editor = editor;
+        _widget = widget;
+        _oldX = oldX; _oldY = oldY; _oldW = oldW; _oldH = oldH;
+        _newX = newX; _newY = newY; _newW = newW; _newH = newH;
+    }
+
+    public void Undo()
+    {
+        _editor.MoveWidget(_widget, _oldX, _oldY);
+        _editor.ResizeWidget(_widget, _oldW, _oldH);
+    }
+
+    public void Redo()
+    {
+        _editor.MoveWidget(_widget, _newX, _newY);
+        _editor.ResizeWidget(_widget, _newW, _newH);
+    }
+}
+
 /// <summary>控件属性编辑。</summary>
 public sealed class PropertyEdit : IRevertibleEdit
 {
