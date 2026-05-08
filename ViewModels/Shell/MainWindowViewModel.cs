@@ -46,7 +46,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         IWidgetEditorService widgetEditorService,
         WidgetBlockGenerator widgetBlockGenerator,
         ManualPageAutoGenerator manualPageAutoGenerator,
-        IUserService userService)
+        IUserService userService,
+        PlcVariableImportService plcVariableImportService)
         : base(
             opcUaService,
             csvImportService,
@@ -88,7 +89,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
         // 先初始化运行时（LoadDefault 设置 Current），再让编辑器共享同一 ProjectDocument
         InitializeDynamicRuntime();
-        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetBlockGenerator, _widgetFactory);
+        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetBlockGenerator, _widgetFactory, plcVariableImportService);
         Designer = new DesignerViewModel(this);
     }
 
@@ -130,7 +131,38 @@ public sealed partial class MainWindowViewModel : MainViewModel
     }
 
     /// <summary>编辑器/发布触发后调用：刷新顶栏用户页按钮。</summary>
-    internal void RefreshTopNavUserPages() => OnPropertyChanged(nameof(TopNavUserPages));
+    internal void RefreshTopNavUserPages()
+    {
+        OnPropertyChanged(nameof(TopNavUserPages));
+        RefreshSidebarUserPages();
+    }
+
+    /// <summary>
+    /// 把工程中 ParentRouteKey 等于内置导航段（"手动操作"/"监控"/...）的用户页面，
+    /// 作为子项注入到对应 NavigationItem.Children；点击按 RouteKey 跳转到运行页 Tab。
+    /// </summary>
+    internal void RefreshSidebarUserPages()
+    {
+        var project = _runtimeProjectService.Current;
+        foreach (var nav in NavigationItems)
+        {
+            // 移除上一次注入的用户页项（RouteKey 非 null）
+            for (var i = nav.Children.Count - 1; i >= 0; i--)
+            {
+                if (nav.Children[i].RouteKey is not null)
+                    nav.Children.RemoveAt(i);
+            }
+
+            if (project is null) continue;
+
+            var injected = project.Pages
+                .Where(p => string.Equals(p.ParentRouteKey, nav.Title, StringComparison.Ordinal))
+                .OrderBy(p => p.NavOrder)
+                .ThenBy(p => p.Title);
+            foreach (var p in injected)
+                nav.Children.Add(new NavigationItemViewModel(p.Title, p.RouteKey, nav.Title));
+        }
+    }
 
     /// <summary>P3.4 运行时全屏：true 时主窗口隐藏导航/状态栏，仅显示 DynamicPageHost。</summary>
     [ObservableProperty]
@@ -215,6 +247,31 @@ public sealed partial class MainWindowViewModel : MainViewModel
         NavigateCommand.Execute("运行页面");
     }
 
+    /// <summary>
+    /// 侧栏导航按钮统一入口：若 NavigationItem 携带 RouteKey（用户画布页），
+    /// 跳转到运行页 Tab 并加载该页；否则按 Title 走固定段 Navigate 逻辑。
+    /// </summary>
+    [RelayCommand]
+    private async Task NavigateNavItem(ApexHMI.ViewModels.NavigationItemViewModel? item)
+    {
+        if (item is null) return;
+        if (!string.IsNullOrWhiteSpace(item.RouteKey))
+        {
+            await NavigateToRuntimePageAsync(item.RouteKey!);
+            NavigateCommand.Execute("运行页面");
+            // NavigateCommand 中会先清空 override；用户页跳转后再覆盖回父段，
+            // 让侧栏继续显示父段（如"手动操作"）的子项。
+            SetNavigationGroupOverride(item.ParentTitle);
+            // 从侧栏父段进入用户画布页时，不显示运行页顶部的"页面切换"按钮条 —
+            // 那些跳转应当只通过侧栏进行。
+            RuntimePage.SetAvailablePages(System.Linq.Enumerable.Empty<Models.RuntimeUi.PageDefinition>());
+        }
+        else
+        {
+            NavigateCommand.Execute(item.Title);
+        }
+    }
+
     private void InitializeDynamicRuntime()
     {
         RuntimePage = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
@@ -230,6 +287,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         {
             _ = NavigateToRuntimePageAsync(defaultPage.RouteKey);
         }
+        RefreshSidebarUserPages();
     }
 
     private void HandleRuntimeAction(string actionType, string actionParam)
@@ -328,6 +386,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         {
             await NavigateToRuntimePageAsync(defaultPage.RouteKey);
         }
+        RefreshTopNavUserPages();
     }
 
     /// <summary>

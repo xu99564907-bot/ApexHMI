@@ -27,7 +27,9 @@ public partial class MainViewModel
 {
     // ========== 刷新机制 ==========
 
-    private const int OpcUaSubscriptionMaxItems = 400;
+    // 订阅上限。导入 PLC 变量表后通常 Tags 几千条，但实际订阅候选（GetSubscriptionCandidates）已按
+     // 气缸/手动命令/阀状态过滤，到不了几千。这里给个宽松上限，避免被截断。
+    private const int OpcUaSubscriptionMaxItems = 2000;
     private static bool EnableRefreshPerfTrace => true;
 
     private IEnumerable<TagItem> GetTagsForOpcSubscription()
@@ -326,9 +328,7 @@ public partial class MainViewModel
             }
             processSw.Stop();
 
-            UpdateRuntimeVisuals();
-            RefreshMonitorView();
-            RefreshAlarmStatistics();
+            ScheduleCoalescedRefresh(); // 合并 UpdateRuntimeVisuals/RefreshMonitorView/RefreshAlarmStatistics，避免轮询每轮全表扫
             if (IsMonitorIoPageVisible)
             {
                 RefreshIoMonitorStates();
@@ -435,6 +435,17 @@ public partial class MainViewModel
         await RefreshSelectedOpcUaNodeAsync();
     }
 
+    /// <summary>
+    /// OPC UA 推送回调聚合：把每条变化触发的全量"扫一遍"刷新（UpdateRuntimeVisuals /
+    /// RefreshCylinderBindingProperties / RefreshCylinderMaskStates / RefreshMonitorView /
+    /// RefreshAlarmStatistics）合并到一个 DispatcherTimer 节流窗口里，避免高频 PLC 推送
+    /// 把 UI 线程打满。
+    /// 每条值依然立即写入 tag.CurrentValue（→ PropertyChanged → 各个 widget 自行刷新），
+    /// 仅"全表扫描型"刷新被合并到 ~120ms 一次。
+    /// </summary>
+    private DispatcherTimer? _coalescedRefreshTimer;
+    private bool _pendingCoalescedRefresh;
+
     private async void OpcUaService_TagValueChanged(string tagNameOrNodeId, string value)
     {
         try
@@ -465,16 +476,43 @@ public partial class MainViewModel
                 {
                     EvaluateEvents(tag);
                 }
-                UpdateRuntimeVisuals();
-                RefreshCylinderBindingProperties();
-                RefreshCylinderMaskStates();
-                RefreshMonitorView();
-                RefreshAlarmStatistics();
+
+                ScheduleCoalescedRefresh();
             });
         }
         catch (Exception ex)
         {
             Log.Error(ex, "OpcUaService_TagValueChanged 异常 tag={Tag}", tagNameOrNodeId);
+        }
+    }
+
+    private void ScheduleCoalescedRefresh()
+    {
+        _pendingCoalescedRefresh = true;
+        if (_coalescedRefreshTimer is null)
+        {
+            _coalescedRefreshTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(120),
+            };
+            _coalescedRefreshTimer.Tick += (_, _) =>
+            {
+                if (!_pendingCoalescedRefresh) return;
+                _pendingCoalescedRefresh = false;
+                try
+                {
+                    UpdateRuntimeVisuals();
+                    RefreshCylinderBindingProperties();
+                    RefreshCylinderMaskStates();
+                    RefreshMonitorView();
+                    RefreshAlarmStatistics();
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "合并刷新异常");
+                }
+            };
+            _coalescedRefreshTimer.Start();
         }
     }
 

@@ -511,7 +511,21 @@ public partial class MainViewModel : ObservableObject, IDisposable
     // - 若之前导入过（或已从配置恢复来源路径）则保存到原目录；
     // - 否则保存到默认目录（config/IoTable），保证重启后也能一直有效。
     public bool CanSaveIoTable => !string.IsNullOrWhiteSpace(_currentIoSourceFilePath) || IoTableRows.Count > 0;
-    public string CurrentNavigationGroup => ResolveNavigationGroup(CurrentSection);
+    /// <summary>
+    /// 用户画布页面跳转时的"父导航组"覆盖：非空时 CurrentNavigationGroup 优先返回此值。
+    /// 用于挂在内置段下的画布页：内容显示运行页 Tab，但侧栏保持父段（如"手动操作"）。
+    /// </summary>
+    private string? _navigationGroupOverride;
+
+    public void SetNavigationGroupOverride(string? group)
+    {
+        if (string.Equals(_navigationGroupOverride, group, StringComparison.Ordinal)) return;
+        _navigationGroupOverride = string.IsNullOrWhiteSpace(group) ? null : group;
+        OnPropertyChanged(nameof(CurrentNavigationGroup));
+    }
+
+    public string CurrentNavigationGroup =>
+        _navigationGroupOverride ?? ResolveNavigationGroup(CurrentSection);
     public bool IsMonitorIoPageVisible => string.Equals(CurrentMonitorSubSection, "输入输出监控", StringComparison.Ordinal);
     public bool IsMonitorProgramPageVisible => string.Equals(CurrentMonitorSubSection, "程序监控", StringComparison.Ordinal);
     public bool IsMonitorCommunicationPageVisible => string.Equals(CurrentMonitorSubSection, "通讯状态监控", StringComparison.Ordinal);
@@ -549,6 +563,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsRuntimeDashboardVisible));
         OnPropertyChanged(nameof(RuntimeHeaderText));
         SystemMessage = value ? "已切换到运行态" : "已切换到设计态";
+        // 设计态 → 运行态：直接跳到主界面，方便看到发布后的运行效果
+        if (value)
+        {
+            NavigateCommand.Execute("主界面");
+        }
         _ = UpdateAutoRefreshStateAsync();
     }
 
@@ -1190,6 +1209,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
         }
 
+        // 任何走 Navigate 的固定段切换都先清掉用户页跳转留下的导航组覆盖。
+        // 用户画布页跳转走 NavigateNavItem 后会再次设置 override。
+        SetNavigationGroupOverride(null);
+
         switch (target)
         {
             case "监控":
@@ -1265,7 +1288,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         NavigationItems.Add(new NavigationItemViewModel("参数设定", "系统参数设定", "轴参数设定", "气缸参数设定", "真空参数设定", "传感器参数设定"));
         NavigationItems.Add(new NavigationItemViewModel("报警画面", "当前报警", "历史报警", "日志", "报警统计"));
         NavigationItems.Add(new NavigationItemViewModel("登录"));
-        NavigationItems.Add(new NavigationItemViewModel("设计器", "画布设计", "运行页面", "手动程序生成", "自动程序生成", "初始化程序生成"));
+        // 取消"运行页面"入口：发布后到对应固定画面（如 主界面/手动操作）即可直接看到运行效果
+        NavigationItems.Add(new NavigationItemViewModel("设计器", "画布设计", "手动程序生成", "自动程序生成", "初始化程序生成"));
     }
 
     private static int ResolveTabIndex(string? section)

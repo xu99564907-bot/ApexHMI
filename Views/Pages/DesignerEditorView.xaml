@@ -14,46 +14,30 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Row 0: 标题栏 -->
-        <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,0,12">
+        <!-- Row 0: 横向工具箱 + 右侧紧凑动作组 -->
+        <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="10,8" Margin="0,0,0,10">
             <DockPanel>
-                <TextBlock Text="开放平台画布设计" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <Button Content="撤销 Ctrl+Z" Command="{Binding UndoCommand}"
-                            IsEnabled="{Binding CanUndo}"
-                            Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1"
-                            Padding="10,6" Margin="0,0,6,0"/>
-                    <Button Content="重做 Ctrl+Y" Command="{Binding RedoCommand}"
-                            IsEnabled="{Binding CanRedo}"
-                            Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1"
-                            Padding="10,6" Margin="0,0,6,0"/>
-                    <Separator Style="{x:Null}" Width="1" Background="#D7DFEA" Margin="6,4"/>
-                    <TextBlock Text="主题:" Foreground="#64748B" VerticalAlignment="Center" Margin="6,0,8,0"/>
-                    <ComboBox ItemsSource="{Binding ThemePresets}"
-                              SelectedItem="{Binding SelectedTheme}"
-                              DisplayMemberPath="Name"
-                              Width="120"
-                              Margin="0,0,10,0"/>
-                    <Button Content="应用主题" Command="{Binding ApplyThemeCommand}"
-                            CommandParameter="{Binding SelectedTheme}"
-                            Background="#3B82F6" Foreground="White" BorderBrush="#3B82F6"
-                            Padding="10,6" Margin="0,0,6,0"/>
-                    <Separator Style="{x:Null}" Width="1" Background="#D7DFEA" Margin="6,4"/>
-                    <Button Content="👁 预览" Command="{Binding PreviewCommand}"
-                            Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
-                            Padding="14,6" Margin="0,0,6,0" FontWeight="SemiBold"
-                            ToolTip="保存并在运行视图中查看当前页面"/>
-                    <Button Content="💾 保存" Command="{Binding SaveCommand}"
-                            Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
-                            Padding="14,6" Margin="0,0,6,0" FontWeight="SemiBold"
-                            ToolTip="保存工程到 project.json（不刷新运行时）"/>
-                    <Button Content="🚀 发布到运行时" Command="{Binding PublishCommand}"
-                            Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
-                            Padding="14,6" Margin="0,0,10,0" FontWeight="SemiBold"
-                            ToolTip="保存并立即刷新运行时页面"/>
-                    <!-- 保存状态徽章：有内容时显示绿底白字，没内容时不可见 -->
-                    <Border Background="#10B981" CornerRadius="12" Padding="10,4"
-                            VerticalAlignment="Center" Margin="0,0,12,0">
+                <!-- 右侧动作 / 状态 -->
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                    <!-- PLC 变量表导入状态 -->
+                    <Border Background="#0369A1" CornerRadius="12" Padding="8,3"
+                            VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PlcVariableStatus}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <TextBlock Text="{Binding PlcVariableStatus}" Foreground="White"
+                                   FontWeight="SemiBold" FontSize="11"
+                                   ToolTip="{Binding PlcVariableFilePath}"/>
+                    </Border>
+                    <Border Background="#10B981" CornerRadius="12" Padding="8,3"
+                            VerticalAlignment="Center" Margin="0,0,8,0">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Visibility" Value="Visible"/>
@@ -65,9 +49,100 @@
                             </Style>
                         </Border.Style>
                         <TextBlock Text="{Binding SaveStatus}" Foreground="White"
-                                   FontWeight="SemiBold" FontSize="12"/>
+                                   FontWeight="SemiBold" FontSize="11"/>
                     </Border>
+                    <!-- 紧凑图标按钮组 -->
+                    <Button Command="{Binding ReloadPlcVariablesCommand}"
+                            Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
+                            Padding="8,5" Margin="0,0,4,0"
+                            ToolTip="从 PLC 程序保存目录加载 Device.Application.xml 变量表">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="DatabaseImport" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="PLC 变量" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding BrowsePlcVariableFileCommand}"
+                            Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1"
+                            Padding="6,5" Margin="0,0,8,0"
+                            ToolTip="手动选择 Device.Application.xml 文件">
+                        <materialDesign:PackIcon Kind="FolderOpen" Width="14" Height="14"/>
+                    </Button>
+                    <Button Command="{Binding PreviewCommand}"
+                            Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
+                            Padding="8,5" Margin="0,0,4,0"
+                            ToolTip="预览：保存并在运行视图中查看当前页面">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Eye" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="预览" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding SaveCommand}"
+                            Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
+                            Padding="8,5" Margin="0,0,4,0"
+                            ToolTip="保存工程 (Ctrl+S)">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentSave" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="保存" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding PublishCommand}"
+                            Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
+                            Padding="8,5"
+                            ToolTip="发布到运行时：保存并刷新运行时页面">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Rocket" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="发布" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
+
+                <!-- 横向工具箱（按分组） -->
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                    <ItemsControl x:Name="ToolboxItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,14,0">
+                                    <TextBlock Text="{Binding Title}" FontSize="10" Foreground="#64748B" Margin="2,0,0,3"/>
+                                    <ItemsControl ItemsSource="{Binding Items}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Margin="0,0,4,0" Padding="8,5"
+                                                        Background="#F8FAFC" Foreground="#334155"
+                                                        BorderBrush="#D7DFEA" FontWeight="Normal"
+                                                        Command="{Binding DataContext.AddWidgetCommand,
+                                                            RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                        CommandParameter="{Binding TypeId}"
+                                                        ToolTip="{Binding TypeId}"
+                                                        PreviewMouseLeftButtonDown="ToolboxItem_PreviewMouseLeftButtonDown"
+                                                        PreviewMouseMove="ToolboxItem_PreviewMouseMove"
+                                                        PreviewMouseLeftButtonUp="ToolboxItem_PreviewMouseLeftButtonUp">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <materialDesign:PackIcon Kind="{Binding IconKind, FallbackValue=Widgets}"
+                                                                                Width="16" Height="16"
+                                                                                VerticalAlignment="Center"
+                                                                                Foreground="#2563EB"
+                                                                                Margin="0,0,6,0"/>
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="12" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 
@@ -114,11 +189,11 @@
                                 <TextBlock Text="标题 (留空 = 自动)" Foreground="#475569" FontSize="11" Margin="0,6,0,2"/>
                                 <TextBox Text="{Binding NewPageTitle, UpdateSourceTrigger=PropertyChanged}"
                                          FontSize="12"/>
-                                <TextBlock Text="挂到父页面 (留空 = 顶层)" Foreground="#475569" FontSize="11" Margin="0,6,0,2"/>
-                                <ComboBox ItemsSource="{Binding Document.Pages}"
-                                          DisplayMemberPath="Title" SelectedValuePath="RouteKey"
-                                          SelectedValue="{Binding NewPageParentRouteKey}"
-                                          IsEditable="True" FontSize="12"/>
+                                <TextBlock Text="挂到父页面 (软件固定画面;留空 = 顶层)" Foreground="#475569" FontSize="11" Margin="0,6,0,2"/>
+                                <ComboBox ItemsSource="{Binding BuiltInParentSections}"
+                                          SelectedValue="{Binding NewPageParentRouteKey, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEditable="False" FontSize="12"
+                                          ToolTip="选择软件内置的固定父画面（如 主界面/手动操作/报警画面 等）"/>
                                 <Button Content="+ 新建页面" Command="{Binding AddPageCommand}"
                                         Background="#374151" Foreground="White" BorderBrush="#374151"
                                         Padding="10,6" Margin="0,8,0,0" HorizontalAlignment="Left"/>
@@ -138,12 +213,11 @@
                         <TextBlock Text="路由键" Foreground="#475569"/>
                         <TextBox Text="{Binding SelectedPage.RouteKey, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,8"/>
-                        <TextBlock Text="父页面 (留空 = 顶层)" Foreground="#475569" FontSize="11"/>
-                        <ComboBox ItemsSource="{Binding Document.Pages}"
-                                  DisplayMemberPath="Title" SelectedValuePath="RouteKey"
-                                  SelectedValue="{Binding SelectedPage.ParentRouteKey}"
-                                  IsEditable="True" Margin="0,4,0,8" FontSize="12"
-                                  ToolTip="把当前页挂到另一页面之下;留空表示独立顶层页"/>
+                        <TextBlock Text="父页面 (软件固定画面;留空 = 顶层)" Foreground="#475569" FontSize="11"/>
+                        <ComboBox ItemsSource="{Binding BuiltInParentSections}"
+                                  SelectedValue="{Binding SelectedPage.ParentRouteKey, UpdateSourceTrigger=PropertyChanged}"
+                                  IsEditable="False" Margin="0,4,0,8" FontSize="12"
+                                  ToolTip="把当前页挂到软件内置固定画面之下;留空表示独立顶层页"/>
                         <TextBlock Text="画布尺寸" Foreground="#475569"/>
                         <UniformGrid Columns="2" Margin="0,4,0,10">
                             <TextBox Text="{Binding SelectedPage.CanvasWidth, UpdateSourceTrigger=PropertyChanged}"
@@ -161,35 +235,6 @@
                         <TextBlock Text="导航排序 (数字越小越靠前)" Foreground="#475569" FontSize="11"/>
                         <TextBox Text="{Binding SelectedPage.NavOrder, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,10" FontSize="12"/>
-
-                        <!-- 工具箱（分组） -->
-                        <TextBlock Text="工具箱" FontSize="14" FontWeight="SemiBold"
-                                   Foreground="#0F172A" Margin="0,0,0,8"/>
-                        <ItemsControl x:Name="ToolboxItemsControl">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Expander Header="{Binding Title}" IsExpanded="True" Margin="0,0,0,6"
-                                              Foreground="#0F172A" FontWeight="SemiBold">
-                                        <ItemsControl ItemsSource="{Binding Types}" Margin="0,4,0,0">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Button Margin="0,0,0,4" Padding="10,6"
-                                                            Background="#F8FAFC" Foreground="#334155"
-                                                            BorderBrush="#D7DFEA" FontWeight="Normal"
-                                                            HorizontalContentAlignment="Left"
-                                                            Command="{Binding DataContext.AddWidgetCommand,
-                                                                RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                            CommandParameter="{Binding}"
-                                                            PreviewMouseMove="ToolboxItem_PreviewMouseMove">
-                                                        <TextBlock Text="{Binding}" FontSize="12"/>
-                                                    </Button>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Expander>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
 
                         <!-- 批量生成功能块 -->
                         <Border Margin="0,16,0,0" Padding="10" CornerRadius="8"
@@ -285,7 +330,7 @@
                         <Canvas x:Name="DesignerCanvas"
                                 Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
                                 Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}"
-                                Background="#E2E8F0"
+                                Background="#FFFFFF"
                                 ClipToBounds="True"
                                 AllowDrop="True"
                                 MouseMove="DesignerCanvas_MouseMoveCoord"
@@ -359,27 +404,81 @@
                                 </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate DataType="{x:Type model:DesignerWidgetItem}">
-                                        <!-- 选中层 Border：捕获鼠标 + 显示选中边框，内部为预创建的真容视图 -->
-                                        <Border Width="{Binding Model.Width}"
-                                                Height="{Binding Model.Height}"
-                                                Cursor="Hand"
-                                                Background="Transparent"
-                                                MouseLeftButtonDown="Widget_MouseLeftButtonDown"
-                                                MouseMove="Widget_MouseMove"
-                                                MouseLeftButtonUp="Widget_MouseLeftButtonUp">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="BorderBrush" Value="Transparent"/>
-                                                    <Setter Property="BorderThickness" Value="2"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                            <Setter Property="BorderBrush" Value="#F59E0B"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <ContentPresenter Content="{Binding View}"/>
-                                        </Border>
+                                        <!-- 外层 Grid 控制 widget 占位尺寸；包含选中层 + 8 个尺寸调整手柄 -->
+                                        <Grid Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+                                            <!-- 选中层 Border：捕获鼠标 + 显示选中边框，内部为预创建的真容视图 -->
+                                            <Border Cursor="Hand"
+                                                    Background="Transparent"
+                                                    MouseLeftButtonDown="Widget_MouseLeftButtonDown"
+                                                    MouseMove="Widget_MouseMove"
+                                                    MouseLeftButtonUp="Widget_MouseLeftButtonUp">
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                                        <Setter Property="BorderThickness" Value="2"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="BorderBrush" Value="#F59E0B"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <ContentPresenter Content="{Binding View}"/>
+                                            </Border>
+
+                                            <!-- 8 个尺寸调整手柄：仅选中时显示 -->
+                                            <Grid Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Grid.Resources>
+                                                    <Style x:Key="ResizeHandleStyle" TargetType="Rectangle">
+                                                        <Setter Property="Width" Value="8"/>
+                                                        <Setter Property="Height" Value="8"/>
+                                                        <Setter Property="Fill" Value="#FFFFFF"/>
+                                                        <Setter Property="Stroke" Value="#F59E0B"/>
+                                                        <Setter Property="StrokeThickness" Value="1.5"/>
+                                                    </Style>
+                                                </Grid.Resources>
+                                                <Rectangle Tag="NW" Cursor="SizeNWSE" Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Left"   VerticalAlignment="Top"    Margin="-4,-4,0,0"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                                <Rectangle Tag="N"  Cursor="SizeNS"    Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Top"    Margin="0,-4,0,0"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                                <Rectangle Tag="NE" Cursor="SizeNESW" Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Right"  VerticalAlignment="Top"    Margin="0,-4,-4,0"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                                <Rectangle Tag="E"  Cursor="SizeWE"    Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Right"  VerticalAlignment="Center" Margin="0,0,-4,0"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                                <Rectangle Tag="SE" Cursor="SizeNWSE" Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Right"  VerticalAlignment="Bottom" Margin="0,0,-4,-4"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                                <Rectangle Tag="S"  Cursor="SizeNS"    Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-4"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                                <Rectangle Tag="SW" Cursor="SizeNESW" Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Left"   VerticalAlignment="Bottom" Margin="-4,0,0,-4"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                                <Rectangle Tag="W"  Cursor="SizeWE"    Style="{StaticResource ResizeHandleStyle}"
+                                                           HorizontalAlignment="Left"   VerticalAlignment="Center" Margin="-4,0,0,0"
+                                                           MouseLeftButtonDown="ResizeHandle_MouseLeftButtonDown"
+                                                           MouseMove="ResizeHandle_MouseMove"
+                                                           MouseLeftButtonUp="ResizeHandle_MouseLeftButtonUp"/>
+                                            </Grid>
+                                        </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>

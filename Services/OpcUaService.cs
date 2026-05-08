@@ -33,6 +33,8 @@ public class OpcUaService : IOpcUaService
     private readonly OpcUaResolvedNodeCacheStore _resolvedNodeCacheStore = new();
     private string _activeEndpointKey = string.Empty;
     private PreferredApplicationSymbolTemplate? _preferredApplicationSymbolTemplate;
+    private int _persistedCacheSnapshotCount;
+    private int _cachePersistInFlight;
 
     public OpcUaService(IOptions<OpcUaRuntimeOptions>? runtimeOptions = null)
     {
@@ -122,10 +124,7 @@ public class OpcUaService : IOpcUaService
 
     public async Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
-        if (!string.IsNullOrWhiteSpace(_activeEndpointKey) && _resolvedNodeIds.Count > 0)
-        {
-            await _resolvedNodeCacheStore.SaveAsync(_activeEndpointKey, _resolvedNodeIds, cancellationToken).ConfigureAwait(false);
-        }
+        await PersistResolvedNodeCacheAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
@@ -178,7 +177,13 @@ public class OpcUaService : IOpcUaService
 
         var totalSw = Stopwatch.StartNew();
         var result = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var tagList = tags.Where(t => !string.IsNullOrWhiteSpace(t.NodeId)).ToList();
+        // 提前过滤：空 NodeId / PLC 直接寻址 / 已知不可解析 —— 不送入 ResolveNodeIdAsync，
+        // 避免每轮轮询为不可解析变量挨个抛 InvalidOperationException 拖慢 UI。
+        var tagList = tags
+            .Where(t => !string.IsNullOrWhiteSpace(t.NodeId)
+                        && !IsPlcDirectAddress(t.NodeId)
+                        && !_unresolvedNodeIds.ContainsKey(NormalizeOpcUaNodeIdText(t.NodeId)))
+            .ToList();
         var resolvedSlots = new (NodeId NodeId, TagItem Tag)?[tagList.Count];
 
         var resolveSw = Stopwatch.StartNew();
@@ -269,6 +274,7 @@ public class OpcUaService : IOpcUaService
             $"ReadTags count={tagList.Count} resolved={resolvedTags.Count} unresolved={unresolvedCount} error={errorCount} " +
             $"resolveMs={resolveSw.ElapsedMilliseconds} readMs={readSw.ElapsedMilliseconds} totalMs={totalSw.ElapsedMilliseconds} endpoint={_activeEndpointKey}");
 
+        TrySchedulePersistResolvedNodeCache();
         return new Dictionary<string, string>(result, StringComparer.OrdinalIgnoreCase);
     }
 
@@ -398,10 +404,7 @@ public class OpcUaService : IOpcUaService
 
         await Task.WhenAll(tasks).ConfigureAwait(false);
 
-        if (!string.IsNullOrWhiteSpace(_activeEndpointKey) && _resolvedNodeIds.Count > 0)
-        {
-            await _resolvedNodeCacheStore.SaveAsync(_activeEndpointKey, _resolvedNodeIds, cancellationToken).ConfigureAwait(false);
-        }
+        await PersistResolvedNodeCacheAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<OpcUaBrowseNode>> BrowseNodeAsync(string? nodeId = null)
@@ -478,7 +481,11 @@ public class OpcUaService : IOpcUaService
                 return;
             }
 
-            var tagList = tags.Where(t => !string.IsNullOrWhiteSpace(t.NodeId)).ToList();
+            var tagList = tags
+                .Where(t => !string.IsNullOrWhiteSpace(t.NodeId)
+                            && !IsPlcDirectAddress(t.NodeId)
+                            && !_unresolvedNodeIds.ContainsKey(NormalizeOpcUaNodeIdText(t.NodeId)))
+                .ToList();
             if (tagList.Count == 0)
             {
                 await UnsubscribeAllAsync(cancellationToken).ConfigureAwait(false);
@@ -646,6 +653,14 @@ public class OpcUaService : IOpcUaService
             throw new InvalidOperationException($"无效的旧版标签路径：{nodeIdText}");
         }
 
+        // PLC 直接寻址（%MB123 / %IX0.0 / %QW10 等）不是 OPC UA NodeId，
+        // 直接进 unresolved 缓存避免重复抛异常拖慢 UI。
+        if (IsPlcDirectAddress(nodeIdText))
+        {
+            _unresolvedNodeIds.TryAdd(nodeIdText, 0);
+            throw new InvalidOperationException($"PLC 直接寻址不可作为 OPC UA NodeId：{nodeIdText}");
+        }
+
         if (_resolvedNodeIds.TryGetValue(nodeIdText, out var cached))
         {
             return cached;
@@ -707,6 +722,20 @@ public class OpcUaService : IOpcUaService
         _unresolvedNodeIds.TryAdd(nodeIdText, 0);
         TraceOpcPerf($"ResolveFail raw={nodeIdText} candidates={_runtimeOptions.MaxNodeIdProbeCandidates} endpoint={_activeEndpointKey}");
         throw new InvalidOperationException($"未能解析 OPC UA NodeId：{nodeIdText}", lastException);
+    }
+
+    /// <summary>是否为 PLC 直接寻址（如 %MB132606 / %IX0.0 / %QW10）。这种字符串无法解析为 OPC UA NodeId。</summary>
+    private static bool IsPlcDirectAddress(string nodeIdText)
+    {
+        if (string.IsNullOrEmpty(nodeIdText)) return false;
+        // 形如 %{区}{宽度}{偏移}：%M/I/Q + B/W/D/X + digits[.digit]
+        if (nodeIdText[0] != '%') return false;
+        if (nodeIdText.Length < 3) return false;
+        var area = char.ToUpperInvariant(nodeIdText[1]);
+        if (area != 'M' && area != 'I' && area != 'Q') return false;
+        var width = char.ToUpperInvariant(nodeIdText[2]);
+        if (width != 'B' && width != 'W' && width != 'D' && width != 'X' && width != 'L') return false;
+        return true;
     }
 
     private static bool IsObviouslyInvalidLegacyPath(string nodeIdText)
@@ -894,11 +923,77 @@ public class OpcUaService : IOpcUaService
 
     private async Task MergeResolvedNodeCacheAsync(CancellationToken cancellationToken)
     {
-        var cachedNodeIds = await _resolvedNodeCacheStore.LoadAsync(_activeEndpointKey, cancellationToken).ConfigureAwait(false);
+        var (cachedNodeIds, cachedUnresolved) = await _resolvedNodeCacheStore
+            .LoadFullAsync(_activeEndpointKey, cancellationToken)
+            .ConfigureAwait(false);
         foreach (var pair in cachedNodeIds)
         {
             _resolvedNodeIds[pair.Key] = pair.Value;
         }
+
+        // 持久化的 unresolved 列表用于跳过已知坏地址，避免每次启动都重撞 48 候选拖累 UI。
+        foreach (var key in cachedUnresolved)
+        {
+            _unresolvedNodeIds.TryAdd(key, 0);
+        }
+    }
+
+    private async Task PersistResolvedNodeCacheAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(_activeEndpointKey))
+        {
+            return;
+        }
+
+        var totalCount = _resolvedNodeIds.Count + _unresolvedNodeIds.Count;
+        if (totalCount == 0)
+        {
+            return;
+        }
+
+        await _resolvedNodeCacheStore
+            .SaveAsync(_activeEndpointKey, _resolvedNodeIds, _unresolvedNodeIds.Keys.ToArray(), cancellationToken)
+            .ConfigureAwait(false);
+        _persistedCacheSnapshotCount = totalCount;
+    }
+
+    /// <summary>
+    /// 在每次 ReadTags 之后机会性持久化 NodeId 解析缓存，覆盖"用户直接关窗、未走 DisconnectAsync"
+    /// 这条路径——否则 unresolved 列表只活在内存，下次启动会再撞 48 候选导致首屏卡顿。
+    /// </summary>
+    private void TrySchedulePersistResolvedNodeCache()
+    {
+        if (string.IsNullOrWhiteSpace(_activeEndpointKey))
+        {
+            return;
+        }
+
+        var totalCount = _resolvedNodeIds.Count + _unresolvedNodeIds.Count;
+        if (totalCount == _persistedCacheSnapshotCount)
+        {
+            return;
+        }
+
+        if (Interlocked.CompareExchange(ref _cachePersistInFlight, 1, 0) != 0)
+        {
+            return;
+        }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await PersistResolvedNodeCacheAsync(default).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "OPC UA NodeId 缓存持久化失败");
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _cachePersistInFlight, 0);
+            }
+        });
     }
 
     private void TraceOpcPerf(string message)

@@ -28,8 +28,20 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private readonly IWidgetEditorService _widgetEditor;
     private readonly RuntimeProjectService _runtimeProjectService;
     private readonly WidgetBlockGenerator _blockGenerator;
+    private readonly PlcVariableImportService _plcVariableImport;
     private readonly EditStack _editStack = new();
     private bool _suppressEditRecording;
+
+    /// <summary>从 PLC Device.Application.xml 加载的变量表（与 Shell.Tags 并列；非空时作为绑定首选）。</summary>
+    public ObservableCollection<TagItem> PlcTags { get; } = new();
+
+    /// <summary>当前 PLC 变量文件路径（成功导入后回显）。</summary>
+    [ObservableProperty]
+    private string _plcVariableFilePath = string.Empty;
+
+    /// <summary>导入状态提示。</summary>
+    [ObservableProperty]
+    private string _plcVariableStatus = string.Empty;
 
     /// <summary>设计模式 widget 渲染所需的工厂。</summary>
     public IWidgetViewFactory WidgetViewFactory { get; }
@@ -310,17 +322,50 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>工具箱分组定义（绑到 DesignerEditorView 的折叠分组列表）。</summary>
     public static readonly IReadOnlyList<ToolboxGroup> ToolboxGroups = new[]
     {
-        new ToolboxGroup("基础控件",       new[] { "text", "bool-lamp", "numeric-readonly", "button", "page-button" }),
-        new ToolboxGroup("手动操作",       new[] { "manual-cylinder-block", "manual-axis-block", "manual-robot-block", "manual-stopper-block" }),
-        new ToolboxGroup("数据 / 报警",    new[] { "alarm-list", "opc-tag-value" }),
-        new ToolboxGroup("通用工业控件",   new[] { "motor", "alarm-banner" }),
+        new ToolboxGroup("基础控件", new[]
+        {
+            new ToolboxItem("text",             "文本",       "FormatText"),
+            new ToolboxItem("bool-lamp",        "指示灯",     "Lightbulb"),
+            new ToolboxItem("numeric-readonly", "数值显示",   "Numeric"),
+            new ToolboxItem("button",           "按钮",       "GestureTap"),
+            new ToolboxItem("page-button",      "页面跳转",   "PageNext"),
+        }),
+        new ToolboxGroup("手动操作", new[]
+        {
+            new ToolboxItem("manual-cylinder-block", "气缸",   "Piston"),
+            new ToolboxItem("manual-axis-block",     "轴",     "AxisArrow"),
+            new ToolboxItem("manual-robot-block",    "机械手", "Robot"),
+            new ToolboxItem("manual-stopper-block",  "挡停",   "StopCircle"),
+        }),
+        new ToolboxGroup("数据 / 报警", new[]
+        {
+            new ToolboxItem("alarm-list",    "报警列表", "BellAlert"),
+            new ToolboxItem("opc-tag-value", "Tag 值",   "Tag"),
+        }),
+        new ToolboxGroup("通用工业控件", new[]
+        {
+            new ToolboxItem("motor",         "电机",     "Engine"),
+            new ToolboxItem("alarm-banner",  "报警条",   "AlertBox"),
+        }),
     };
 
     public sealed class ToolboxGroup
     {
-        public ToolboxGroup(string title, IReadOnlyList<string> types) { Title = title; Types = types; }
+        public ToolboxGroup(string title, IReadOnlyList<ToolboxItem> items) { Title = title; Items = items; }
         public string Title { get; }
-        public IReadOnlyList<string> Types { get; }
+        public IReadOnlyList<ToolboxItem> Items { get; }
+    }
+
+    /// <summary>工具箱单项：TypeId(添加用) + 中文显示名 + MaterialDesign 图标 Kind。</summary>
+    public sealed class ToolboxItem
+    {
+        public ToolboxItem(string typeId, string displayName, string iconKind)
+        {
+            TypeId = typeId; DisplayName = displayName; IconKind = iconKind;
+        }
+        public string TypeId { get; }
+        public string DisplayName { get; }
+        public string IconKind { get; }
     }
 
     public DesignerEditorViewModel(
@@ -329,13 +374,15 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         IWidgetEditorService widgetEditor,
         RuntimeProjectService runtimeProjectService,
         WidgetBlockGenerator blockGenerator,
-        IWidgetViewFactory widgetViewFactory)
+        IWidgetViewFactory widgetViewFactory,
+        PlcVariableImportService plcVariableImport)
         : base(shell, "画布设计")
     {
         _projectEditor = projectEditor;
         _widgetEditor = widgetEditor;
         _runtimeProjectService = runtimeProjectService;
         _blockGenerator = blockGenerator;
+        _plcVariableImport = plcVariableImport;
         WidgetViewFactory = widgetViewFactory;
         DesignModeContext = new DesignModeWidgetDataContext(shell);
 
@@ -349,6 +396,62 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         shell.RegisterDirtySource(() => IsDirty);
 
         InitDocument();
+        // 启动时自动尝试从当前 PLC 工程目录加载一次变量表（失败静默）
+        TryAutoLoadPlcVariables();
+        // PLC 程序保存目录变更时（Shell.GitPullVm.GitTargetFolder）自动重新加载
+        Shell.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.GitTargetFolder)) TryAutoLoadPlcVariables();
+        };
+    }
+
+    /// <summary>启动 / GitTargetFolder 变更时静默加载；找不到文件不弹错。</summary>
+    public void TryAutoLoadPlcVariables()
+    {
+        var path = _plcVariableImport.ResolveDefaultPath(Shell.GitTargetFolder);
+        if (string.IsNullOrEmpty(path)) return;
+        LoadPlcVariablesFrom(path);
+    }
+
+    private void LoadPlcVariablesFrom(string path)
+    {
+        var tags = _plcVariableImport.LoadFromFile(path);
+        PlcTags.Clear();
+        foreach (var t in tags) PlcTags.Add(t);
+        PlcVariableFilePath = path;
+        PlcVariableStatus = tags.Count > 0
+            ? $"已加载 {tags.Count} 个变量"
+            : "未解析到变量";
+        OnPropertyChanged(nameof(AvailableTags));
+        Log.Information("DesignerEditor: 加载 PLC 变量 path={Path} count={Count}", path, tags.Count);
+    }
+
+    /// <summary>"重新导入 PLC 变量"按钮：从 GitTargetFolder 找 Device.Application.xml 并解析。</summary>
+    [RelayCommand]
+    private void ReloadPlcVariables()
+    {
+        var path = _plcVariableImport.ResolveDefaultPath(Shell.GitTargetFolder);
+        if (string.IsNullOrEmpty(path))
+        {
+            PlcVariableStatus = "未找到 Device.Application.xml（请在「PLC 程序保存目录」中设置）";
+            return;
+        }
+        LoadPlcVariablesFrom(path!);
+    }
+
+    /// <summary>"浏览 XML 文件"命令：手动选择一个 Device.Application.xml。</summary>
+    [RelayCommand]
+    private void BrowsePlcVariableFile()
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "PLC 变量表 (Device.Application.xml)|Device.Application.xml|XML 文件 (*.xml)|*.xml",
+            Title = "选择 PLC 变量表 XML",
+        };
+        var initial = Shell.GitTargetFolder;
+        if (!string.IsNullOrWhiteSpace(initial) && System.IO.Directory.Exists(initial))
+            dlg.InitialDirectory = initial;
+        if (dlg.ShowDialog() == true) LoadPlcVariablesFrom(dlg.FileName);
     }
 
     /// <summary>当前画布是否有未保存改动（G7 切页确认依据）。</summary>
@@ -450,8 +553,11 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
     // ========== B-07: Tag 数据源 ==========
 
-    /// <summary>可用 Tag 列表，用于绑定选择器下拉框。</summary>
-    public IEnumerable<TagItem> AvailableTags => Shell.Tags;
+    /// <summary>
+    /// 可用 Tag 列表：PLC 变量表（Device.Application.xml）非空时优先使用，
+    /// 否则回退到 Shell.Tags（OPC UA 在线变量 + 演示数据）。
+    /// </summary>
+    public IEnumerable<TagItem> AvailableTags => PlcTags.Count > 0 ? (IEnumerable<TagItem>)PlcTags : Shell.Tags;
 
     /// <summary>
     /// 当前选中 widget 的可用设备名列表（按 TypeId 自动从 Shell 取真实设备）。
@@ -481,8 +587,29 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
     // ========== 选中页切换 ==========
 
+    private PageDefinition? _subscribedPage;
+
+    private void OnSelectedPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        // 父段/标题/导航排序/顶栏可见性变更 → 立即刷新左侧导航与顶栏，
+        // 这样把已绑定的页面重绑到别的父画面后无需保存即可看到效果。
+        if (e.PropertyName is nameof(PageDefinition.ParentRouteKey)
+                          or nameof(PageDefinition.Title)
+                          or nameof(PageDefinition.NavOrder)
+                          or nameof(PageDefinition.ShowInTopNav))
+        {
+            (Shell as MainWindowViewModel)?.RefreshTopNavUserPages();
+        }
+    }
+
     partial void OnSelectedPageChanged(PageDefinition? value)
     {
+        if (_subscribedPage is not null)
+            _subscribedPage.PropertyChanged -= OnSelectedPagePropertyChanged;
+        _subscribedPage = value;
+        if (value is not null)
+            value.PropertyChanged += OnSelectedPagePropertyChanged;
+
         CurrentWidgets.Clear();
         if (value is not null)
         {
@@ -533,6 +660,15 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>新建页面时挂载的父页面 RouteKey（null = 顶层页）。</summary>
     [ObservableProperty]
     private string? _newPageParentRouteKey;
+
+    /// <summary>
+    /// 软件内置的固定父页面（顶级导航段）。新建画布页面时可挂载到这些固定画面之下，
+    /// 而不是其他画布页。值即 CurrentSection 字符串。
+    /// </summary>
+    public IReadOnlyList<string> BuiltInParentSections { get; } = new[]
+    {
+        "主界面", "监控", "手动操作", "参数设定", "报警画面", "登录", "设计器"
+    };
 
     [RelayCommand]
     private void AddPage()
@@ -692,6 +828,27 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         _widgetEditor.ResizeWidget(SelectedWidget, width, height);
     }
 
+    /// <summary>拖角实时改变 位置+尺寸（不记录撤销）；自动吸附到网格。</summary>
+    public void MoveAndResizeSelectedWidget(double x, double y, double width, double height)
+    {
+        if (SelectedWidget is null) return;
+        _widgetEditor.MoveWidget(SelectedWidget, SnapValue(x), SnapValue(y));
+        _widgetEditor.ResizeWidget(SelectedWidget, SnapValue(width), SnapValue(height));
+        MarkPageEdited();
+    }
+
+    /// <summary>拖角缩放结束后写入撤销栈。</summary>
+    public void CommitResize(double oldX, double oldY, double oldW, double oldH,
+                             double newX, double newY, double newW, double newH)
+    {
+        if (SelectedWidget is null) return;
+        _editStack.Execute(new ResizeWidgetEdit(
+            _widgetEditor, SelectedWidget,
+            oldX, oldY, oldW, oldH,
+            newX, newY, newW, newH));
+        OnPropertyChanged(nameof(CanUndo));
+    }
+
     // ========== B-07: 绑定修改 ==========
 
     /// <summary>当前选中控件的绑定 Tag 名称（用于双向绑定到 ComboBox）。</summary>
@@ -741,7 +898,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private void OpenTagBrowser()
     {
         if (SelectedWidget is null) return;
-        var dlg = new ApexHMI.Views.Dialogs.TagBrowserDialog(Shell.Tags)
+        var dlg = new ApexHMI.Views.Dialogs.TagBrowserDialog(PlcTags.Count > 0 ? PlcTags : (System.Collections.Generic.IEnumerable<TagItem>)Shell.Tags)
         {
             Owner = System.Windows.Application.Current.MainWindow
         };

@@ -34,3 +34,13 @@ config/pki-probe/
 # 用户凭据 - 含密码哈希，不入版本控制
 config/users.json
 docs/credentials.md
+
+# OPC UA 运行时 tag 解析缓存（应用运行时自动写入，不入版本控制）
+config/appsettings.json
+config/tags.json
+config/*.bak.*
+
+# 构建日志与临时文件
+build_*.txt
+*_wpftmp.csproj
+.qoder/

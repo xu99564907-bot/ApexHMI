@@ -354,16 +354,6 @@
         </Grid.ColumnDefinitions>
 
         <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="0,0,0,1" Padding="0">
-            <Border.Style>
-                <Style TargetType="Border">
-                    <Setter Property="Visibility" Value="Visible"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsRuntimeFullScreen}" Value="True">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
             <DockPanel>
                 <Border DockPanel.Dock="Top" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
                 <Grid Height="40" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
@@ -595,7 +585,7 @@
                                     <ItemsControl ItemsSource="{Binding Children}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Button Content="{Binding Title}" Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding Title}" Padding="8" Margin="20,0,0,4" Background="#F8FAFC" Foreground="#334155" BorderBrush="#D7DFEA"/>
+                                                <Button Content="{Binding Title}" Command="{Binding DataContext.NavigateNavItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Padding="8" Margin="20,0,0,4" Background="#F8FAFC" Foreground="#334155" BorderBrush="#D7DFEA"/>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>

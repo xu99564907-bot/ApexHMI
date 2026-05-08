@@ -38,12 +38,46 @@ public partial class DesignerEditorView : UserControl
         => DataContext as DesignerEditorViewModel;
 
     // -- 工具箱拖拽到画布 --
+    // 修复：单次按下既触发 Click(AddWidgetCommand) 又触发 DoDragDrop 会重复添加。
+    // 通过记录按下点 + 阈值后再触发 DoDragDrop，并在 PreviewMouseLeftButtonUp 中
+    // 当已发生拖拽时把事件 Handled=true，从而抑制 Button.Click 触发 Command。
+    private bool _toolboxDragging;
+    private Point _toolboxPressPoint;
+
+    private void ToolboxItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _toolboxDragging = false;
+        _toolboxPressPoint = e.GetPosition(null);
+    }
 
     private void ToolboxItem_PreviewMouseMove(object sender, MouseEventArgs e)
     {
-        if (e.LeftButton != MouseButtonState.Pressed) return;
-        if (sender is FrameworkElement element && element.DataContext is string tool)
-            DragDrop.DoDragDrop(element, tool, DragDropEffects.Copy);
+        if (e.LeftButton != MouseButtonState.Pressed || _toolboxDragging) return;
+        var pos = e.GetPosition(null);
+        if (Math.Abs(pos.X - _toolboxPressPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(pos.Y - _toolboxPressPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+        if (sender is FrameworkElement element)
+        {
+            string? typeId = element.DataContext switch
+            {
+                DesignerEditorViewModel.ToolboxItem ti => ti.TypeId,
+                string s => s, // 兼容旧绑定
+                _ => null
+            };
+            if (string.IsNullOrEmpty(typeId)) return;
+            _toolboxDragging = true;
+            DragDrop.DoDragDrop(element, typeId, DragDropEffects.Copy);
+        }
+    }
+
+    private void ToolboxItem_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_toolboxDragging)
+        {
+            e.Handled = true;
+            _toolboxDragging = false;
+        }
     }
 
     // ===== 框选状态 =====
@@ -200,6 +234,100 @@ public partial class DesignerEditorView : UserControl
             (Math.Abs(w.X - _widgetStartX) > 0.5 || Math.Abs(w.Y - _widgetStartY) > 0.5))
         {
             vm.CommitMove(_widgetStartX, _widgetStartY, w.X, w.Y);
+        }
+
+        e.Handled = true;
+    }
+
+    // ===== 控件尺寸调整手柄（8 个，按 Tag 标识方向） =====
+    private bool _isResizing;
+    private string? _resizeHandle;
+    private Point _resizeStartPoint;
+    private double _resizeStartX, _resizeStartY, _resizeStartW, _resizeStartH;
+
+    private static WidgetInstance? ResolveWidget(object? dataContext) => dataContext switch
+    {
+        DesignerWidgetItem item => item.Model,
+        WidgetInstance w => w,
+        _ => null
+    };
+
+    private void ResizeHandle_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not FrameworkElement fe) return;
+        var widget = ResolveWidget(fe.DataContext);
+        if (widget is null) return;
+
+        var vm = GetViewModel();
+        if (vm is null) return;
+
+        // 选中此控件，确保 SelectedWidget 是手柄所属的那个
+        vm.SelectSingleWidget(widget);
+
+        _isResizing = true;
+        _resizeHandle = fe.Tag as string;
+        _resizeStartPoint = e.GetPosition(DesignerCanvas);
+        _resizeStartX = widget.X;
+        _resizeStartY = widget.Y;
+        _resizeStartW = widget.Width;
+        _resizeStartH = widget.Height;
+        fe.CaptureMouse();
+        e.Handled = true;
+    }
+
+    private void ResizeHandle_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (!_isResizing || e.LeftButton != MouseButtonState.Pressed || _resizeHandle is null) return;
+
+        var vm = GetViewModel();
+        if (vm?.SelectedWidget is null) return;
+
+        var pos = e.GetPosition(DesignerCanvas);
+        var dx = pos.X - _resizeStartPoint.X;
+        var dy = pos.Y - _resizeStartPoint.Y;
+
+        double newX = _resizeStartX, newY = _resizeStartY;
+        double newW = _resizeStartW, newH = _resizeStartH;
+
+        if (_resizeHandle.Contains("W")) { newX = _resizeStartX + dx; newW = _resizeStartW - dx; }
+        if (_resizeHandle.Contains("E")) { newW = _resizeStartW + dx; }
+        if (_resizeHandle.Contains("N")) { newY = _resizeStartY + dy; newH = _resizeStartH - dy; }
+        if (_resizeHandle.Contains("S")) { newH = _resizeStartH + dy; }
+
+        // 强制最小尺寸（与 WidgetEditorService 内部 10 一致，但放宽到 20 更易拖）
+        const double minSize = 20;
+        if (newW < minSize)
+        {
+            newW = minSize;
+            if (_resizeHandle.Contains("W")) newX = _resizeStartX + _resizeStartW - minSize;
+        }
+        if (newH < minSize)
+        {
+            newH = minSize;
+            if (_resizeHandle.Contains("N")) newY = _resizeStartY + _resizeStartH - minSize;
+        }
+        if (newX < 0) { newW += newX; newX = 0; }
+        if (newY < 0) { newH += newY; newY = 0; }
+
+        vm.MoveAndResizeSelectedWidget(newX, newY, newW, newH);
+    }
+
+    private void ResizeHandle_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (!_isResizing) return;
+        _isResizing = false;
+        _resizeHandle = null;
+
+        if (e.MouseDevice.Captured is FrameworkElement captured)
+            captured.ReleaseMouseCapture();
+
+        var vm = GetViewModel();
+        if (vm?.SelectedWidget is WidgetInstance w &&
+            (Math.Abs(w.X - _resizeStartX) > 0.5 || Math.Abs(w.Y - _resizeStartY) > 0.5
+             || Math.Abs(w.Width - _resizeStartW) > 0.5 || Math.Abs(w.Height - _resizeStartH) > 0.5))
+        {
+            vm.CommitResize(_resizeStartX, _resizeStartY, _resizeStartW, _resizeStartH,
+                            w.X, w.Y, w.Width, w.Height);
         }
 
         e.Handled = true;

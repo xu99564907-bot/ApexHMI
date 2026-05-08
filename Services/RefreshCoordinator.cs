@@ -80,12 +80,37 @@ public sealed class RefreshCoordinator
     {
         return selectedTabIndex switch
         {
-            0 => tags, // 运行总览 — 刷新全部
-            1 => tags, // 监控 — 刷新全部 I/O
-            3 => GetManualPageTags(tags, currentManualSubSection, manualPageResolver), // 手动操作
-            4 => GetParameterPageTags(tags, currentParameterSubSection), // 参数设定
+            // 运行总览 / 监控页：导入 PLC 变量后 Tags 可达数千，全表轮询会把 UI 卡死。
+            // 这里只返回"必须周期性读"的子集（报警 + 设备状态），其它依赖订阅推送即可。
+            0 => GetCriticalDashboardTags(tags),
+            1 => GetCriticalDashboardTags(tags),
+            3 => GetManualPageTags(tags, currentManualSubSection, manualPageResolver),
+            4 => GetParameterPageTags(tags, currentParameterSubSection),
             _ => Enumerable.Empty<TagItem>()
         };
+    }
+
+    /// <summary>
+    /// 主界面 / 监控页周期性轮询的最小必要集：
+    /// - IsAlarm 的 Tag（报警状态需要确定性周期检查；订阅丢包会漏掉边沿）
+    /// - 设备状态汇总：DB30xx_Control / DBxxxx_Fault / Machine.Status
+    /// 其余高频变量（气缸 / 阀 / 手动命令等）走 OPC UA 订阅，不要再轮询。
+    /// </summary>
+    private static IEnumerable<TagItem> GetCriticalDashboardTags(IEnumerable<TagItem> tags)
+    {
+        foreach (var t in tags)
+        {
+            if (t.IsAlarm) { yield return t; continue; }
+            var n = t.Name ?? string.Empty;
+            if (n.IndexOf("Fault", StringComparison.OrdinalIgnoreCase) >= 0
+             || n.IndexOf("Alarm", StringComparison.OrdinalIgnoreCase) >= 0
+             || n.IndexOf("Machine.Status", StringComparison.OrdinalIgnoreCase) >= 0
+             || n.IndexOf("Mode.Status", StringComparison.OrdinalIgnoreCase) >= 0
+             || n.IndexOf("HMI.Status", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                yield return t;
+            }
+        }
     }
 
     private static IEnumerable<TagItem> GetManualPageTags(
