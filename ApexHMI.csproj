@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -43,7 +44,7 @@
     <PackageReference Include="MaterialDesignThemes" Version="4.9.0" />
     <PackageReference Include="MaterialDesignColors" Version="2.1.4" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.10" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.10" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
     <PackageReference Include="OPCFoundation.NetStandard.Opc.Ua" Version="1.5.378.134" />
@@ -64,6 +65,16 @@
 
   <ItemGroup>
     <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
+
+  <!-- net48 + AnyCPU/x64 NuGet 默认复制 win-x86 native dll，64 位进程加载失败。
+       显式从 NuGet runtimes/win-x64/native 复制 e_sqlite3.dll 覆盖。 -->
+  <ItemGroup>
+    <None Include="$(NuGetPackageRoot)sqlitepclraw.lib.e_sqlite3\2.1.10\runtimes\win-x64\native\e_sqlite3.dll">
+      <Link>e_sqlite3.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </None>
   </ItemGroup>
 
   <!-- Runtime assets copied to output so the exe can be run standalone -->
