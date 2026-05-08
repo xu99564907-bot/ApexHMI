@@ -14,41 +14,78 @@
 
 ---
 
-## 执行进度（截至 2026-05-08 15:07）
+## 执行进度（截至 2026-05-08 17:30）
 
 ### ✅ 已完成 commit
 
-| 阶段 | 内容 | commit |
+| Phase | 范围 | commit | 项数 |
+|---|---|---|---|
+| 0.1 | M1+M2 监控 9 处 bug + 4 命名属性 | `89283a6` | 2 |
+| 0.2 | L2 + L3 用户外置（IUserService + config/users.json + SHA256） | `89283a6` | 2 |
+| 0.3 | G3 状态栏流程步号 + 节拍/UPH chip | `89283a6` | 1 |
+| 0.4 | G1 全局快捷键 Ctrl+1~8 / NumPad1-8 + F5 | `89283a6` | 1 |
+| 0.5 | G6 多语言切换（编辑菜单 → 语言 / Language） | `89283a6` + `83bf45f` | 1 |
+| 0.6 | L7 最近登录时间 + 失败次数显示 | `89283a6` | 1 |
+| 0.7 | G7 全局未保存提示（DesignerEditor 接入） | `89283a6` | 1 |
+| 1 | 生产计数模块 HMI 侧（SQLite + 差值法 + CountView Tab 11 + B 入口） | `1b8c964` + `e3dcf7f` + `e35b5a3` | 1 |
+| **2.1** | **主界面 H1/H2/H3/H4/H5/H6/H7** | `ff00bb5` + `42ef0d7` | **7** |
+| **2.2.AB** | **监控-详细生产 M3/M5/M6/M8 + IO 监控 M9/M10/M11/M13/M15** | `8d2c945` | **9** |
+| **2.2.CD** | **监控-通讯调试 M17/M19/M20 + 程序监控 M21/M22** | `fac61a7` + `8ddcabc` | **5** |
+| **2.3** | **手动操作 MA2/MA5/MA6/MA7/MA9/MA10** | `b6f67a0` | **6** |
+
+**累计完成：约 37 项 / 12 commit**
+
+### ⏸ 推迟到 Phase 3 / 4（设计复杂或视觉重构相关）
+
+| 项 | 推迟到 | 原因 |
 |---|---|---|
-| Phase 0.1 | M1+M2 监控 9 处 bug（5 字面量 + 4 硬编码 Tags 下标）+ 4 个命名属性 | `89283a6` |
-| Phase 0.2 | L2 + L3 用户外置（IUserService + config/users.json + SHA256 + 删除暴露密码） | `89283a6` |
-| Phase 0.3 | G3 状态栏流程步号 chip + 节拍/UPH chip | `89283a6` |
-| Phase 0.4 | G1 全局快捷键 Ctrl+1~8 / NumPad1-8 + F5 | `89283a6` |
-| Phase 0.5 | G6 多语言切换（编辑菜单 → 语言 / Language） | `89283a6` + `83bf45f` |
-| Phase 0.6 | L7 最近登录时间 + 失败次数显示（LoginView） | `89283a6` |
-| Phase 0.7 | G7 全局未保存提示（IDirtyTracker 框架 + DesignerEditor 接入） | `89283a6` |
-| Phase 1   | 生产计数模块 HMI 侧（PLC 端等同事联调）：SQLite 账本 + 差值法 + CountView Tab 11 + B 入口（监控 → 生产计数）| `1b8c964` + `e3dcf7f` + `e35b5a3` |
-
-### ⏸ 推迟（设计较复杂，单独评估）
-
-- **G2 高 DPI UI 缩放** — UiScale 属性 + ZoomIn/ZoomOut 命令已加在 ViewModel，但未接 UI（XAML 上的 ScaleTransform 方案需要更深设计避免裁切/留白）
-- **G10 权限边界 disabled+tooltip** — 50+ 按钮工程，单独评估实施策略
+| G2 高 DPI UI 缩放 | Phase 3 视觉 | XAML ScaleTransform 方案需深设计 |
+| G10 权限边界 disabled+tooltip | 单独 phase | 50+ 按钮工程量大 |
+| H10 KPI 图标徽章状态色 | Phase 3 视觉 | 跟全局视觉一起刷 |
+| H12 首页可定制 | Phase 4 锦上添花 | 拖拽+持久化 |
+| M14 DI/DO 切换改 tab 视觉 | Phase 3 视觉 | 视觉调整 |
+| M16 OPC UA 节点收藏夹 | Phase 4 | persistence + 数据结构 |
+| M18 OPC UA 写入测试 | Phase 4 | dialog + 权限审计 |
+| M23 流程异常排行跳转 trace 图 | Phase 4 | 实现复杂 |
+| M24 标记关键步号 | Phase 4 | 持久化 |
+| M25 历史回放速率 | Phase 4 | 要新加 ReplayTimer |
+| M26 看报警弹层 | Phase 4 | 跟报警增强一起做 |
+| M27 PDF 报告 | Phase 4 | 要 PDF 库 |
+| MA4 气缸分组 Tab | Phase 4 | 要 ManualCylinderBlockItem 加 Group 字段 |
+| MA8 设计器布局应急按钮 | 不做 | 用户没填 |
 
 ### ⏳ 待做（按 Q3=全做 推进）
 
-| 页面 | 待做项数（仅⭐+◯，不计△）| 关键内容 |
-|---|---|---|
-| 全局 | 0 已全做 | — |
-| **主界面 H1-H13** | 待做 ~10 项 | 环形进度 / 班次倒计时 / KPI mini sparkline / 报警卡跳转 / ready 卡明细 / 流程日志过滤+搜索 / KPI 状态色 / 首页定制 |
-| **监控 M3-M27** | 待做 ~22 项 | KPI 展开历史 / 趋势缩放 / 自定义时间 / IO 搜索+翻转计数+变化高亮 / OPC UA 收藏夹+搜索+写入测试 / Trace 平均节拍+PNG导出+异常排行跳转 等 |
-| **手动 MA2-MA10** | 待做 ~7 项 | 报警卡红边框闪烁 / 气缸分组+搜索 / 双击跳参数页 / 长按显示 IO 详情 / 气缸操作日志 等 |
-| **参数 P1-P10** | 待做 10 项 | 搜索框 / 分组折叠 / 未保存高亮 / 修改 diff 预览 / 变更历史 / 配方对比 等 |
-| **报警 A1-A10** | 待做 10 项 | 声音+弹窗 / 级别筛选 tab / 详情侧边栏 / 导出 CSV / 频率图 / 事件链 等 |
-| **配方 R1-R9** | 待做 9 项 | 配方对比 / 导入导出 / 启用前预校验 / 切换流程化 / 历史版本回滚 等 |
-| **程序生成 D1-D3 / D6 / D8-D9** | 待做 6 项 | IO 表导入校验 / 生成后 diff 预览 / 多工位批量生成 / Git 代理 / 编辑注释 / ST 文件预览 |
-| **履历 AU1-AU8** | 待做 8 项 | 时间段过滤 / 用户动作过滤 / 关键字搜索 / 导出 PDF / 事件链 / 动作分类 等 |
-| **登录 L4-L6** | 待做 3 项 | 切换不退出 / 临时提权 / 权限可编辑表 |
-| Phase 1 联调 | 等 PLC | PLC 端 DB8003_Count 简化合约 + Tags 加 OK.Total/NG.Total |
+| Phase | 子页 | 项数 | 关键内容 |
+|---|---|---|---|
+| **2.4** | **参数 ParameterView** | 10 项 (P1-P10) | 搜索 / 分组折叠 / 未保存高亮 / 修改 diff / 变更历史 / 与配方对比 / 权限优雅提示 / 合法性校验 / 导出为配方 / 批量编辑 |
+| **2.5** | **报警 AlarmView** | 10 项 (A1-A10) | 声音+弹窗 / 级别筛选 tab / 详情侧边栏 / 导出 CSV-Excel / 频率图 / 二次确认 / 备注 / 跳流程 / 时间段查询 / 邮件 IM 推送 |
+| **2.6** | **配方 RecipeView** | 9 项 (R1-R9) | 对比 / 导入导出 / 启用前预校验 / 切换流程化 / 历史版本 / 删除二次确认 / 上次使用时间 / 产线兼容标签 / 试运行 |
+| **2.7** | **程序生成 DesignerView** | 6 项 (D1/D2/D3/D6/D8/D9) | IO 表导入校验 / 生成后 diff 预览 / 多工位批量生成 / Git 代理 / 快速编辑注释 / ST 文件预览 |
+| **2.8** | **履历 AuditView** | 8 项 (AU1-AU8) | 时间段过滤 / 用户动作过滤 / 关键字搜索 / 导出 PDF / 事件链 / 动作分类 / 详情截断 / 履历归档 |
+| **2.9** | **登录 LoginView 升级** | 3 项 (L4/L5/L6) | 切换不退出 / 临时提权 / 权限说明可编辑 |
+| Phase 1 联调 | 等 PLC | — | PLC 端 DB8003_Count 简化合约 + Tags 加 OK.Total/NG.Total |
+| **Phase 3** | **整体视觉重构** | 全局 | XAML Style 资源字典 + 卡片/按钮/表格全局风格刷新 + KPI/环形进度等新视觉组件 |
+| **Phase 4** | **锦上添花** | 14+ 项 | G4 事件中心 / 上面"推迟"列表里的项 |
+
+### git 历史
+
+```
+b6f67a0 [OP-Phase-2.3] 手动操作 MA2/MA5/MA6/MA7/MA9/MA10
+8ddcabc [OP-Phase-2.2.CD-fix]
+fac61a7 [OP-Phase-2.2.CD] 监控-通讯+程序监控 M17/M19/M20/M21/M22
+8d2c945 [OP-Phase-2.2.AB] 监控-详细生产+IO M3/M5/M6/M8/M9/M10/M11/M13/M15
+42ef0d7 [OP-Phase-2.1-fix] ProgressBar Mode=OneWay
+ff00bb5 [OP-Phase-2.1] 主界面 H1-H7
+83bf45f [OP-Phase-0.5-tweak] 语言切换挪到编辑菜单
+e35b5a3 [OP-Phase-1-fix2] x64 e_sqlite3.dll
+e3dcf7f [OP-Phase-1-fix] SQLitePCL Init
+1b8c964 [OP-Phase-1] 生产计数模块 HMI 侧
+34a4882 Merge OP-pre + OP-Phase-0
+89283a6 [OP-Phase-0] 修 MonitorView 9 处 bug + 用户外置 + 全局基础
+fd17a2d [OP-pre] 画布设计器顶部横向工具箱重构 + PLC 变量导入
+807ff35 master ← 干净未污染
+```
 
 ---
 
