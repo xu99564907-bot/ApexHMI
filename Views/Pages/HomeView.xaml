@@ -30,7 +30,7 @@
                                                 <TextBlock DockPanel.Dock="Right" Text="{Binding ProductionProgressPercentText}" Foreground="#0369A1" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                             </DockPanel>
                                             <TextBlock Text="{Binding ProductionProgressText}" FontSize="18" FontWeight="Bold" Foreground="#0369A1" Margin="0,2,0,4"/>
-                                            <ProgressBar Value="{Binding ProductionProgressPercent}" Maximum="100" Height="6" Foreground="#0EA5E9" Background="#E0F2FE" BorderThickness="0"/>
+                                            <ProgressBar Value="{Binding ProductionProgressPercent, Mode=OneWay}" Maximum="100" Height="6" Foreground="#0EA5E9" Background="#E0F2FE" BorderThickness="0"/>
                                             <TextBlock Text="{Binding ShiftRemainingText}" Foreground="#0369A1" FontSize="11" Margin="0,4,0,0"/>
                                         </StackPanel>
                                     </Border>
