@@ -444,15 +444,74 @@ public partial class MainViewModel
         _ = WriteIoMonitorPageToPLC();
     }
 
+    // M9 IO 监控搜索（按地址 / 注释模糊匹配）
+    [ObservableProperty] private string ioMonitorSearchText = string.Empty;
+
+    partial void OnIoMonitorSearchTextChanged(string value) => RefreshIoMonitorPagedItems();
+
     private void RefreshIoMonitorPagedItems()
     {
         IoMonitorLeftItems.Clear();
         IoMonitorRightItems.Clear();
+
+        // M9 应用搜索过滤
+        IEnumerable<IoMonitorItem> filtered = _ioMonitorItems.Where(x => x.Direction == IoMonitorType);
+        if (!string.IsNullOrWhiteSpace(IoMonitorSearchText))
+        {
+            var s = IoMonitorSearchText.Trim();
+            filtered = filtered.Where(x =>
+                (x.Address?.IndexOf(s, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
+                || (x.Comment?.IndexOf(s, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0);
+        }
+
+        var page = filtered.ToList();
         var offset = IoMonitorCurrentPage * 16;
-        foreach (var item in _ioMonitorItems.Where(x => x.Direction == IoMonitorType && x.Index >= offset && x.Index < offset + 8))
+        foreach (var item in page.Where(x => x.Index >= offset && x.Index < offset + 8))
             IoMonitorLeftItems.Add(item);
-        foreach (var item in _ioMonitorItems.Where(x => x.Direction == IoMonitorType && x.Index >= offset + 8 && x.Index < offset + 16))
+        foreach (var item in page.Where(x => x.Index >= offset + 8 && x.Index < offset + 16))
             IoMonitorRightItems.Add(item);
+    }
+
+    /// <summary>M11 由 SubscriptionTimer 周期触发，让 IoMonitorItem.IsRecentlyChanged 在 1.5s 后自动恢复 false。</summary>
+    internal void RefreshIoMonitorRecentlyChangedFlags()
+    {
+        foreach (var item in _ioMonitorItems)
+            item.RefreshRecentlyChangedFlag();
+    }
+
+    // M15 导出当前 IO 状态为 CSV
+    [RelayCommand]
+    private void ExportIoSnapshotCsv()
+    {
+        try
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "CSV 文件|*.csv",
+                FileName = $"io-snapshot-{DateTime.Now:yyyyMMdd-HHmmss}.csv"
+            };
+            if (dlg.ShowDialog() != true) return;
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("方向,索引,地址,注释,状态,翻转计数,最近变化");
+            foreach (var item in _ioMonitorItems.OrderBy(x => x.Direction).ThenBy(x => x.Index))
+            {
+                sb.Append(item.Direction).Append(',')
+                  .Append(item.Index).Append(',')
+                  .Append(EscapeCsv(item.Address)).Append(',')
+                  .Append(EscapeCsv(item.Comment)).Append(',')
+                  .Append(item.Status ? "ON" : "OFF").Append(',')
+                  .Append(item.ToggleCount).Append(',')
+                  .Append(item.LastChangeAt?.ToString("HH:mm:ss") ?? string.Empty)
+                  .AppendLine();
+            }
+            System.IO.File.WriteAllText(dlg.FileName, sb.ToString(), new System.Text.UTF8Encoding(true));
+            SystemMessage = $"已导出 IO 快照：{dlg.FileName}";
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "ExportIoSnapshotCsv 失败");
+            SystemMessage = $"导出 IO 快照失败：{ex.Message}";
+        }
     }
 
     [RelayCommand]

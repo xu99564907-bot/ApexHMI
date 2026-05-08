@@ -118,7 +118,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public ObservableCollection<SfcStep> SfcSteps { get; } = new();
     public ObservableCollection<SfcStep> SfcInitSteps { get; } = new();
     public ObservableCollection<string> FlowFilterOptions { get; } = new() { "全部", "主线1", "主线2", "主线3" };
-    public ObservableCollection<string> FlowTimeRangeOptions { get; } = new() { "全部", "本班次", "今日", "近7天" };
+    // M5: 加 "自定义" 让用户用 DatePicker 指定起止时间
+    public ObservableCollection<string> FlowTimeRangeOptions { get; } = new() { "全部", "本班次", "今日", "近7天", "自定义" };
     public ObservableCollection<string> FlowStepFilterOptions { get; } = new() { "全部", "10", "20", "30", "40", "50", "60" };
     public ObservableCollection<string> IoPlcTemplateOptions { get; } = new() { "汇川中型PLC", "汇川小型PLC", "西门子PLC" };
     public ObservableCollection<string> ProgramMonitorTraceFlowOptions { get; } = new() { "主线1", "主线2", "主线3" };
@@ -138,6 +139,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool flowLogShowWarn = true;
     [ObservableProperty] private bool flowLogShowError = true;
     [ObservableProperty] private string flowLogSearchText = string.Empty;
+
+    // M5 监控页自定义时间范围（仅 SelectedFlowTimeRange == "自定义" 时显示 DatePicker）
+    [ObservableProperty] private DateTime customTimeFrom = DateTime.Today.AddDays(-1);
+    [ObservableProperty] private DateTime customTimeTo = DateTime.Today.AddDays(1);
+
+    // M8 监控页"流程/OEE/报警趋势"卡的多线显示开关
+    [ObservableProperty] private bool showOeeTrendLine = true;
+    [ObservableProperty] private bool showAlarmTrendLine = true;
+    [ObservableProperty] private bool showFlowStepTrendLine = true;
+    [ObservableProperty] private bool showFlowIssueTrendLine = false;
+
+    // M6 监控页 工单/配方 切换提示（最近一次更新时间）
+    [ObservableProperty] private DateTime? lastOrderChangeAt;
+    [ObservableProperty] private DateTime? lastRecipeChangeAt;
     /// <summary>UI 全局缩放因子，应用到主窗口 LayoutTransform。范围 0.7 ~ 1.5。</summary>
     [ObservableProperty] private double uiScale = 1.0;
     [ObservableProperty] private string manualWriteTagName = string.Empty;
@@ -495,6 +510,33 @@ public partial class MainViewModel : ObservableObject, IDisposable
             return string.Join("\n", lines);
         }
     }
+
+    // ===== Phase 2.2.A 监控-详细生产数据 =====
+    // M5 自定义时间范围 DatePicker 仅在 "自定义" 选项时显示
+    public bool IsCustomTimeRangeVisible => string.Equals(SelectedFlowTimeRange, "自定义", StringComparison.Ordinal);
+
+    // M3 KPI 卡 ToolTip 明细（hover 显示更详细的统计）
+    public string OrderKpiDetail =>
+        $"工单号：{CurrentOrderText}\n本班次：{ShiftProductionCount} 件\n今日累计：{DailyProductionCount} 件\n良品/不良：{GoodCount} / {NgCount}";
+    public string RecipeKpiDetail =>
+        $"配方：{CurrentRecipeText}\n班次状态：{ShiftStatusText}\n节拍：{CycleTimeSeconds:F1}s\nUPH：{HourlyThroughput}";
+    public string ShiftKpiDetail =>
+        $"班次：{ShiftStatusText}\n本班产量：{ShiftProductionCount} / 目标 {TargetCount}\n达成率：{(TargetCount > 0 ? ShiftProductionCount * 100.0 / TargetCount : 0):F1}%\n良品 {ShiftGoodCount} / 不良 {ShiftNgCount}";
+    public string TargetKpiDetail =>
+        $"目标产量：{TargetCount} 件\n本班完成：{ShiftProductionCount}（{(TargetCount > 0 ? ShiftProductionCount * 100.0 / TargetCount : 0):F1}%）\n剩余：{Math.Max(0, TargetCount - ShiftProductionCount)} 件";
+
+    // M6 工单 / 配方切换提示（"刚刚切换" / "5 分钟前切换"）
+    public string OrderChangeHint => FormatChangeHint(LastOrderChangeAt);
+    public string RecipeChangeHint => FormatChangeHint(LastRecipeChangeAt);
+    private static string FormatChangeHint(DateTime? at)
+    {
+        if (at is null) return string.Empty;
+        var elapsed = DateTime.Now - at.Value;
+        if (elapsed.TotalSeconds < 60) return "● 刚刚切换";
+        if (elapsed.TotalMinutes < 60) return $"● {(int)elapsed.TotalMinutes} 分钟前切换";
+        if (elapsed.TotalHours < 24) return $"● {(int)elapsed.TotalHours} 小时前切换";
+        return $"● {(int)elapsed.TotalDays} 天前切换";
+    }
     public string ProgramMonitorMainFlowTracePath => BuildTracePath("F1", "主线1");
     public string ProgramMonitorSubFlow2TracePath => BuildTracePath("F2", "主线2");
     public string ProgramMonitorSubFlow3TracePath => BuildTracePath("F3", "主线3");
@@ -839,7 +881,11 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnSelectedAlarmTimeRangeChanged(string value) => RefreshAlarmStatistics();
     partial void OnShowOnlyFocusAlarmsChanged(bool value) => RefreshAlarmStatistics();
     partial void OnSelectedFlowFilterChanged(string value) => RefreshFlowView();
-    partial void OnSelectedFlowTimeRangeChanged(string value) => RefreshFlowView();
+    partial void OnSelectedFlowTimeRangeChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsCustomTimeRangeVisible));
+        RefreshFlowView();
+    }
     partial void OnSelectedFlowStepFilterChanged(string value) => RefreshFlowView();
     partial void OnShowOnlyAbnormalFlowChanged(bool value) => RefreshFlowView();
     partial void OnProgramMonitorTraceWindowMinutesChanged(double value) => RefreshProgramMonitorTrace();
@@ -1193,10 +1239,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnUseOpcSubscriptionChanged(bool value) => _ = UpdateAutoRefreshStateAsync();
     partial void OnSelectedRecipeNameChanged(string value)
     {
+        // M6 配方切换记录时间用于 UI 显示"X 分钟前切换"
+        LastRecipeChangeAt = DateTime.Now;
+        OnPropertyChanged(nameof(RecipeChangeHint));
         if (this is Shell.MainWindowViewModel shell)
         {
             shell.Recipe.RefreshActiveRecipeParameters();
         }
+    }
+
+    // M6 工单切换记录时间（CurrentOrderText 是计算属性，无 OnXxxChanged，
+    // 在 RefreshTagsAsync / 写入 tag 时触发：留 hook，主流程后续接入）
+    public void NotifyOrderChanged()
+    {
+        LastOrderChangeAt = DateTime.Now;
+        OnPropertyChanged(nameof(OrderChangeHint));
+        OnPropertyChanged(nameof(CurrentOrderText));
     }
 
     partial void OnRefreshIntervalMsChanged(int value)

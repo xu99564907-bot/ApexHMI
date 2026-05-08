@@ -100,6 +100,8 @@ public partial class MainViewModel
         {
             // H2 主界面班次倒计时每 tick 刷新文本（计算属性，仅触发 binding 更新）
             OnPropertyChanged(nameof(ShiftRemainingText));
+            // M11 IO 监控"近期变化"高亮 1.5s 后自动恢复
+            RefreshIoMonitorRecentlyChangedFlags();
             await AutoRefreshTickAsync();
         }
         catch (Exception ex)
