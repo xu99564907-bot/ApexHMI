@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -7,10 +8,25 @@ namespace ApexHMI.Converters;
 
 public sealed class NavigationSelectionBrushConverter : IMultiValueConverter
 {
-    private static readonly Brush ActiveBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6987b0"));
+    // mockup 规范：active 时 linear-gradient(135deg, #2563EB, #1D4ED8) + 白字
+    //              未选时 #FFFFFF + #334155 文字
+    private static readonly Brush ActiveBackground = BuildActiveBackground();
     private static readonly Brush InactiveBackground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFFFF"));
     private static readonly Brush ActiveForeground = Brushes.White;
-    private static readonly Brush InactiveForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#475569"));
+    private static readonly Brush InactiveForeground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#334155"));
+
+    private static Brush BuildActiveBackground()
+    {
+        var brush = new LinearGradientBrush
+        {
+            StartPoint = new Point(0, 0),
+            EndPoint = new Point(1, 1)
+        };
+        brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#2563EB"), 0));
+        brush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#1D4ED8"), 1));
+        brush.Freeze();
+        return brush;
+    }
 
     public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
     {

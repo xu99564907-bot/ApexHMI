@@ -159,6 +159,8 @@
             <Setter Property="CaretBrush" Value="#0F172A"/>
             <Setter Property="Padding" Value="4,2"/>
         </Style>
+        <!-- 主导航：mockup 规格 默认白底浅描边、hover 蓝边浅蓝底深蓝字、
+             active 蓝渐变白字（由 NavigationSelectionBrushConverter 接管）  -->
         <Style x:Key="TopNavigationIconButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="90"/>
             <Setter Property="Height" Value="90"/>
@@ -177,12 +179,9 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="12"
-                                RenderTransformOrigin="0.5,0.5"
                                 SnapsToDevicePixels="True">
-                            <Border.RenderTransform>
-                                <TranslateTransform x:Name="tt" Y="0"/>
-                            </Border.RenderTransform>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -194,11 +193,57 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="bd" Property="Opacity" Value="0.85"/>
                             </Trigger>
+                            <!-- Active 态由 NavigationSelectionBrushConverter 通过 Background MultiBinding 直接设置 -->
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- 子导航按钮（左侧 sidebar 子项）：mockup .side-nav .item 规格 -->
+        <Style x:Key="SubNavigationItemStyle" TargetType="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="12,2,0,0"/>
+            <Setter Property="Background" Value="#F8FAFC"/>
+            <Setter Property="BorderBrush" Value="#E2E8F0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="#334155"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"
+                                              TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#EEF4FF"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#2563EB"/>
+                                <Setter Property="Foreground" Value="#1D4ED8"/>
+                            </Trigger>
+                            <!-- Active 态：Tag=True 时（外部 binding CurrentSection == Title 计算） -->
+                            <Trigger Property="Tag" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#2563EB"/>
+                                <Setter TargetName="bd" Property="BorderBrush" Value="#1D4ED8"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="WindowControlButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="46"/>
             <Setter Property="Height" Value="32"/>
@@ -247,7 +292,8 @@
         </Style>
         <SolidColorBrush x:Key="VsMenuBarBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="VsMenuTextBrush" Color="#334155"/>
-        <SolidColorBrush x:Key="VsMenuHoverBrush" Color="#EFF6FF"/>
+        <SolidColorBrush x:Key="VsMenuHoverBrush" Color="#EEF4FF"/>
+        <SolidColorBrush x:Key="VsMenuHoverTextBrush" Color="#1D4ED8"/>
         <SolidColorBrush x:Key="VsMenuPopupBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="VsMenuBorderBrush" Color="#D7DFEA"/>
         <SolidColorBrush x:Key="VsMenuSeparatorBrush" Color="#E2E8F0"/>
@@ -336,11 +382,11 @@
                             </Trigger>
                             <Trigger Property="IsHighlighted" Value="True">
                                 <Setter TargetName="TopLevelBorder" Property="Background" Value="{StaticResource VsMenuHoverBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Foreground" Value="{StaticResource VsMenuHoverTextBrush}"/>
                             </Trigger>
                             <Trigger Property="IsSubmenuOpen" Value="True">
                                 <Setter TargetName="TopLevelBorder" Property="Background" Value="{StaticResource VsMenuHoverBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Foreground" Value="{StaticResource VsMenuHoverTextBrush}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Foreground" Value="#6F6F6F"/>
@@ -623,7 +669,17 @@
                                     <ItemsControl ItemsSource="{Binding Children}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Button Content="{Binding Title}" Command="{Binding DataContext.NavigateNavItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Padding="8" Margin="20,0,0,4" Background="#F8FAFC" Foreground="#334155" BorderBrush="{DynamicResource Brush.Border}"/>
+                                                <Button Content="{Binding Title}"
+                                                        Command="{Binding DataContext.NavigateNavItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource SubNavigationItemStyle}">
+                                                    <Button.Tag>
+                                                        <MultiBinding Converter="{StaticResource EqualsToBoolConverter}">
+                                                            <Binding Path="DataContext.CurrentSection" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                            <Binding Path="Title"/>
+                                                        </MultiBinding>
+                                                    </Button.Tag>
+                                                </Button>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
