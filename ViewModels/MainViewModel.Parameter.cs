@@ -55,18 +55,6 @@ public partial class MainViewModel
     }
 
     [RelayCommand]
-    private void ShowParameterDiff()
-    {
-        var dirty = Parameters.Where(p => p.IsDirty).ToList();
-        var dialog = new ParameterDiffDialog
-        {
-            Owner = Application.Current?.MainWindow,
-            DataContext = dirty
-        };
-        dialog.ShowDialog();
-    }
-
-    [RelayCommand]
     private void ShowParameterHistory(ParameterItem? item)
     {
         if (item is null)

@@ -138,13 +138,8 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
 
-                <!-- 操作按钮组：查看修改 / 历史已合入按钮列 / 与配方对比 / 导出为配方 / 批量编辑 -->
+                <!-- 操作按钮组：与配方对比 / 导出为配方 / 批量编辑（变更历史在每行的"历史"按钮列） -->
                 <StackPanel Grid.Column="4" Orientation="Horizontal">
-                    <Button Content="查看本次修改"
-                            Command="{Binding ShellViewModel.ShowParameterDiffCommand}"
-                            Background="#F59E0B" Foreground="White" BorderBrush="#F59E0B"
-                            Padding="10,4" FontSize="12" Margin="6,0,0,0"
-                            ToolTip="弹层显示当前会话所有 IsDirty 参数（旧值 → 新值）"/>
                     <Button Content="与配方对比"
                             Command="{Binding ShellViewModel.CompareParametersWithRecipeCommand}"
                             Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
