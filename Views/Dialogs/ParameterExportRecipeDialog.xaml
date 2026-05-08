@@ -1,0 +1,29 @@
+<Window x:Class="ApexHMI.Views.Dialogs.ParameterExportRecipeDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="导出当前参数为配方" Height="200" Width="420"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="#F8FAFC">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" FontSize="14" Foreground="#0F172A" Margin="0,0,0,8"
+                   Text="将当前所有参数快照保存为新配方。请输入配方名称："/>
+        <TextBox Grid.Row="1" x:Name="NameBox" Height="32" FontSize="14"
+                 VerticalContentAlignment="Center"/>
+        <TextBlock Grid.Row="2" FontSize="12" Foreground="#94A3B8" Margin="0,8,0,0"
+                   Text="保存后可在「配方管理」页查看 / 加载该配方。"
+                   TextWrapping="Wrap"/>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <Button Content="导出" Width="80" Height="32" Margin="0,0,8,0"
+                    Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
+                    Click="Export_Click"/>
+            <Button Content="取消" IsCancel="True" Width="80" Height="32"
+                    Background="#64748B" Foreground="White" BorderBrush="#64748B"/>
+        </StackPanel>
+    </Grid>
+</Window>

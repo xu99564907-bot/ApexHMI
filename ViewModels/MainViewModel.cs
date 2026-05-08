@@ -874,6 +874,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsParameterCylinderPageVisible));
         OnPropertyChanged(nameof(IsParameterVacuumPageVisible));
         OnPropertyChanged(nameof(IsParameterSensorPageVisible));
+        RefreshParameterCategoryChips();
         ParametersView.Refresh();
         // 子页面切换后立即刷新
         if (AutoRefreshEnabled && _opcUaService.IsConnected)

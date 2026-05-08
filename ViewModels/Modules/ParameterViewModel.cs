@@ -63,8 +63,20 @@ public sealed class ParameterViewModel : ModuleViewModelBase
             return;
         }
 
+        // P8: 阻止非法值落盘
+        var invalid = Shell.FindInvalidParameter();
+        if (invalid is not null)
+        {
+            Shell.ShowPopup("参数校验失败", $"【{invalid.Name}】{invalid.ValidationError}", "Warning");
+            return;
+        }
+
         var path = Path.Combine(Shell.GetProjectRoot(), "config", "parameters.json");
         await _parameterService.SaveAsync(path, Parameters);
+
+        // P5: 把本次 dirty 修改写进各参数的 ChangeHistory，并刷新 OriginalValue 基线
+        Shell.CommitParameterChanges();
+
         Shell.SystemMessage = $"参数已保存：{path}";
         Shell.AddLog("参数", Shell.SystemMessage, "Info");
     }
@@ -83,10 +95,13 @@ public sealed class ParameterViewModel : ModuleViewModelBase
         Parameters.Clear();
         foreach (var item in items)
         {
+            // 加载时同步 OriginalValue → IsDirty 归 false
+            item.OriginalValue = item.Value;
             Parameters.Add(item);
         }
 
         Shell.RefreshParameterPermissions();
+        Shell.RefreshParameterCategoryChips();
         Shell.SystemMessage = "参数加载完成";
         Shell.AddLog("参数", Shell.SystemMessage, "Info");
     }
