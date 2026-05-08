@@ -25,6 +25,21 @@ public partial class MainViewModel
 {
     private int _suppressAlarmStatisticsRefreshDepth;
     private readonly AlarmNotificationService _alarmNotificationService = new();
+    private readonly ThemeService _themeService = new();
+
+    /// <summary>G5 主题切换：light / dark / highContrast。在编辑菜单调用。</summary>
+    [RelayCommand]
+    private void SwitchTheme(string? theme)
+    {
+        var t = theme switch
+        {
+            "dark" => AppTheme.Dark,
+            "highContrast" or "high" => AppTheme.HighContrast,
+            _ => AppTheme.Light
+        };
+        _themeService.Apply(t);
+        AddLog("视觉", $"主题已切换：{t}", "Info");
+    }
 
     // ========== A2/A9: 报警过滤（当前 + 历史共用一组过滤条件） ==========
     [ObservableProperty]

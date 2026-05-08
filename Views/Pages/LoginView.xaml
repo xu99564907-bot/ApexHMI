@@ -11,10 +11,10 @@
 
             <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,10,0">
                 <StackPanel>
-                    <TextBlock Text="登录权限" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
-                    <TextBlock Text="当前身份" Foreground="#64748B"/>
-                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="24" FontWeight="Bold" Foreground="#0F172A" Margin="0,4,0,4"/>
-                    <TextBlock Text="{Binding ShellViewModel.LastLoginText}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                    <TextBlock Text="登录权限" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
+                    <TextBlock Text="当前身份" Foreground="{DynamicResource Brush.TextMuted}"/>
+                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"/>
+                    <TextBlock Text="{Binding ShellViewModel.LastLoginText}" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="12" Margin="0,0,0,4"/>
                     <TextBlock Text="{Binding ShellViewModel.FailedAttemptsText}" Foreground="#DC2626" FontSize="12" Margin="0,0,0,12">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
@@ -27,7 +27,7 @@
                             </Style>
                         </TextBlock.Style>
                     </TextBlock>
-                    <TextBlock Text="密码" Foreground="#64748B"/>
+                    <TextBlock Text="密码" Foreground="{DynamicResource Brush.TextMuted}"/>
                     <PasswordBox PasswordChanged="RolePasswordBox_PasswordChanged" Margin="0,4,0,12"/>
                     <WrapPanel>
                         <Button Content="操作员" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Operator" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
@@ -49,9 +49,9 @@
                     </WrapPanel>
 
                     <TextBlock Text="L5 临时提权：当某项操作权限不足时，调用方会自动弹层让工程师/管理员一次性输入密码授权完成。"
-                               Margin="0,12,0,0" Foreground="#64748B" TextWrapping="Wrap" FontSize="11"/>
+                               Margin="0,12,0,0" Foreground="{DynamicResource Brush.TextMuted}" TextWrapping="Wrap" FontSize="11"/>
                     <TextBlock Text="默认账号见运维内部文档；首次登录后请尽快修改密码。"
-                               Margin="0,8,0,0" Foreground="#94A3B8" TextWrapping="Wrap" FontSize="11"/>
+                               Margin="0,8,0,0" Foreground="{DynamicResource Brush.TextPlaceholder}" TextWrapping="Wrap" FontSize="11"/>
                 </StackPanel>
             </Border>
 
@@ -65,7 +65,7 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <DockPanel Grid.Row="0" Margin="0,0,0,8">
-                        <TextBlock Text="权限说明" FontSize="18" FontWeight="Bold" Foreground="#0F172A"/>
+                        <TextBlock Text="权限说明" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                             <Button Content="重新加载" Command="{Binding ReloadPermissionsCommand}"
                                     Background="#374151" Foreground="White" BorderBrush="#374151"
@@ -82,7 +82,7 @@
                               AutoGenerateColumns="False"
                               CanUserAddRows="True" CanUserDeleteRows="True"
                               IsReadOnly="False"
-                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#E2E8F0"
+                              Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="#E2E8F0"
                               RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="角色" Binding="{Binding Role, UpdateSourceTrigger=LostFocus}" Width="160"/>
@@ -90,12 +90,12 @@
                         </DataGrid.Columns>
                     </DataGrid>
                     <TextBlock Grid.Row="2" Text="提示：管理员可在此添加 / 修改自定义角色（需保证 config/users.json 中存在同名 Role）。"
-                               Foreground="#64748B" Margin="0,8,0,4" TextWrapping="Wrap" FontSize="11"/>
+                               Foreground="{DynamicResource Brush.TextMuted}" Margin="0,8,0,4" TextWrapping="Wrap" FontSize="11"/>
                     <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,4,0,0">
-                        <TextBlock Text="当前可编辑参数：" Foreground="#64748B" Margin="0,0,8,0"/>
-                        <TextBlock Text="{Binding CanEditParameters}" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,16,0"/>
-                        <TextBlock Text="当前可复位报警：" Foreground="#64748B" Margin="0,0,8,0"/>
-                        <TextBlock Text="{Binding CanAdmin}" FontWeight="Bold" Foreground="#0F172A"/>
+                        <TextBlock Text="当前可编辑参数：" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding CanEditParameters}" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,16,0"/>
+                        <TextBlock Text="当前可复位报警：" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,0,8,0"/>
+                        <TextBlock Text="{Binding CanAdmin}" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                     </StackPanel>
                 </Grid>
             </Border>

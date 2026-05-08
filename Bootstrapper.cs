@@ -43,6 +43,7 @@ public static class Bootstrapper
         services.AddSingleton<IParameterService, ParameterService>();
         services.AddSingleton<IAlarmService, AlarmService>();
         services.AddSingleton<AlarmNotificationService>();
+        services.AddSingleton<ThemeService>();
         services.AddSingleton<IRecipeService, RecipeService>();
         services.AddSingleton<IUserService, UserService>();
         services.AddSingleton<IProductionCountService, ProductionCountService>();
