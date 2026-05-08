@@ -1284,7 +1284,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void BuildNavigation()
     {
         NavigationItems.Add(new NavigationItemViewModel("主界面"));
-        NavigationItems.Add(new NavigationItemViewModel("监控", "输入输出监控", "程序监控", "通讯状态监控", "详细生产数据"));
+        NavigationItems.Add(new NavigationItemViewModel("监控", "输入输出监控", "程序监控", "通讯状态监控", "详细生产数据", "生产计数"));
         NavigationItems.Add(new NavigationItemViewModel("手动操作", "气缸", "轴", "机械手", "电机", "挡停"));
         NavigationItems.Add(new NavigationItemViewModel("参数设定", "系统参数设定", "轴参数设定", "气缸参数设定", "真空参数设定", "传感器参数设定"));
         NavigationItems.Add(new NavigationItemViewModel("报警画面", "当前报警", "历史报警", "日志", "报警统计"));
@@ -1339,7 +1339,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         return section switch
         {
             "主界面" or "运行总览" => "主界面",
-            "监控" or "监视画面" or "输入输出监控" or "程序监控" or "通讯状态监控" or "详细生产数据" => "监控",
+            "监控" or "监视画面" or "输入输出监控" or "程序监控" or "通讯状态监控" or "详细生产数据" or "生产计数" => "监控",
             "配方管理" => "配方管理",
             "手动操作" or "手动画面" or "气缸" or "轴" or "机械手" or "电机" or "挡停" => "手动操作",
             "参数设定" or "系统参数设定" or "轴参数设定" or "气缸参数设定" or "真空参数设定" or "传感器参数设定" => "参数设定",

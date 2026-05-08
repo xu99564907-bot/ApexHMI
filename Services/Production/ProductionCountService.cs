@@ -21,6 +21,16 @@ public sealed class ProductionCountService : IProductionCountService, IDisposabl
     private const string TagNameOk = "OK.Total";
     private const string TagNameNg = "NG.Total";
 
+    /// <summary>
+    /// 初始化 SQLitePCL 原生库。.NET Framework 4.8 不会自动加载 e_sqlite3.dll，
+    /// 必须在使用 SqliteConnection 前显式 Init 一次。
+    /// </summary>
+    static ProductionCountService()
+    {
+        try { SQLitePCL.Batteries_V2.Init(); }
+        catch (Exception ex) { Log.Error(ex, "SQLitePCL.Batteries_V2.Init 失败"); }
+    }
+
     private readonly IOpcUaService _opcUa;
     private readonly ShiftOptions _shift;
     private readonly string _dbPath;
