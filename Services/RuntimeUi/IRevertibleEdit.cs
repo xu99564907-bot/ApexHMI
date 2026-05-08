@@ -133,6 +133,9 @@ public sealed class EditStack
     public string? UndoDescription => _undoStack.Count > 0 ? _undoStack.Peek().Description : null;
     public string? RedoDescription => _redoStack.Count > 0 ? _redoStack.Peek().Description : null;
 
+    /// <summary>任何 Execute / Undo / Redo / Clear 后触发；用于上层（如 ViewModel）跟踪 dirty 状态。</summary>
+    public event EventHandler? EditApplied;
+
     /// <summary>执行一个编辑操作，并将它压入撤销栈。</summary>
     public void Execute(IRevertibleEdit edit)
     {
@@ -147,6 +150,8 @@ public sealed class EditStack
             for (var i = _maxSize - 1; i >= 0; i--)
                 _undoStack.Push(items[i]);
         }
+
+        EditApplied?.Invoke(this, EventArgs.Empty);
     }
 
     public void Undo()
@@ -155,6 +160,7 @@ public sealed class EditStack
         var edit = _undoStack.Pop();
         edit.Undo();
         _redoStack.Push(edit);
+        EditApplied?.Invoke(this, EventArgs.Empty);
     }
 
     public void Redo()
@@ -163,11 +169,13 @@ public sealed class EditStack
         var edit = _redoStack.Pop();
         edit.Redo();
         _undoStack.Push(edit);
+        EditApplied?.Invoke(this, EventArgs.Empty);
     }
 
     public void Clear()
     {
         _undoStack.Clear();
         _redoStack.Clear();
+        EditApplied?.Invoke(this, EventArgs.Empty);
     }
 }

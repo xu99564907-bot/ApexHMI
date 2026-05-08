@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using ApexHMI.Services;
+using ApexHMI.Services.Security;
 using Serilog;
 
 namespace ApexHMI.ViewModels;
@@ -28,7 +29,8 @@ public partial class MainViewModel
         IRecipeService recipeService,
         TrendHistoryService trendHistoryService,
         GitPullService gitPullService,
-        GeneratedArtifactSyncService generatedArtifactSyncService)
+        GeneratedArtifactSyncService generatedArtifactSyncService,
+        IUserService userService)
     {
         _opcUaService = opcUaService;
         _csvImportService = csvImportService;
@@ -44,6 +46,7 @@ public partial class MainViewModel
         _trendHistoryService = trendHistoryService;
         _gitPullService = gitPullService;
         _generatedArtifactSyncService = generatedArtifactSyncService;
+        _userService = userService;
 
         BuildNavigation();
         BindingOperations.EnableCollectionSynchronization(IoTableRows, _ioTableRowsSync);

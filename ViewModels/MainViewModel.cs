@@ -20,6 +20,8 @@ using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using ApexHMI.Models.Sfc;
 using ApexHMI.Services;
+using ApexHMI.Services.Security;
+using Serilog;
 
 namespace ApexHMI.ViewModels;
 
@@ -43,6 +45,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly TrendHistoryService _trendHistoryService;
     private readonly GitPullService _gitPullService;
     private readonly GeneratedArtifactSyncService _generatedArtifactSyncService;
+    private readonly IUserService _userService;
     private readonly DispatcherTimer _subscriptionTimer;
     private readonly DispatcherTimer _opcUaBrowserRefreshTimer;
     private readonly object _ioTableRowsSync = new();
@@ -130,6 +133,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string currentSection = "主界面";
     [ObservableProperty] private string systemMessage = "系统就绪";
     [ObservableProperty] private string loginUser = "操作员";
+    /// <summary>UI 全局缩放因子，应用到主窗口 LayoutTransform。范围 0.7 ~ 1.5。</summary>
+    [ObservableProperty] private double uiScale = 1.0;
     [ObservableProperty] private string manualWriteTagName = string.Empty;
     [ObservableProperty] private string manualWriteValue = string.Empty;
     [ObservableProperty] private string newTagName = string.Empty;
@@ -288,6 +293,10 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public int DailyGoodCount => GetIntTag("Daily_GoodCount", 1246);
     public int DailyNgCount => GetIntTag("Daily_NgCount", 34);
     public int TargetCount => GetIntTag("Production_TargetCount", 1500);
+    public int HourlyThroughput => GetIntTag("Throughput_Hourly", 380);
+    public double CycleTimeSeconds => GetDoubleTag("Cycle_Time", 3.2);
+    public int MachineRunTimeMin => GetIntTag("Machine_RunTimeMin", 420);
+    public int MachineStopTimeMin => GetIntTag("Machine_StopTimeMin", 34);
     public double AvailabilityRate => CalculateAvailability();
     public double PerformanceRate => CalculatePerformance();
     public double QualityRate => CalculateQuality();
@@ -550,8 +559,43 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanAdmin));
         OnPropertyChanged(nameof(CanOperateDevices));
         OnPropertyChanged(nameof(CurrentRoleText));
+        OnPropertyChanged(nameof(CurrentAccount));
+        OnPropertyChanged(nameof(LastLoginText));
+        OnPropertyChanged(nameof(FailedAttemptsText));
         RefreshParameterPermissions();
     }
+
+    /// <summary>当前角色对应的账号（从 IUserService 查找）。</summary>
+    public UserAccount? CurrentAccount =>
+        _userService?.ListUsers().FirstOrDefault(u => u.Role == CurrentUserRole);
+
+    // ========== G7 全局未保存提示 ==========
+    private readonly List<Func<bool>> _dirtySources = new();
+
+    /// <summary>子模块（画布设计 / 参数 / 配方）注册自己的 dirty 探测函数。</summary>
+    public void RegisterDirtySource(Func<bool> isDirty)
+    {
+        if (isDirty is null) return;
+        _dirtySources.Add(isDirty);
+    }
+
+    /// <summary>子模块的 dirty 状态变化时调用，触发 IsAnyDirty 的 PropertyChanged。</summary>
+    public void NotifyDirtyStateChanged() => OnPropertyChanged(nameof(IsAnyDirty));
+
+    /// <summary>当前是否存在任意未保存改动（聚合所有已注册的 dirty 源）。</summary>
+    public bool IsAnyDirty => _dirtySources.Any(f => f());
+
+    /// <summary>当前账号的最近一次成功登录时间，用于 LoginView 显示。</summary>
+    public string LastLoginText =>
+        CurrentAccount?.LastLoginAt is { } at
+            ? $"上次登录：{at:yyyy-MM-dd HH:mm}"
+            : "首次登录或未记录";
+
+    /// <summary>自上次成功登录以来的失败尝试次数，&gt; 0 时显示。</summary>
+    public string FailedAttemptsText =>
+        (CurrentAccount?.FailedAttempts ?? 0) > 0
+            ? $"自上次成功后失败：{CurrentAccount!.FailedAttempts} 次"
+            : string.Empty;
 
     partial void OnCurrentMonitorSubSectionChanged(string value)
     {
@@ -1056,31 +1100,56 @@ public partial class MainViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private void SwitchLanguage(string? culture)
+    {
+        if (string.IsNullOrEmpty(culture)) return;
+        var svc = Converters.LocExtension.LocalizationService;
+        if (svc is null) return;
+        try
+        {
+            svc.CurrentCulture = culture;
+            OnPropertyChanged(nameof(CurrentCulture));
+            SystemMessage = $"已切换语言：{culture}";
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "切换语言失败：{Culture}", culture);
+            SystemMessage = $"切换语言失败：{culture}";
+        }
+    }
+
+    /// <summary>当前语言代码（如 "zh-CN" / "en-US"），由 LocalizationService 提供。</summary>
+    public string CurrentCulture =>
+        Converters.LocExtension.LocalizationService?.CurrentCulture ?? "zh-CN";
+
+    [RelayCommand]
+    private void ZoomIn() => UiScale = Math.Min(1.5, Math.Round(UiScale + 0.1, 1));
+
+    [RelayCommand]
+    private void ZoomOut() => UiScale = Math.Max(0.7, Math.Round(UiScale - 0.1, 1));
+
+    [RelayCommand]
+    private void ResetZoom() => UiScale = 1.0;
+
+    [RelayCommand]
     private void Login(string? roleName)
     {
-        var role = roleName switch
+        if (string.IsNullOrEmpty(roleName))
         {
-            "Operator" => UserRole.Operator,
-            "Engineer" => UserRole.Engineer,
-            "Administrator" => UserRole.Administrator,
-            _ => UserRole.Operator
-        };
-
-        var ok = role switch
-        {
-            UserRole.Operator => true,
-            UserRole.Engineer => LoginPassword == "123456",
-            UserRole.Administrator => LoginPassword == "admin888",
-            _ => false
-        };
-
-        if (!ok)
-        {
-            SystemMessage = "登录失败：密码错误";
+            SystemMessage = "登录失败：未选择角色";
             return;
         }
 
-        CurrentUserRole = role;
+        var account = _userService.AuthenticateByRole(roleName, LoginPassword ?? string.Empty);
+        if (account is null)
+        {
+            SystemMessage = "登录失败：密码错误或账号锁定";
+            AddLog("登录", SystemMessage, "Warning");
+            AddAudit("登录", roleName, "失败", "密码错误或账号锁定");
+            return;
+        }
+
+        CurrentUserRole = account.Role;
         LoginPassword = string.Empty;
         SystemMessage = $"已登录为：{CurrentRoleText}";
         AddLog("登录", SystemMessage, "Info");
@@ -1106,6 +1175,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         var target = section.Trim();
+
+        // G7 全局未保存提示：切走当前页前确认
+        if (!string.Equals(target, CurrentSection, StringComparison.Ordinal) && IsAnyDirty)
+        {
+            var result = System.Windows.MessageBox.Show(
+                "当前页面有未保存的改动，是否继续切换？\n\n点击「是」放弃改动并切换；点击「否」留在当前页面。",
+                "未保存提示",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+            if (result != System.Windows.MessageBoxResult.Yes)
+            {
+                return;
+            }
+        }
 
         switch (target)
         {

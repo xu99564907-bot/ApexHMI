@@ -13,7 +13,20 @@
                 <StackPanel>
                     <TextBlock Text="登录权限" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
                     <TextBlock Text="当前身份" Foreground="#CBD5E1"/>
-                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,4,0,12"/>
+                    <TextBlock Text="{Binding CurrentRoleText}" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,4,0,4"/>
+                    <TextBlock Text="{Binding ShellViewModel.LastLoginText}" Foreground="#94A3B8" FontSize="12" Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding ShellViewModel.FailedAttemptsText}" Foreground="#FCA5A5" FontSize="12" Margin="0,0,0,12">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ShellViewModel.FailedAttemptsText}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                     <TextBlock Text="密码" Foreground="#CBD5E1"/>
                     <PasswordBox PasswordChanged="RolePasswordBox_PasswordChanged" Margin="0,4,0,12"/>
                     <WrapPanel>
@@ -22,7 +35,7 @@
                         <Button Content="管理员" Command="{Binding ShellViewModel.LoginCommand}" CommandParameter="Administrator" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="12,8" Margin="0,0,8,8"/>
                     </WrapPanel>
                     <Button Content="退出登录" Command="{Binding ShellViewModel.LogoutCommand}" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C" Padding="12,8" Width="120"/>
-                    <TextBlock Text="示例密码：工程师 123456，管理员 admin888" Margin="0,12,0,0" Foreground="#94A3B8" TextWrapping="Wrap"/>
+                    <TextBlock Text="默认账号见运维内部文档；首次登录后请尽快修改密码。" Margin="0,12,0,0" Foreground="#94A3B8" TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>
 

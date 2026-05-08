@@ -338,8 +338,24 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         _blockGenerator = blockGenerator;
         WidgetViewFactory = widgetViewFactory;
         DesignModeContext = new DesignModeWidgetDataContext(shell);
+
+        // G7 未保存提示：任何编辑都标记 dirty，Save 后清除
+        _editStack.EditApplied += (_, _) =>
+        {
+            IsDirty = true;
+            OnPropertyChanged(nameof(CanUndo));
+            OnPropertyChanged(nameof(CanRedo));
+        };
+        shell.RegisterDirtySource(() => IsDirty);
+
         InitDocument();
     }
+
+    /// <summary>当前画布是否有未保存改动（G7 切页确认依据）。</summary>
+    [ObservableProperty]
+    private bool _isDirty;
+
+    partial void OnIsDirtyChanged(bool value) => Shell.NotifyDirtyStateChanged();
 
     // ========== 工程文档 ==========
 
@@ -982,6 +998,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         {
             _runtimeProjectService.Save(Document);
             SaveStatus = $"已保存  {DateTime.Now:HH:mm:ss}";
+            IsDirty = false;
             (Shell as MainWindowViewModel)?.RefreshTopNavUserPages();
             Log.Information("DesignerEditor: 工程已保存");
         }

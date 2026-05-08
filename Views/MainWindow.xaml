@@ -19,6 +19,26 @@
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
+    <Window.InputBindings>
+        <!-- G1 全局快捷键：Ctrl+1~8 顶部导航；F5 刷新 -->
+        <KeyBinding Modifiers="Ctrl" Key="D1" Command="{Binding NavigateCommand}" CommandParameter="主界面"/>
+        <KeyBinding Modifiers="Ctrl" Key="D2" Command="{Binding NavigateCommand}" CommandParameter="监控"/>
+        <KeyBinding Modifiers="Ctrl" Key="D3" Command="{Binding NavigateCommand}" CommandParameter="手动操作"/>
+        <KeyBinding Modifiers="Ctrl" Key="D4" Command="{Binding NavigateCommand}" CommandParameter="参数设定"/>
+        <KeyBinding Modifiers="Ctrl" Key="D5" Command="{Binding NavigateCommand}" CommandParameter="配方管理"/>
+        <KeyBinding Modifiers="Ctrl" Key="D6" Command="{Binding NavigateCommand}" CommandParameter="报警画面"/>
+        <KeyBinding Modifiers="Ctrl" Key="D7" Command="{Binding NavigateCommand}" CommandParameter="登录"/>
+        <KeyBinding Modifiers="Ctrl" Key="D8" Command="{Binding NavigateCommand}" CommandParameter="设计器"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad1" Command="{Binding NavigateCommand}" CommandParameter="主界面"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad2" Command="{Binding NavigateCommand}" CommandParameter="监控"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad3" Command="{Binding NavigateCommand}" CommandParameter="手动操作"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad4" Command="{Binding NavigateCommand}" CommandParameter="参数设定"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad5" Command="{Binding NavigateCommand}" CommandParameter="配方管理"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad6" Command="{Binding NavigateCommand}" CommandParameter="报警画面"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad7" Command="{Binding NavigateCommand}" CommandParameter="登录"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad8" Command="{Binding NavigateCommand}" CommandParameter="设计器"/>
+        <KeyBinding Key="F5" Command="{Binding RefreshTagsCommand}"/>
+    </Window.InputBindings>
     <Window.Resources>
         <conv:ViewportToCylinderItemWidthConverter x:Key="ViewportToCylinderItemWidthConverter"/>
         <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
@@ -667,9 +687,39 @@
                             <TextBlock Text="{Binding CommunicationStatus}" Foreground="#1D4ED8" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
+                    <Border Background="#F3E8FF" BorderBrush="#DDD6FE" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0"
+                            ToolTip="当前自动流程主步号；点击跳到 主界面">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="流程：" Foreground="#7C3AED" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding CurrentFlowStepText}" Foreground="#7C3AED" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0"
+                            ToolTip="实时节拍 / 每小时产量">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="节拍 " Foreground="#047857" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding CycleTimeSeconds, StringFormat={}{0:F1}s}" Foreground="#047857" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Text=" · " Foreground="#047857" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding HourlyThroughput, StringFormat={}{0} UPH}" Foreground="#047857" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                     <TextBlock Text="{Binding SystemMessage}" Foreground="#0F172A" VerticalAlignment="Center"/>
                 </WrapPanel>
-                    <TextBlock DockPanel.Dock="Right" Text="{l:Loc StatusBar_AppTagline}" Foreground="#64748B" VerticalAlignment="Center"/>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="10" Padding="0" Margin="0,0,10,0"
+                                ToolTip="切换界面语言 / Switch UI language">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="中" Command="{Binding SwitchLanguageCommand}" CommandParameter="zh-CN"
+                                        Background="Transparent" BorderThickness="0" Padding="10,2" Foreground="#475569"
+                                        Cursor="Hand" FontSize="12"/>
+                                <Border Width="1" Background="#CBD5E1"/>
+                                <Button Content="EN" Command="{Binding SwitchLanguageCommand}" CommandParameter="en-US"
+                                        Background="Transparent" BorderThickness="0" Padding="10,2" Foreground="#475569"
+                                        Cursor="Hand" FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+                        <TextBlock Text="{l:Loc StatusBar_AppTagline}" Foreground="#64748B" VerticalAlignment="Center"/>
+                    </StackPanel>
             </DockPanel>
         </Border>
         </Grid>

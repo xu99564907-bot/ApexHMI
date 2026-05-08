@@ -5,6 +5,7 @@ using ApexHMI.Models.RuntimeUi;
 using ApexHMI.Services;
 using ApexHMI.Services.DataBinding;
 using ApexHMI.Services.RuntimeUi;
+using ApexHMI.Services.Security;
 using ApexHMI.Models.RuntimeUi;
 using ApexHMI.ViewModels.Modules;
 using ApexHMI.ViewModels.Runtime;
@@ -44,7 +45,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         IProjectEditorService projectEditorService,
         IWidgetEditorService widgetEditorService,
         WidgetBlockGenerator widgetBlockGenerator,
-        ManualPageAutoGenerator manualPageAutoGenerator)
+        ManualPageAutoGenerator manualPageAutoGenerator,
+        IUserService userService)
         : base(
             opcUaService,
             csvImportService,
@@ -59,7 +61,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
             recipeService,
             trendHistoryService,
             gitPullService,
-            generatedArtifactSyncService)
+            generatedArtifactSyncService,
+            userService)
     {
         _runtimeProjectService = runtimeProjectService;
         _dataBindingService = dataBindingService;

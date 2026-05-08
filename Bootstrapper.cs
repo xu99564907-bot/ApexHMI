@@ -5,6 +5,7 @@ using ApexHMI.Models;
 using ApexHMI.Services;
 using ApexHMI.Services.DataBinding;
 using ApexHMI.Services.RuntimeUi;
+using ApexHMI.Services.Security;
 using ApexHMI.ViewModels.Shell;
 using ApexHMI.Views;
 using Microsoft.Extensions.Options;
@@ -41,6 +42,7 @@ public static class Bootstrapper
         services.AddSingleton<IParameterService, ParameterService>();
         services.AddSingleton<IAlarmService, AlarmService>();
         services.AddSingleton<IRecipeService, RecipeService>();
+        services.AddSingleton<IUserService, UserService>();
 
         services.AddSingleton<ICsvImportService, CsvImportService>();
         services.AddSingleton(sp => (CsvImportService)sp.GetRequiredService<ICsvImportService>());
