@@ -649,6 +649,10 @@
                 <TabItem Header="{l:Loc Tab_Runtime}">
                     <runtime:DynamicPageHost DataContext="{Binding RuntimePage}"/>
                 </TabItem>
+
+                <TabItem Header="生产计数">
+                    <pages:CountView DataContext="{Binding Count}"/>
+                </TabItem>
             </TabControl>
         </Grid>
 

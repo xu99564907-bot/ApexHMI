@@ -13,6 +13,25 @@ public class AppOptions
 
     /// <summary>PLC program generation defaults.</summary>
     public IoProgramGenerationOptions IoProgramGeneration { get; set; } = new();
+
+    /// <summary>生产计数模块班次定义（白班 / 夜班开始时间）。</summary>
+    public ShiftOptions Shift { get; set; } = new();
+}
+
+/// <summary>
+/// 班次配置。HMI 侧的生产计数按这两个时间点切分白班 / 夜班。
+/// 默认 08:30 / 20:30 跟传统 PLC 端配置一致；可在 config/shift.json 改。
+/// </summary>
+public class ShiftOptions
+{
+    /// <summary>白班开始时间（24h，"HH:mm"）。</summary>
+    public string DayStart { get; set; } = "08:30";
+
+    /// <summary>夜班开始时间（24h，"HH:mm"）。</summary>
+    public string NightStart { get; set; } = "20:30";
+
+    /// <summary>SQLite 计数账本文件名（相对 ConfigDirectoryName）。</summary>
+    public string DatabaseFileName { get; set; } = "production.db";
 }
 
 /// <summary>

@@ -4,6 +4,7 @@ using ApexHMI.Interfaces;
 using ApexHMI.Models;
 using ApexHMI.Services;
 using ApexHMI.Services.DataBinding;
+using ApexHMI.Services.Production;
 using ApexHMI.Services.RuntimeUi;
 using ApexHMI.Services.Security;
 using ApexHMI.ViewModels.Shell;
@@ -43,6 +44,7 @@ public static class Bootstrapper
         services.AddSingleton<IAlarmService, AlarmService>();
         services.AddSingleton<IRecipeService, RecipeService>();
         services.AddSingleton<IUserService, UserService>();
+        services.AddSingleton<IProductionCountService, ProductionCountService>();
 
         services.AddSingleton<ICsvImportService, CsvImportService>();
         services.AddSingleton(sp => (CsvImportService)sp.GetRequiredService<ICsvImportService>());
@@ -82,6 +84,12 @@ public static class Bootstrapper
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
 
-        return services.BuildServiceProvider();
+        var provider = services.BuildServiceProvider();
+
+        // ProductionCountService 是 singleton 但没被任何地方注入，
+        // 主动 resolve 一次让它在 Bootstrapper 阶段就完成 OPC UA 事件订阅 + SQLite schema 初始化。
+        _ = provider.GetRequiredService<IProductionCountService>();
+
+        return provider;
     }
 }

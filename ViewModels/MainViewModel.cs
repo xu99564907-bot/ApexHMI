@@ -1270,6 +1270,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
                 break;
             case "画布设计":
             case "运行页面":
+            case "生产计数":
                 CurrentSection = target;
                 break;
             default:
@@ -1312,6 +1313,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
             "设计器" or "手动程序生成" or "自动程序生成" or "初始化程序生成" => 8,
             "画布设计" => 9,
             "运行页面" => 10,
+            "生产计数" => 11,
             _ => 0
         };
     }

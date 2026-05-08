@@ -4,6 +4,7 @@ using ApexHMI.Interfaces;
 using ApexHMI.Models.RuntimeUi;
 using ApexHMI.Services;
 using ApexHMI.Services.DataBinding;
+using ApexHMI.Services.Production;
 using ApexHMI.Services.RuntimeUi;
 using ApexHMI.Services.Security;
 using ApexHMI.Models.RuntimeUi;
@@ -47,7 +48,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         WidgetBlockGenerator widgetBlockGenerator,
         ManualPageAutoGenerator manualPageAutoGenerator,
         IUserService userService,
-        PlcVariableImportService plcVariableImportService)
+        PlcVariableImportService plcVariableImportService,
+        IProductionCountService productionCountService)
         : base(
             opcUaService,
             csvImportService,
@@ -82,6 +84,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         GitPull = new GitPullViewModel(this, gitPullService, generatedArtifactSyncService);
         Login = new LoginViewModel(this);
         Audit = new AuditViewModel(this);
+        Count = new CountViewModel(this, productionCountService);
 
         SetGitPullViewModel(GitPull);
 
@@ -104,6 +107,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     public GitPullViewModel GitPull { get; }
     public LoginViewModel Login { get; }
     public AuditViewModel Audit { get; }
+    public CountViewModel Count { get; }
 
     public DynamicPageHostViewModel RuntimePage { get; private set; } = null!;
 
