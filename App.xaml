@@ -10,6 +10,7 @@
                 <ResourceDictionary Source="/Themes/Buttons.xaml"/>
                 <ResourceDictionary Source="/Themes/Cards.xaml"/>
                 <ResourceDictionary Source="/Themes/DataGrid.xaml"/>
+                <ResourceDictionary Source="/Themes/Inputs.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
         <!-- 通用转换器 -->

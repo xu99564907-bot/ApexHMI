@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="删除配方" Height="240" Width="440"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-        Background="#F8FAFC">
+        Background="{DynamicResource Brush.SurfaceAlt}">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

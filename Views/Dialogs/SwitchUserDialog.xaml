@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="切换用户" Height="280" Width="380"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
-        Background="#F8FAFC">
+        Background="{DynamicResource Brush.SurfaceAlt}">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

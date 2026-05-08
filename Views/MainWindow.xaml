@@ -22,6 +22,13 @@
         <shell:WindowChrome CaptionHeight="40" ResizeBorderThickness="6" CornerRadius="0" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
     <Window.InputBindings>
+        <!-- G2 高 DPI 缩放：Ctrl+= 放大 / Ctrl+- 缩小 / Ctrl+0 复位 -->
+        <KeyBinding Modifiers="Ctrl" Key="OemPlus" Command="{Binding ZoomInCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="Add" Command="{Binding ZoomInCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="OemMinus" Command="{Binding ZoomOutCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="Subtract" Command="{Binding ZoomOutCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="D0" Command="{Binding ResetZoomCommand}"/>
+        <KeyBinding Modifiers="Ctrl" Key="NumPad0" Command="{Binding ResetZoomCommand}"/>
         <!-- G1 全局快捷键：Ctrl+1~8 顶部导航；F5 刷新 -->
         <KeyBinding Modifiers="Ctrl" Key="D1" Command="{Binding NavigateCommand}" CommandParameter="主界面"/>
         <KeyBinding Modifiers="Ctrl" Key="D2" Command="{Binding NavigateCommand}" CommandParameter="监控"/>
@@ -485,6 +492,61 @@
                         </MenuItem>
                     </Menu>
                     <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
+                        <!-- G4 事件中心铃铛 -->
+                        <ToggleButton x:Name="EventCenterToggle" Style="{StaticResource WindowControlButtonStyle}"
+                                      ToolTip="事件中心 (聚合最近报警/系统事件)" Width="44">
+                            <Grid>
+                                <materialDesign:PackIcon Kind="BellOutline" Width="18" Height="18"/>
+                                <Border Background="#DC2626" CornerRadius="8" Padding="3,0" MinWidth="14" Height="14"
+                                        VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,2,2,0"
+                                        Visibility="{Binding ActiveAlarmCount, Converter={StaticResource StringNotEmptyToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding ActiveAlarmCount}" Foreground="White" FontSize="9"
+                                               FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </ToggleButton>
+                        <Popup IsOpen="{Binding ElementName=EventCenterToggle, Path=IsChecked}"
+                               PlacementTarget="{Binding ElementName=EventCenterToggle}"
+                               Placement="Bottom" StaysOpen="False" AllowsTransparency="True"
+                               PopupAnimation="Slide">
+                            <Border Background="#FFFFFF" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="8"
+                                    Width="380" Height="460" Margin="0,4,8,0">
+                                <DockPanel Margin="12">
+                                    <TextBlock DockPanel.Dock="Top" Text="🔔 事件中心" FontSize="14" FontWeight="Bold"
+                                               Foreground="#0F172A" Margin="0,0,0,8"/>
+                                    <TextBlock DockPanel.Dock="Top" FontSize="11" Foreground="#64748B" Margin="0,0,0,8">
+                                        <Run Text="活跃报警 "/>
+                                        <Run Text="{Binding ActiveAlarmCount, Mode=OneWay}" FontWeight="Bold" Foreground="#DC2626"/>
+                                        <Run Text=" 条 / 总条目 "/>
+                                        <Run Text="{Binding Logs.Count, Mode=OneWay}" FontWeight="Bold"/>
+                                    </TextBlock>
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding Logs}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border BorderBrush="#E2E8F0" BorderThickness="0,0,0,1" Padding="0,6">
+                                                        <StackPanel>
+                                                            <DockPanel>
+                                                                <TextBlock Text="{Binding Time, StringFormat='HH:mm:ss'}"
+                                                                           Foreground="#94A3B8" FontSize="11"/>
+                                                                <TextBlock DockPanel.Dock="Right"
+                                                                           Text="{Binding Level}"
+                                                                           Foreground="{Binding Level, Converter={StaticResource StringToBrushConverter}}"
+                                                                           FontSize="10" FontWeight="SemiBold"/>
+                                                            </DockPanel>
+                                                            <TextBlock Text="{Binding Source}" FontSize="12"
+                                                                       FontWeight="SemiBold" Foreground="#0F172A"/>
+                                                            <TextBlock Text="{Binding Message}" FontSize="11"
+                                                                       Foreground="#475569" TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </DockPanel>
+                            </Border>
+                        </Popup>
                         <Button Style="{StaticResource WindowControlButtonStyle}" Click="MinimizeWindowButton_Click">
                             <Grid Width="12" Height="12">
                                 <Rectangle Height="1" Width="10" VerticalAlignment="Center" Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>

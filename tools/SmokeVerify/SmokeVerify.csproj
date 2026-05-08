@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ApexHMI.SmokeVerify</RootNamespace>
+    <UseWPF>false</UseWPF>
+    <!-- 不参与主项目 build (主项目 net48 + WPF), 单独 dotnet run 跑 -->
+  </PropertyGroup>
+</Project>

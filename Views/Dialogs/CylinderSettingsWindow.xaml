@@ -6,7 +6,7 @@
         Width="860"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
-        Background="#F8FAFC">
+        Background="{DynamicResource Brush.SurfaceAlt}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="20">
             <Grid.RowDefinitions>
@@ -35,7 +35,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                    <Border Grid.Row="0" Grid.ColumnSpan="2" Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="160"/>
@@ -52,7 +52,7 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
+                    <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,0,0,12">
                         <UniformGrid Columns="2">
                             <Button Content="{Binding CylinderHomeMaskButtonText}" Command="{Binding ToggleCylinderHomeMaskCommand}" Foreground="{DynamicResource Brush.Text}" Padding="10,8" Margin="0,0,8,0">
                                 <Button.Style>
@@ -98,7 +98,7 @@
                         <TextBlock Text="动点延时设定 (100ms)" Foreground="{DynamicResource Brush.TextSecondary}"/>
                         <TextBox Text="{Binding CylinderWorkDelaySetting, UpdateSourceTrigger=LostFocus}" Margin="0,6,0,0"/>
                     </StackPanel>
-                    <Border Grid.Row="3" Grid.Column="1" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="12,0,0,12">
+                    <Border Grid.Row="3" Grid.Column="1" Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="12,0,0,12">
                         <StackPanel>
                             <TextBlock Text="当前状态" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"/>
                             <TextBlock Text="{Binding CylinderCurrentStateText}" TextWrapping="Wrap" Foreground="#1D4ED8" Margin="0,6,0,0"/>
@@ -106,19 +106,19 @@
                     </Border>
 
                     <UniformGrid Grid.Row="4" Grid.ColumnSpan="2" Columns="3">
-                        <Border Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0">
+                        <Border Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,0,8,0">
                             <StackPanel>
                                 <TextBlock Text="当前动作时间 (S)" Foreground="{DynamicResource Brush.TextMuted}"/>
                                 <TextBlock Text="{Binding CylinderCurrentActionTimeDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="8,0">
+                        <Border Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="8,0">
                             <StackPanel>
                                 <TextBlock Text="上次动作时间 (S)" Foreground="{DynamicResource Brush.TextMuted}"/>
                                 <TextBlock Text="{Binding CylinderLastActionTimeDisplay}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Border>
-                        <Border Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="8,0,0,0">
+                        <Border Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="8,0,0,0">
                             <StackPanel>
                                 <TextBlock Text="动作次数" Foreground="{DynamicResource Brush.TextMuted}"/>
                                 <TextBlock Text="{Binding CylinderActionCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,8,0,0"/>
@@ -126,7 +126,7 @@
                         </Border>
                     </UniformGrid>
 
-                    <Border Grid.Row="5" Grid.ColumnSpan="2" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
+                    <Border Grid.Row="5" Grid.ColumnSpan="2" Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>

@@ -104,6 +104,10 @@ public partial class ManualCylinderBlockItem : ObservableObject
     [ObservableProperty]
     private string lastOperationText = string.Empty;
 
+    // MA4 气缸分组：可按工位（OP30/OP40/OP50）或类别（上料/夹紧/出料）分组
+    [ObservableProperty]
+    private string groupName = "全部";
+
     public string WorkCommandLabel => !string.IsNullOrWhiteSpace(WorkCommandDisplayName)
         ? WorkCommandDisplayName
         : IsVerticalNaming ? "上升" : "伸出";

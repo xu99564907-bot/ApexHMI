@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="事件链关联视图" Height="540" Width="780"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
-        Background="#F8FAFC">
+        Background="{DynamicResource Brush.SurfaceAlt}">
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

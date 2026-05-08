@@ -52,4 +52,12 @@ public partial class FlowStepRecord : ObservableObject
 
     [ObservableProperty]
     private bool isHighlighted;
+
+    // M24 标记关键步号：true 时表 + 图都高亮，便于交班讲解
+    [ObservableProperty]
+    private bool isCriticalStep;
+
+    // M24 标记备注（一句话说明这步为啥关键）
+    [ObservableProperty]
+    private string criticalNote = string.Empty;
 }

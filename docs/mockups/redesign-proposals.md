@@ -39,9 +39,11 @@
 | **2.8** | **履历 AU1-AU8** | (本次) | **8** |
 | **2.9** | **登录 L4/L5/L6** | `1d90c5f` | **3** |
 | **3.0** | **视觉重构骨架** (Themes/Theme/Buttons/Cards/DataGrid + RingProgressBar + KpiCard) | `a73b22e` | 骨架 |
-| **3.1** | **G5 主题切换 + 组件验证** (Theme.Dark/HighContrast + ThemeService + HomeView H1 用 RingProgressBar + LoginView DynamicResource) | (本次) | G5 |
+| **3.1** | **G5 主题切换 + 组件验证** (Theme.Dark/HighContrast + ThemeService + HomeView H1 用 RingProgressBar + LoginView DynamicResource) | `d8af90c` | G5 |
+| **3.2-3.7** | **批量扫色 + 卡片/按钮 mockup 对齐 + 字体模糊修复 + 菜单/导航/子导航 active 修复** | `b91039a` ~ `1cbadbc` | 6 项 |
+| **3.8 + 4.0** | **完成全部剩余视觉 + 锦上添花 14 项** (Inputs.xaml / DataGrid 默认 / G2 缩放 / G4 事件中心 / H10 KPI 状态色 / M16 收藏 / M18 写入 / M23 跳转 / M24 关键步 / M25 速率 / M26 弹层 / M27 PDF / MA4 分组 / H12 隐藏) + SmokeVerify 73 项断言通过 | (本次) | 14 |
 
-**累计完成：约 83 项 / 19 commit · Phase 3 主题切换 + 复用组件可用**
+**累计完成：约 97 项 / 21 commit · Phase 2/3/4 全部主体落地 ✅**
 
 ### ⏸ 推迟到 Phase 3 / 4（设计复杂或视觉重构相关）
 

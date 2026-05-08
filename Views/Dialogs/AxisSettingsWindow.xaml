@@ -6,7 +6,7 @@
         Width="980"
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
-        Background="#F8FAFC">
+        Background="{DynamicResource Brush.SurfaceAlt}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="20">
             <Grid.RowDefinitions>
@@ -40,7 +40,7 @@
                         <TextBox Text="{Binding SelectedAxisSettingsBlock.DisplayName, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
                     </StackPanel>
 
-                    <Border Grid.Column="2" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="10">
+                    <Border Grid.Column="2" Background="{DynamicResource Brush.SurfaceAlt}" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="10">
                         <StackPanel>
                             <TextBlock Text="当前状态" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"/>
                             <TextBlock Text="{Binding SelectedAxisCurrentStateText}" Foreground="#1D4ED8" Margin="0,6,0,0" TextWrapping="Wrap"/>

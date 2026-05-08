@@ -4,7 +4,7 @@
         xmlns:vm="clr-namespace:ApexHMI.ViewModels.Modules"
         Title="中文工业术语对照表" Height="560" Width="520"
         WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
-        Background="#F8FAFC">
+        Background="{DynamicResource Brush.SurfaceAlt}">
     <Window.DataContext>
         <vm:AlarmTermsViewModel/>
     </Window.DataContext>

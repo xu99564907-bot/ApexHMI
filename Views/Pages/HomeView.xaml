@@ -52,12 +52,31 @@
                                             <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <StackPanel><TextBlock Text="{l:Loc Home_ProductionStatus}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding DeviceStatusText}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/></StackPanel>
-                                        <StackPanel Grid.Column="1"><TextBlock Text="{l:Loc Home_ProductionCount}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding ProductionCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/><Path Data="{Binding ProductionTrendPath}" Stroke="#2563EB" StrokeThickness="1.5" Stretch="Fill" Height="18" Margin="0,4,8,0" SnapsToDevicePixels="True"/></StackPanel>
-                                        <StackPanel Grid.Column="2"><TextBlock Text="{l:Loc Home_OeeRate}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding OeeRate, StringFormat={}{0:F1}%}" FontSize="22" FontWeight="Bold" Foreground="#16A34A"/><Path Data="{Binding OeeTrendPath}" Stroke="#16A34A" StrokeThickness="1.5" Stretch="Fill" Height="18" Margin="0,4,8,0" SnapsToDevicePixels="True"/></StackPanel>
-                                        <StackPanel Grid.Column="3"><TextBlock Text="{l:Loc Home_DeviceStatus}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding AxisStatusText}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" TextWrapping="Wrap"/></StackPanel>
-                                        <StackPanel Grid.Column="4"><TextBlock Text="{l:Loc Home_ActiveAlarms}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding ActiveAlarmCount}" FontSize="22" FontWeight="Bold" Foreground="#D97706"/></StackPanel>
-                                        <StackPanel Grid.Column="5"><TextBlock Text="{l:Loc Home_UnackAlarms}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding UnacknowledgedAlarmCount}" FontSize="22" FontWeight="Bold" Foreground="#DC2626"/></StackPanel>
+                                        <!-- H10 KPI 卡左侧加状态色 strip：运行=绿/告警=橙/异常=红 -->
+                                        <DockPanel Grid.Column="0">
+                                            <Rectangle DockPanel.Dock="Left" Width="4" Fill="#16A34A" Margin="0,0,8,0" RadiusX="2" RadiusY="2"/>
+                                            <StackPanel><TextBlock Text="{l:Loc Home_ProductionStatus}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding DeviceStatusText}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/></StackPanel>
+                                        </DockPanel>
+                                        <DockPanel Grid.Column="1">
+                                            <Rectangle DockPanel.Dock="Left" Width="4" Fill="#2563EB" Margin="0,0,8,0" RadiusX="2" RadiusY="2"/>
+                                            <StackPanel><TextBlock Text="{l:Loc Home_ProductionCount}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding ProductionCount}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/><Path Data="{Binding ProductionTrendPath}" Stroke="#2563EB" StrokeThickness="1.5" Stretch="Fill" Height="18" Margin="0,4,8,0" SnapsToDevicePixels="True"/></StackPanel>
+                                        </DockPanel>
+                                        <DockPanel Grid.Column="2">
+                                            <Rectangle DockPanel.Dock="Left" Width="4" Fill="#16A34A" Margin="0,0,8,0" RadiusX="2" RadiusY="2"/>
+                                            <StackPanel><TextBlock Text="{l:Loc Home_OeeRate}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding OeeRate, StringFormat={}{0:F1}%}" FontSize="22" FontWeight="Bold" Foreground="#16A34A"/><Path Data="{Binding OeeTrendPath}" Stroke="#16A34A" StrokeThickness="1.5" Stretch="Fill" Height="18" Margin="0,4,8,0" SnapsToDevicePixels="True"/></StackPanel>
+                                        </DockPanel>
+                                        <DockPanel Grid.Column="3">
+                                            <Rectangle DockPanel.Dock="Left" Width="4" Fill="#0F766E" Margin="0,0,8,0" RadiusX="2" RadiusY="2"/>
+                                            <StackPanel><TextBlock Text="{l:Loc Home_DeviceStatus}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding AxisStatusText}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" TextWrapping="Wrap"/></StackPanel>
+                                        </DockPanel>
+                                        <DockPanel Grid.Column="4">
+                                            <Rectangle DockPanel.Dock="Left" Width="4" Fill="#D97706" Margin="0,0,8,0" RadiusX="2" RadiusY="2"/>
+                                            <StackPanel><TextBlock Text="{l:Loc Home_ActiveAlarms}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding ActiveAlarmCount}" FontSize="22" FontWeight="Bold" Foreground="#D97706"/></StackPanel>
+                                        </DockPanel>
+                                        <DockPanel Grid.Column="5">
+                                            <Rectangle DockPanel.Dock="Left" Width="4" Fill="#DC2626" Margin="0,0,8,0" RadiusX="2" RadiusY="2"/>
+                                            <StackPanel><TextBlock Text="{l:Loc Home_UnackAlarms}" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding UnacknowledgedAlarmCount}" FontSize="22" FontWeight="Bold" Foreground="#DC2626"/></StackPanel>
+                                        </DockPanel>
                                     </Grid>
                                 </Border>
                                 <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="16">
