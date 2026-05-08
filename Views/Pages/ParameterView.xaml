@@ -40,19 +40,19 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+                    <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                        <TextBlock Text="当前角色：" FontSize="16" Foreground="#64748B" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding ShellViewModel.CurrentRoleText}" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                        <TextBlock Text="当前角色：" FontSize="16" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ShellViewModel.CurrentRoleText}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                        <TextBlock Text="通讯状态：" FontSize="16" Foreground="#64748B" VerticalAlignment="Center"/>
+                        <TextBlock Text="通讯状态：" FontSize="16" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center"/>
                         <Border Background="#DBEAFE" CornerRadius="12" Padding="12,4" Margin="8,0,0,0">
                             <TextBlock Text="{Binding ShellViewModel.CommunicationStatus}" Foreground="#1D4ED8" FontWeight="SemiBold"/>
                         </Border>
                     </StackPanel>
                     <TextBlock Text="PLC / OPC UA 通讯参数通过独立配置窗口管理。"
-                               Foreground="#64748B"
+                               Foreground="{DynamicResource Brush.TextMuted}"
                                Margin="0,10,0,0"/>
                     <Button Content="打开 PLC 通讯配置"
                             Command="{Binding OpenCommunicationConfigCommand}"
@@ -117,7 +117,7 @@
 
                 <!-- P2 分组折叠 chips：每个分组一个 ToggleButton，IsChecked=折叠态（灰），未选=展开态（蓝） -->
                 <TextBlock Grid.Column="2" Text="折叠分组：" FontSize="13" FontWeight="SemiBold"
-                           Foreground="#0F172A"
+                           Foreground="{DynamicResource Brush.Text}"
                            VerticalAlignment="Center" Margin="16,0,6,0"
                            ToolTip="点击下方分组按钮可隐藏 / 展开该分组下的所有参数行"/>
                 <ItemsControl Grid.Column="3"
@@ -168,8 +168,8 @@
                   ItemsSource="{Binding ParametersView}"
                   AutoGenerateColumns="False"
                   Background="#FFFFFF"
-                  Foreground="#0F172A"
-                  BorderBrush="#D7DFEA"
+                  Foreground="{DynamicResource Brush.Text}"
+                  BorderBrush="{DynamicResource Brush.Border}"
                   BorderThickness="1"
                   RowBackground="#FFFFFF"
                   AlternatingRowBackground="#F8FAFC"
@@ -210,7 +210,7 @@
                 <DataGridTemplateColumn Header="PLC变量" Width="2*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Value}" VerticalAlignment="Center" Foreground="#0F172A" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Value}" VerticalAlignment="Center" Foreground="{DynamicResource Brush.Text}" TextWrapping="Wrap"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                     <DataGridTemplateColumn.CellEditingTemplate>
@@ -260,7 +260,7 @@
                         <DataTemplate>
                             <Button Content="历史"
                                     FontSize="11" Padding="6,2" Height="22"
-                                    Background="Transparent" BorderBrush="#CBD5E1" Foreground="#475569"
+                                    Background="Transparent" BorderBrush="#CBD5E1" Foreground="{DynamicResource Brush.TextSecondary}"
                                     Command="{Binding DataContext.ShellViewModel.ShowParameterHistoryCommand,
                                                       RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}"

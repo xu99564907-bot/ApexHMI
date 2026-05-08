@@ -11,7 +11,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" FontSize="14" Foreground="#0F172A" Margin="0,0,0,8"
+        <TextBlock Grid.Row="0" FontSize="14" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"
                    Text="即将批量修改以下参数（仅可编辑权限内的项）："/>
         <ListBox Grid.Row="1"
                  ItemsSource="{Binding}"
@@ -20,9 +20,9 @@
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Margin="2">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Width="160"/>
-                        <TextBlock Text="当前=" Foreground="#64748B"/>
-                        <TextBlock Text="{Binding Value}" Foreground="#0F172A" Margin="2,0,8,0"/>
-                        <TextBlock Text="{Binding Unit}" Foreground="#94A3B8"/>
+                        <TextBlock Text="当前=" Foreground="{DynamicResource Brush.TextMuted}"/>
+                        <TextBlock Text="{Binding Value}" Foreground="{DynamicResource Brush.Text}" Margin="2,0,8,0"/>
+                        <TextBlock Text="{Binding Unit}" Foreground="{DynamicResource Brush.TextPlaceholder}"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>

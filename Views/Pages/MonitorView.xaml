@@ -12,28 +12,28 @@
                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.2*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource CardBorderStyle}" Padding="16" Visibility="{Binding IsMonitorProductionPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel>
-                                <TextBlock Text="详细生产数据" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                                <TextBlock Text="详细生产数据" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
                                 <WrapPanel Margin="0,0,0,12">
-                                    <TextBlock Text="监视分类：" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="监视分类：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <ComboBox Width="140" ItemsSource="{Binding MonitorCategoryOptions}" SelectedItem="{Binding SelectedMonitorCategory}" Margin="0,0,12,0"/>
-                                    <TextBlock Text="流程：" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="流程：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <ComboBox Width="120" ItemsSource="{Binding FlowFilterOptions}" SelectedItem="{Binding SelectedFlowFilter}" Margin="0,0,12,0"/>
-                                    <TextBlock Text="步号：" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="步号：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <ComboBox Width="90" ItemsSource="{Binding FlowStepFilterOptions}" SelectedItem="{Binding SelectedFlowStepFilter}" Margin="0,0,12,0"/>
-                                    <TextBlock Text="时间：" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                    <TextBlock Text="时间：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <ComboBox Width="120" ItemsSource="{Binding FlowTimeRangeOptions}" SelectedItem="{Binding SelectedFlowTimeRange}" Margin="0,0,12,0"/>
                                     <!-- M5 自定义时间范围：DatePicker 仅在 SelectedFlowTimeRange == "自定义" 时显示 -->
                                     <DatePicker SelectedDate="{Binding CustomTimeFrom, Mode=TwoWay}" Margin="0,0,4,0" VerticalAlignment="Center"
                                                 Visibility="{Binding IsCustomTimeRangeVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 ToolTip="起始日期"/>
-                                    <TextBlock Text="~" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,4,0"
+                                    <TextBlock Text="~" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"
                                                Visibility="{Binding IsCustomTimeRangeVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     <DatePicker SelectedDate="{Binding CustomTimeTo, Mode=TwoWay}" Margin="0,0,12,0" VerticalAlignment="Center"
                                                 Visibility="{Binding IsCustomTimeRangeVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                 ToolTip="结束日期"/>
-                                    <CheckBox Content="仅异常" IsChecked="{Binding ShowOnlyAbnormalFlow}" Foreground="#0F172A" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                    <Button Content="刷新视图" Command="{Binding RefreshTagsCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="12,8" Margin="0,0,8,0"/>
-                                    <Button Content="加载历史趋势" Command="{Binding LoadTrendHistoryCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="12,8" Margin="0,0,8,0"/>
+                                    <CheckBox Content="仅异常" IsChecked="{Binding ShowOnlyAbnormalFlow}" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                    <Button Content="刷新视图" Command="{Binding RefreshTagsCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="12,8" Margin="0,0,8,0"/>
+                                    <Button Content="加载历史趋势" Command="{Binding LoadTrendHistoryCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="12,8" Margin="0,0,8,0"/>
                                     <Button Content="导入流程CSV分析" Command="{Binding ImportFlowCsvCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="12,8"/>
                                 </WrapPanel>
                                 <UniformGrid Columns="2" Margin="0,0,0,12">
@@ -41,25 +41,25 @@
                                 <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="0,0,8,8" ToolTip="{Binding OrderKpiDetail}">
                                     <StackPanel>
                                         <DockPanel>
-                                            <TextBlock Text="工单号" Foreground="#64748B"/>
+                                            <TextBlock Text="工单号" Foreground="{DynamicResource Brush.TextMuted}"/>
                                             <TextBlock DockPanel.Dock="Right" Text="{Binding OrderChangeHint}" Foreground="#0EA5E9" FontSize="11" VerticalAlignment="Center"/>
                                         </DockPanel>
-                                        <TextBlock Text="{Binding CurrentOrderText}" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+                                        <TextBlock Text="{Binding CurrentOrderText}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="8,0,0,8" ToolTip="{Binding RecipeKpiDetail}">
                                     <StackPanel>
                                         <DockPanel>
-                                            <TextBlock Text="配方" Foreground="#64748B"/>
+                                            <TextBlock Text="配方" Foreground="{DynamicResource Brush.TextMuted}"/>
                                             <TextBlock DockPanel.Dock="Right" Text="{Binding RecipeChangeHint}" Foreground="#0EA5E9" FontSize="11" VerticalAlignment="Center"/>
                                         </DockPanel>
-                                        <TextBlock Text="{Binding CurrentRecipeText}" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+                                        <TextBlock Text="{Binding CurrentRecipeText}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="0,0,8,8" ToolTip="{Binding ShiftKpiDetail}"><StackPanel><TextBlock Text="班次状态" Foreground="#64748B"/><TextBlock Text="{Binding ShiftStatusText}" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/></StackPanel></Border>
-                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="8,0,0,8" ToolTip="{Binding TargetKpiDetail}"><StackPanel><TextBlock Text="目标产量" Foreground="#64748B"/><TextBlock Text="{Binding TargetCount}" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/></StackPanel></Border>
+                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="0,0,8,8" ToolTip="{Binding ShiftKpiDetail}"><StackPanel><TextBlock Text="班次状态" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding ShiftStatusText}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/></StackPanel></Border>
+                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="8,0,0,8" ToolTip="{Binding TargetKpiDetail}"><StackPanel><TextBlock Text="目标产量" Foreground="{DynamicResource Brush.TextMuted}"/><TextBlock Text="{Binding TargetCount}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/></StackPanel></Border>
                                 </UniformGrid>
-                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="0,0,0,12"><StackPanel><TextBlock Text="历史趋势落盘状态" FontSize="16" FontWeight="Bold" Foreground="#0F172A"/><TextBlock Text="系统每次刷新时会自动将 OEE / 产量 / 报警数追加写入 trend-history.csv。" Foreground="#475569" Margin="0,8,0,0" TextWrapping="Wrap"/></StackPanel></Border>
+                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="0,0,0,12"><StackPanel><TextBlock Text="历史趋势落盘状态" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/><TextBlock Text="系统每次刷新时会自动将 OEE / 产量 / 报警数追加写入 trend-history.csv。" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,8,0,0" TextWrapping="Wrap"/></StackPanel></Border>
                                 <Grid Margin="0,12,0,0">
                                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -98,7 +98,7 @@
                         </Border>
                         <Border Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource CardBorderStyle}" Padding="16" Visibility="{Binding IsMonitorSinglePanelPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel>
-                                <TextBlock Text="{Binding CurrentMonitorTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                                <TextBlock Text="{Binding CurrentMonitorTitle}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
                                 <!-- IO 状态监控表格 -->
                                 <Grid Visibility="{Binding IsMonitorIoPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,12">
                                     <Grid.RowDefinitions>
@@ -128,12 +128,12 @@
                                                 Padding="14,8" Margin="8,0,0,0" Height="36"
                                                 ToolTip="导出当前所有 IO 状态 + 翻转计数到 CSV 文件"/>
                                         <TextBox Text="{Binding IoMonitorSearchText, UpdateSourceTrigger=PropertyChanged}"
-                                                 BorderBrush="#D7DFEA" Padding="6,4" Margin="16,0,0,0" Height="36" VerticalContentAlignment="Center"
+                                                 BorderBrush="{DynamicResource Brush.Border}" Padding="6,4" Margin="16,0,0,0" Height="36" VerticalContentAlignment="Center"
                                                  ToolTip="搜索 IO（按地址 / 注释模糊匹配，比如输入 CY3 只看 CY3 相关）"/>
                                     </DockPanel>
                                     <!-- 标题 -->
                                     <TextBlock Grid.Row="1" Text="{Binding IoMonitorTitle}" 
-                                               FontSize="18" FontWeight="Bold" Foreground="#0F172A" 
+                                               FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" 
                                                HorizontalAlignment="Center" Margin="0,0,0,12"/>
                                     <!-- IO 状态表格 -->
                                     <Grid Grid.Row="2">
@@ -146,7 +146,7 @@
                                         <DataGrid Grid.Column="0" ItemsSource="{Binding IoMonitorLeftItems}"
                                                   AutoGenerateColumns="False" CanUserAddRows="False"
                                                   HeadersVisibility="Column" IsReadOnly="True"
-                                                  Background="#FFFFFF" BorderBrush="#D7DFEA"
+                                                  Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}"
                                                   RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                                                   Margin="0,0,4,0">
                                             <!-- M11 IsRecentlyChanged 高亮（1.5s 内有过变化的行黄底）-->
@@ -188,7 +188,7 @@
                                         <DataGrid Grid.Column="1" ItemsSource="{Binding IoMonitorRightItems}"
                                                   AutoGenerateColumns="False" CanUserAddRows="False"
                                                   HeadersVisibility="Column" IsReadOnly="True"
-                                                  Background="#FFFFFF" BorderBrush="#D7DFEA"
+                                                  Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}"
                                                   RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                                                   Margin="4,0,8,0">
                                             <DataGrid.RowStyle>
@@ -228,10 +228,10 @@
                                         <StackPanel Grid.Column="2" VerticalAlignment="Center">
                                             <Button Content="▲" Command="{Binding IoMonitorPageUpCommand}" 
                                                     Width="50" Height="50" Margin="0,0,0,8"
-                                                    Background="#E2E8F0" Foreground="#0F172A" FontSize="18"/>
+                                                    Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" FontSize="18"/>
                                             <Button Content="▼" Command="{Binding IoMonitorPageDownCommand}" 
                                                     Width="50" Height="50"
-                                                    Background="#E2E8F0" Foreground="#0F172A" FontSize="18"/>
+                                                    Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" FontSize="18"/>
                                         </StackPanel>
                                     </Grid>
                                 </Grid>
@@ -243,29 +243,29 @@
                                             <RowDefinition Height="*"/>
                                         </Grid.RowDefinitions>
                                         <DockPanel Margin="0,0,0,8">
-                                            <TextBlock Text="OPC UA 内置调试器" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                            <TextBlock Text="OPC UA 内置调试器" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                                             <WrapPanel DockPanel.Dock="Right">
                                                 <Button Content="浏览根节点" Command="{Binding LoadOpcUaBrowserRootCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,6" Margin="0,0,8,0"/>
-                                                <Button Content="读取选中节点" Command="{Binding RefreshSelectedOpcUaNodeCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,6" Margin="0,0,8,0"/>
-                                                <Button Content="加入变量表" Command="{Binding AddSelectedOpcUaNodeAsTagCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,6"/>
+                                                <Button Content="读取选中节点" Command="{Binding RefreshSelectedOpcUaNodeCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="10,6" Margin="0,0,8,0"/>
+                                                <Button Content="加入变量表" Command="{Binding AddSelectedOpcUaNodeAsTagCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="10,6"/>
                                             </WrapPanel>
                                         </DockPanel>
                                         <!-- M17 节点搜索框 -->
                                         <DockPanel Grid.Row="1" Margin="0,0,0,10">
-                                            <TextBlock Text="搜索：" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBlock Text="搜索：" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                             <TextBox DockPanel.Dock="Left" Text="{Binding OpcUaBrowserSearchText, UpdateSourceTrigger=PropertyChanged}"
-                                                     Width="240" BorderBrush="#D7DFEA" Padding="6,4"
+                                                     Width="240" BorderBrush="{DynamicResource Brush.Border}" Padding="6,4"
                                                      ToolTip="按 DisplayName / NodeId 模糊匹配，命中节点黄底高亮（不展开节点）"/>
-                                            <TextBlock Text="{Binding OpcUaBrowserStatus}" Foreground="#64748B" Margin="12,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding OpcUaBrowserStatus}" Foreground="{DynamicResource Brush.TextMuted}" Margin="12,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center"/>
                                         </DockPanel>
-                                        <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" MinHeight="320">
+                                        <Border Grid.Row="2" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" MinHeight="320">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="1.1*"/>
                                                     <ColumnDefinition Width="0.9*"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Border Margin="12" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8">
-                                                    <TreeView ItemsSource="{Binding OpcUaBrowserNodes}" Background="#FFFFFF" Foreground="#0F172A" BorderThickness="0" SelectedItemChanged="OpcUaBrowserTreeView_SelectedItemChanged">
+                                                <Border Margin="12" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8">
+                                                    <TreeView ItemsSource="{Binding OpcUaBrowserNodes}" Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderThickness="0" SelectedItemChanged="OpcUaBrowserTreeView_SelectedItemChanged">
                                                         <TreeView.ItemContainerStyle>
                                                             <Style TargetType="TreeViewItem">
                                                                 <EventSetter Event="Expanded" Handler="OpcUaBrowserTreeViewItem_Expanded"/>
@@ -282,44 +282,44 @@
                                                         <TreeView.Resources>
                                                             <HierarchicalDataTemplate DataType="{x:Type model:OpcUaBrowseNode}" ItemsSource="{Binding Children}">
                                                                 <StackPanel Orientation="Horizontal">
-                                                                    <TextBlock Text="{Binding DisplayName}" Foreground="#0F172A"/>
+                                                                    <TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource Brush.Text}"/>
                                                                     <TextBlock Text="  " />
-                                                                    <TextBlock Text="{Binding NodeClass}" Foreground="#64748B"/>
+                                                                    <TextBlock Text="{Binding NodeClass}" Foreground="{DynamicResource Brush.TextMuted}"/>
                                                                 </StackPanel>
                                                             </HierarchicalDataTemplate>
                                                         </TreeView.Resources>
                                                     </TreeView>
                                                 </Border>
                                                 <!-- M20 节点详情面板配色统一为浅色（之前白底白字看不清）-->
-                                                <Border Grid.Column="1" Margin="0,12,12,12" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" Padding="12">
+                                                <Border Grid.Column="1" Margin="0,12,12,12" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12">
                                                     <Grid>
                                                         <Grid.RowDefinitions>
                                                             <RowDefinition Height="Auto"/>
                                                             <RowDefinition Height="*"/>
                                                         </Grid.RowDefinitions>
                                                         <StackPanel Grid.Row="0">
-                                                            <TextBlock Text="节点详情" FontSize="15" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,10"/>
-                                                            <TextBlock Text="显示名" Foreground="#64748B"/>
-                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DisplayName}" Foreground="#0F172A" Margin="0,4,0,10" TextWrapping="Wrap"/>
-                                                            <TextBlock Text="NodeId" Foreground="#64748B"/>
+                                                            <TextBlock Text="节点详情" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,10"/>
+                                                            <TextBlock Text="显示名" Foreground="{DynamicResource Brush.TextMuted}"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DisplayName}" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,10" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="NodeId" Foreground="{DynamicResource Brush.TextMuted}"/>
                                                             <TextBlock Text="{Binding SelectedOpcUaBrowseNode.NodeId}" Foreground="#1D4ED8" Margin="0,4,0,10" TextWrapping="Wrap"/>
-                                                            <TextBlock Text="节点类型" Foreground="#64748B"/>
-                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.NodeClass}" Foreground="#0F172A" Margin="0,4,0,10"/>
-                                                            <TextBlock Text="数据类型" Foreground="#64748B"/>
-                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DataType}" Foreground="#0F172A" Margin="0,4,0,10"/>
-                                                            <TextBlock Text="当前值" Foreground="#64748B"/>
+                                                            <TextBlock Text="节点类型" Foreground="{DynamicResource Brush.TextMuted}"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.NodeClass}" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,10"/>
+                                                            <TextBlock Text="数据类型" Foreground="{DynamicResource Brush.TextMuted}"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaBrowseNode.DataType}" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,10"/>
+                                                            <TextBlock Text="当前值" Foreground="{DynamicResource Brush.TextMuted}"/>
                                                             <TextBlock Text="{Binding SelectedOpcUaNodeValue}" Foreground="#16A34A" FontWeight="SemiBold" Margin="0,4,0,10" TextWrapping="Wrap"/>
-                                                            <TextBlock Text="状态" Foreground="#64748B"/>
-                                                            <TextBlock Text="{Binding SelectedOpcUaNodeStatus}" Foreground="#0F172A" Margin="0,4,0,10"/>
-                                                            <TextBlock Text="时间戳" Foreground="#64748B"/>
-                                                            <TextBlock Text="{Binding SelectedOpcUaNodeTimestamp}" Foreground="#0F172A" Margin="0,4,0,10"/>
+                                                            <TextBlock Text="状态" Foreground="{DynamicResource Brush.TextMuted}"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaNodeStatus}" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,10"/>
+                                                            <TextBlock Text="时间戳" Foreground="{DynamicResource Brush.TextMuted}"/>
+                                                            <TextBlock Text="{Binding SelectedOpcUaNodeTimestamp}" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,10"/>
                                                         </StackPanel>
                                                         <!-- M19 OPC UA 订阅 quality 变化日志 -->
-                                                        <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,8,0,0">
+                                                        <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,8,0,0">
                                                             <DockPanel>
-                                                                <TextBlock DockPanel.Dock="Top" Text="订阅 quality 日志（最近 50 条）" Foreground="#64748B" FontSize="11" Margin="0,0,0,6"/>
+                                                                <TextBlock DockPanel.Dock="Top" Text="订阅 quality 日志（最近 50 条）" Foreground="{DynamicResource Brush.TextMuted}" FontSize="11" Margin="0,0,0,6"/>
                                                                 <ListBox ItemsSource="{Binding OpcUaQualityLog}" Background="Transparent" BorderThickness="0"
-                                                                         FontFamily="Consolas" FontSize="11" Foreground="#475569"
+                                                                         FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource Brush.TextSecondary}"
                                                                          MaxHeight="120" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
                                                             </DockPanel>
                                                         </Border>
@@ -347,7 +347,7 @@
                                             </Grid.RowDefinitions>
                                             <DockPanel Margin="0,0,0,10">
                                                 <TextBlock Text="主流程步号 Trace" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                                                <TextBlock DockPanel.Dock="Right" Text="横轴：时间 / 纵轴：主流程步号" Foreground="#94A3B8"/>
+                                                <TextBlock DockPanel.Dock="Right" Text="横轴：时间 / 纵轴：主流程步号" Foreground="{DynamicResource Brush.TextPlaceholder}"/>
                                             </DockPanel>
                                             <Grid Grid.Row="1">
                                                 <Grid.RowDefinitions>
@@ -356,7 +356,7 @@
                                                 </Grid.RowDefinitions>
                                                 <DockPanel Margin="0,0,0,10">
                                                     <TextBlock Text="{Binding ProgramMonitorTraceLatestText}" Foreground="#93C5FD" FontWeight="Bold"/>
-                                                    <TextBlock DockPanel.Dock="Right" Text="{Binding ProgramMonitorTraceWindowText}" Foreground="#94A3B8"/>
+                                                    <TextBlock DockPanel.Dock="Right" Text="{Binding ProgramMonitorTraceWindowText}" Foreground="{DynamicResource Brush.TextPlaceholder}"/>
                                                 </DockPanel>
                                                 <Grid Grid.Row="1">
                                                     <Grid.ColumnDefinitions>
@@ -370,10 +370,10 @@
                                                             <RowDefinition Height="*"/>
                                                             <RowDefinition Height="*"/>
                                                         </Grid.RowDefinitions>
-                                                        <TextBlock Text="{Binding ProgramMonitorTraceAxisTopLabel}" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Top"/>
-                                                        <TextBlock Grid.Row="1" Text="{Binding ProgramMonitorTraceAxisMidHighLabel}" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
-                                                        <TextBlock Grid.Row="2" Text="{Binding ProgramMonitorTraceAxisMidLowLabel}" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center"/>
-                                                        <TextBlock Grid.Row="3" Text="{Binding ProgramMonitorTraceAxisBottomLabel}" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Bottom"/>
+                                                        <TextBlock Text="{Binding ProgramMonitorTraceAxisTopLabel}" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" VerticalAlignment="Top"/>
+                                                        <TextBlock Grid.Row="1" Text="{Binding ProgramMonitorTraceAxisMidHighLabel}" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Row="2" Text="{Binding ProgramMonitorTraceAxisMidLowLabel}" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" VerticalAlignment="Center"/>
+                                                        <TextBlock Grid.Row="3" Text="{Binding ProgramMonitorTraceAxisBottomLabel}" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" VerticalAlignment="Bottom"/>
                                                     </Grid>
                                                     <Grid Grid.Column="1">
                                                         <Border x:Name="ProgramTraceChartHost"
@@ -421,8 +421,8 @@
                                                             <ColumnDefinition Width="*"/>
                                                             <ColumnDefinition Width="Auto"/>
                                                         </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="{Binding ProgramMonitorTraceStartLabel}" Foreground="#94A3B8"/>
-                                                        <TextBlock Grid.Column="1" Text="{Binding ProgramMonitorTraceEndLabel}" Foreground="#94A3B8"/>
+                                                        <TextBlock Text="{Binding ProgramMonitorTraceStartLabel}" Foreground="{DynamicResource Brush.TextPlaceholder}"/>
+                                                        <TextBlock Grid.Column="1" Text="{Binding ProgramMonitorTraceEndLabel}" Foreground="{DynamicResource Brush.TextPlaceholder}"/>
                                                     </Grid>
                                                     <DockPanel Margin="0,8,0,0">
                                                         <TextBlock Text="{Binding ProgramMonitorCursorText}" Foreground="#CBD5E1"/>
@@ -430,10 +430,10 @@
                                                             <CheckBox Content="主线1" IsChecked="{Binding ProgramMonitorTraceShowLine1, Mode=TwoWay}" Foreground="#60A5FA" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                                             <CheckBox Content="主线2" IsChecked="{Binding ProgramMonitorTraceShowLine2, Mode=TwoWay}" Foreground="#F59E0B" Margin="0,0,12,0" VerticalAlignment="Center"/>
                                                             <CheckBox Content="主线3" IsChecked="{Binding ProgramMonitorTraceShowLine3, Mode=TwoWay}" Foreground="#22C55E" Margin="0,0,16,0" VerticalAlignment="Center"/>
-                                                            <TextBlock Text="光标跟随" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                            <TextBlock Text="光标跟随" Foreground="{DynamicResource Brush.TextPlaceholder}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                                             <ComboBox Width="90" ItemsSource="{Binding ProgramMonitorTraceFlowOptions}" SelectedItem="{Binding SelectedProgramMonitorTraceFlow, Mode=TwoWay}" Margin="0,0,16,0"/>
-                                                            <TextBlock Text="Shift+左键拖拽缩放，双击复位" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,16,0"/>
-                                                            <TextBlock Text="缩放" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                            <TextBlock Text="Shift+左键拖拽缩放，双击复位" Foreground="{DynamicResource Brush.TextPlaceholder}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                                                            <TextBlock Text="缩放" Foreground="{DynamicResource Brush.TextPlaceholder}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                                             <Slider Width="180" Minimum="1" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding ProgramMonitorTraceWindowMinutes, Mode=TwoWay}"/>
                                                         </StackPanel>
                                                     </DockPanel>
@@ -454,10 +454,10 @@
                                                                 ToolTip="把 trace 图当前可视区域保存为 PNG（便于汇报）"/>
                                                         <Button Content="保存会话" Command="{Binding SaveProgramMonitorTraceSessionCommand}" Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="10,4" Margin="0,0,8,0"/>
                                                         <Button Content="加载会话" Command="{Binding LoadProgramMonitorTraceSessionCommand}" Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED" Padding="10,4" Margin="0,0,16,0"/>
-                                                        <TextBlock Text="定位时间" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                        <TextBlock Text="定位时间" Foreground="{DynamicResource Brush.TextPlaceholder}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                                         <TextBox Width="120" Text="{Binding ProgramMonitorTraceLocateTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0"/>
                                                         <Button Content="定位" Command="{Binding LocateProgramMonitorTraceTimeCommand}" Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED" Padding="10,4" Margin="0,0,16,0"/>
-                                                        <TextBlock Text="回放" Foreground="#94A3B8" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                                        <TextBlock Text="回放" Foreground="{DynamicResource Brush.TextPlaceholder}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                                         <Slider Width="220" Minimum="0" Maximum="{Binding ProgramMonitorTraceReplayMaximum}" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding ProgramMonitorTraceReplayPosition, Mode=TwoWay}" IsEnabled="{Binding HasProgramMonitorTraceHistory}"/>
                                                     </DockPanel>
                                                 </StackPanel>

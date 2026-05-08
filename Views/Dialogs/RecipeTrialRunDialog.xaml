@@ -12,11 +12,11 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" FontSize="14" Foreground="#0F172A" Margin="0,0,0,8">
+        <TextBlock Grid.Row="0" FontSize="14" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8">
             <Run Text="试运行配方："/>
             <Run Text="{Binding Name}" FontWeight="Bold"/>
         </TextBlock>
-        <TextBlock Grid.Row="1" FontSize="12" Foreground="#64748B" Margin="0,0,0,8"
+        <TextBlock Grid.Row="1" FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,0,0,8"
                    Text="将配方加载到参数页（不切换 Active），空跑指定件数验证。"/>
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,4,0,0">
             <TextBlock Text="空跑件数：" VerticalAlignment="Center" Margin="0,0,8,0"/>

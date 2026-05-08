@@ -39,8 +39,8 @@
                 Margin="0,0,0,10">
             <DockPanel>
                 <StackPanel>
-                    <TextBlock Text="{Binding CurrentAlarmTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
-                    <TextBlock Text="左侧子导航切换：当前报警 / 历史报警 / 日志 / 报警统计" Foreground="#64748B" Margin="0,8,0,0"/>
+                    <TextBlock Text="{Binding CurrentAlarmTitle}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
+                    <TextBlock Text="左侧子导航切换：当前报警 / 历史报警 / 日志 / 报警统计" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,8,0,0"/>
                 </StackPanel>
                 <WrapPanel DockPanel.Dock="Right">
                     <Button Content="确认全部报警" Command="{Binding AcknowledgeAllAlarmsCommand}"
@@ -63,15 +63,15 @@
         <!-- A2/A9 过滤工具栏：级别 / 来源 / 时间 / 关键字（当前+历史共用） -->
         <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Padding="12,8" Margin="0,0,0,10">
             <WrapPanel>
-                <TextBlock Text="级别：" FontSize="13" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="级别：" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <ComboBox Width="100" Height="26" Margin="0,0,12,0"
                           ItemsSource="{Binding AlarmListLevelOptions}"
                           SelectedItem="{Binding AlarmListLevelFilter}"/>
-                <TextBlock Text="来源：" FontSize="13" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="来源：" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <ComboBox Width="160" Height="26" Margin="0,0,12,0"
                           ItemsSource="{Binding AlarmSourceOptions}"
                           SelectedItem="{Binding AlarmListSourceFilter}"/>
-                <TextBlock Text="时间：" FontSize="13" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="时间：" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <ComboBox Width="100" Height="26" Margin="0,0,12,0"
                           ItemsSource="{Binding AlarmListTimeRangeOptions}"
                           SelectedItem="{Binding AlarmListTimeRange}"/>
@@ -94,12 +94,12 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="当前报警" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,8"/>
+                        <TextBlock Text="当前报警" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"/>
                         <DataGrid ItemsSource="{Binding CurrentAlarmsView}"
                                   SelectedItem="{Binding SelectedAlarmDetail, Mode=TwoWay}"
                                   AutoGenerateColumns="False"
-                                  Background="#FFFFFF" Foreground="#0F172A"
-                                  BorderBrush="#E2E8F0" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
+                                  Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}"
+                                  BorderBrush="{DynamicResource Brush.BorderSoft}" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                                   RowStyle="{StaticResource HighlightRowStyle}"
                                   HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                                   Height="540">
@@ -118,7 +118,7 @@
                                             <Button Content="跳流程"
                                                     Command="{Binding DataContext.JumpToFlowByAlarmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding Source}"
-                                                    Background="Transparent" BorderBrush="#CBD5E1" Foreground="#475569"
+                                                    Background="Transparent" BorderBrush="#CBD5E1" Foreground="{DynamicResource Brush.TextSecondary}"
                                                     FontSize="11" Padding="6,2" Height="22"
                                                     ToolTip="跳到程序监控页对应流程步号（A8）"/>
                                         </DataTemplate>
@@ -130,48 +130,48 @@
 
                     <!-- A3 详情侧边栏 -->
                     <Border Grid.Column="1" Margin="10,0,0,0"
-                            Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="6"
+                            Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1" CornerRadius="6"
                             Padding="12">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel DataContext="{Binding SelectedAlarmDetail}">
-                                <TextBlock Text="📋 报警详情" FontSize="14" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,8"/>
+                                <TextBlock Text="📋 报警详情" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"/>
                                 <StackPanel Visibility="{Binding ., Converter={StaticResource NullToVisibilityConverter}}">
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="时间"/>
-                                    <TextBlock FontSize="13" Foreground="#0F172A" Margin="0,0,0,8"
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="时间"/>
+                                    <TextBlock FontSize="13" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"
                                                Text="{Binding Time, StringFormat='yyyy-MM-dd HH:mm:ss'}"/>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="级别 / 状态"/>
-                                    <TextBlock FontSize="13" Foreground="#0F172A" Margin="0,0,0,8">
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="级别 / 状态"/>
+                                    <TextBlock FontSize="13" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8">
                                         <Run Text="{Binding Level}"/>
                                         <Run Text="  "/>
                                         <Run Text="{Binding State}"/>
                                     </TextBlock>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="来源"/>
-                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,8"
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="来源"/>
+                                    <TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"
                                                Text="{Binding Source}" TextWrapping="Wrap"/>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="内容"/>
-                                    <TextBlock FontSize="13" Foreground="#0F172A" Margin="0,0,0,8"
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="内容"/>
+                                    <TextBlock FontSize="13" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"
                                                Text="{Binding Message}" TextWrapping="Wrap"/>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="处理建议"/>
-                                    <TextBlock FontSize="13" Foreground="#475569" Margin="0,0,0,8"
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="处理建议"/>
+                                    <TextBlock FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8"
                                                Text="{Binding HandlingSuggestion}" TextWrapping="Wrap"/>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="原因归档"/>
-                                    <TextBlock FontSize="13" Foreground="#475569" Margin="0,0,0,8"
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="原因归档"/>
+                                    <TextBlock FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8"
                                                Text="{Binding CauseArchive}" TextWrapping="Wrap"/>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="关联流程步号"/>
-                                    <TextBlock FontSize="13" Foreground="#475569" Margin="0,0,0,8"
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="关联流程步号"/>
+                                    <TextBlock FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8"
                                                Text="{Binding RelatedFlowStep, FallbackValue='--'}"/>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="累计次数 / 确认人"/>
-                                    <TextBlock FontSize="13" Foreground="#475569" Margin="0,0,0,8">
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="累计次数 / 确认人"/>
+                                    <TextBlock FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8">
                                         <Run Text="{Binding Count}"/>
                                         <Run Text=" 次  /  "/>
                                         <Run Text="{Binding AcknowledgedBy, FallbackValue='--'}"/>
                                     </TextBlock>
-                                    <TextBlock FontSize="12" Foreground="#64748B" Text="备注（操作员可填）"/>
+                                    <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Text="备注（操作员可填）"/>
                                     <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}"
                                              AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60"
                                              BorderBrush="#CBD5E1" BorderThickness="1" Padding="6"/>
                                 </StackPanel>
-                                <TextBlock FontSize="12" Foreground="#94A3B8" FontStyle="Italic"
+                                <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextPlaceholder}" FontStyle="Italic"
                                            Text="（点击左侧表格中的一行查看详情）"
                                            Visibility="{Binding ., Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
                             </StackPanel>
@@ -184,12 +184,12 @@
             <Border Style="{StaticResource CardBorderStyle}" Padding="12"
                     Visibility="{Binding IsAlarmHistoryPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
-                    <TextBlock Text="历史报警" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                    <TextBlock Text="历史报警" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
                     <DataGrid ItemsSource="{Binding AlarmHistoryView}"
                               SelectedItem="{Binding SelectedAlarmDetail, Mode=TwoWay}"
                               AutoGenerateColumns="False"
-                              Background="#FFFFFF" Foreground="#0F172A"
-                              BorderBrush="#E2E8F0" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
+                              Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}"
+                              BorderBrush="{DynamicResource Brush.BorderSoft}" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                               RowStyle="{StaticResource HighlightRowStyle}"
                               HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                               Height="600">
@@ -208,7 +208,7 @@
                                         <Button Content="跳流程"
                                                 Command="{Binding DataContext.JumpToFlowByAlarmCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding Source}"
-                                                Background="Transparent" BorderBrush="#CBD5E1" Foreground="#475569"
+                                                Background="Transparent" BorderBrush="#CBD5E1" Foreground="{DynamicResource Brush.TextSecondary}"
                                                 FontSize="11" Padding="6,2" Height="22"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -222,9 +222,9 @@
             <Border Style="{StaticResource CardBorderStyle}" Padding="12"
                     Visibility="{Binding IsAlarmLogPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
-                    <TextBlock Text="日志" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                    <TextBlock Text="日志" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
                     <DataGrid ItemsSource="{Binding Logs}" AutoGenerateColumns="False"
-                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#E2E8F0"
+                              Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.BorderSoft}"
                               Height="620">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="时间" Binding="{Binding Time, StringFormat='HH:mm:ss'}" Width="*"/>
@@ -241,21 +241,21 @@
             <Border Style="{StaticResource CardBorderStyle}" Padding="12"
                     Visibility="{Binding IsAlarmStatisticsPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <StackPanel>
-                    <TextBlock Text="报警统计" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                    <TextBlock Text="报警统计" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
                     <WrapPanel Margin="0,0,0,10">
-                        <TextBlock Text="级别：" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="级别：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox Width="120" ItemsSource="{Binding AlarmLevelOptions}" SelectedItem="{Binding SelectedAlarmLevel}" Margin="0,0,12,0"/>
-                        <TextBlock Text="时间：" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBlock Text="时间：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox Width="120" ItemsSource="{Binding AlarmTimeRangeOptions}" SelectedItem="{Binding SelectedAlarmTimeRange}" Margin="0,0,12,0"/>
-                        <CheckBox Content="只看重点报警" IsChecked="{Binding ShowOnlyFocusAlarms}" Foreground="#0F172A" VerticalAlignment="Center"/>
+                        <CheckBox Content="只看重点报警" IsChecked="{Binding ShowOnlyFocusAlarms}" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                     </WrapPanel>
 
                     <!-- A5 报警发生频率（最近 24h，每小时一个 bar；按级别堆叠） -->
                     <Border Style="{StaticResource CardBorderStyle}" Background="#F8FAFC" Padding="12" Margin="0,0,0,12">
                         <StackPanel>
                             <DockPanel>
-                                <TextBlock Text="📊 报警发生频率（最近 24h，按小时）" FontSize="14" FontWeight="Bold" Foreground="#0F172A"/>
-                                <TextBlock DockPanel.Dock="Right" FontSize="11" Foreground="#64748B" HorizontalAlignment="Right">
+                                <TextBlock Text="📊 报警发生频率（最近 24h，按小时）" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
+                                <TextBlock DockPanel.Dock="Right" FontSize="11" Foreground="{DynamicResource Brush.TextMuted}" HorizontalAlignment="Right">
                                     <Run Text="🟥 Alarm  "/>
                                     <Run Text="🟧 Error  " Foreground="#EA580C"/>
                                     <Run Text="🟨 Warning"/>
@@ -275,7 +275,7 @@
                                                            Height="{Binding NormalizedHeight, Converter={StaticResource NormalizedHeightConverter}, ConverterParameter=100}"
                                                            ToolTip="{Binding Total, StringFormat='共 {0} 条'}"/>
                                             </Grid>
-                                            <TextBlock Text="{Binding Label}" FontSize="9" Foreground="#94A3B8"
+                                            <TextBlock Text="{Binding Label}" FontSize="9" Foreground="{DynamicResource Brush.TextPlaceholder}"
                                                        HorizontalAlignment="Center" Margin="0,2,0,0"/>
                                         </StackPanel>
                                     </DataTemplate>
@@ -293,7 +293,7 @@
                         </StackPanel>
                     </Border>
                     <DataGrid ItemsSource="{Binding AlarmStatisticsView}" AutoGenerateColumns="False"
-                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#E2E8F0">
+                              Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.BorderSoft}">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="来源" Binding="{Binding Source}" Width="*"/>
                             <DataGridTextColumn Header="级别" Binding="{Binding Level}" Width="*"/>

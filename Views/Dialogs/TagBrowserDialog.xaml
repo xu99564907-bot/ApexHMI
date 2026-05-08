@@ -5,19 +5,19 @@
         WindowStartupLocation="CenterOwner" Background="#F8FAFC">
     <DockPanel Margin="12">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
-            <TextBlock Text="搜索/分类：" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBlock Text="搜索/分类：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
             <ComboBox x:Name="CategoryCombo" Width="120" SelectionChanged="Filter_Changed" Margin="0,0,8,0"/>
             <TextBox x:Name="SearchBox" TextChanged="Filter_Changed"
                      ToolTip="按名称/NodeId 模糊搜索"/>
         </DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
             <Button Content="取消" Click="Cancel_Click" Padding="14,6" Margin="0,0,8,0"
-                    Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1"/>
+                    Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"/>
             <Button Content="选择" Click="Confirm_Click" Padding="14,6"
                     Background="#2563EB" Foreground="White" BorderBrush="#2563EB" IsDefault="True"/>
         </StackPanel>
         <ListView x:Name="TagListView" MouseDoubleClick="Confirm_Click"
-                  Background="#FFFFFF" BorderBrush="#D7DFEA">
+                  Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="名称"     Width="180" DisplayMemberBinding="{Binding Name}"/>

@@ -18,7 +18,7 @@
         </Grid.RowDefinitions>
 
         <!-- 说明 -->
-        <TextBlock Grid.Row="0" Margin="0,0,0,8" FontSize="12" Foreground="#475569"
+        <TextBlock Grid.Row="0" Margin="0,0,0,8" FontSize="12" Foreground="{DynamicResource Brush.TextSecondary}"
                    TextWrapping="Wrap"
                    Text="按中文由长到短排列，优先匹配更长的词组。修改后点击「保存」立即生效，下次生成时使用新对照表。"/>
 

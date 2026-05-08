@@ -11,7 +11,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" FontSize="14" Foreground="#0F172A" Margin="0,0,0,8"
+        <TextBlock Grid.Row="0" FontSize="14" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"
                    Text="选择两个配方进行对比，点【对比】按钮。差异行会以蓝底高亮，相同参数自动隐藏。"
                    TextWrapping="Wrap"/>
         <Grid Grid.Row="1" Margin="0,0,0,8">

@@ -18,15 +18,15 @@
             <TextBlock Text="PLC / OPC UA 通讯参数"
                        FontSize="24"
                        FontWeight="Bold"
-                       Foreground="#0F172A"/>
+                       Foreground="{DynamicResource Brush.Text}"/>
             <TextBlock Text="在这里统一设置通讯协议、服务器地址、端口、Endpoint 和登录方式。"
-                       Foreground="#64748B"
+                       Foreground="{DynamicResource Brush.TextMuted}"
                        Margin="0,8,0,0"/>
         </StackPanel>
 
         <Border Grid.Row="1"
                 Background="#FFFFFF"
-                BorderBrush="#D7DFEA"
+                BorderBrush="{DynamicResource Brush.Border}"
                 BorderThickness="1"
                 CornerRadius="10"
                 Padding="16"
@@ -48,7 +48,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="通讯协议"
-                           Foreground="#475569"
+                           Foreground="{DynamicResource Brush.TextSecondary}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,10"/>
                 <ComboBox Grid.Column="1"
@@ -59,7 +59,7 @@
 
                 <TextBlock Grid.Row="1"
                            Text="服务器 IP"
-                           Foreground="#475569"
+                           Foreground="{DynamicResource Brush.TextSecondary}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,10"/>
                 <TextBox Grid.Row="1"
@@ -70,7 +70,7 @@
                 <TextBlock Grid.Row="1"
                            Grid.Column="2"
                            Text="端口"
-                           Foreground="#475569"
+                           Foreground="{DynamicResource Brush.TextSecondary}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,10"/>
                 <TextBox Grid.Row="1"
@@ -80,7 +80,7 @@
 
                 <TextBlock Grid.Row="2"
                            Text="Endpoint"
-                           Foreground="#475569"
+                           Foreground="{DynamicResource Brush.TextSecondary}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,10"/>
                 <TextBox Grid.Row="2"
@@ -93,12 +93,12 @@
                           Grid.ColumnSpan="2"
                           Content="匿名连接"
                           IsChecked="{Binding Connection.UseAnonymous}"
-                          Foreground="#0F172A"
+                          Foreground="{DynamicResource Brush.Text}"
                           Margin="0,0,0,10"/>
 
                 <TextBlock Grid.Row="4"
                            Text="用户名"
-                           Foreground="#475569"
+                           Foreground="{DynamicResource Brush.TextSecondary}"
                            VerticalAlignment="Center"
                            Margin="0,0,8,10"/>
                 <TextBox Grid.Row="4"
@@ -120,7 +120,7 @@
 
                 <TextBlock Grid.Row="5"
                            Text="密码"
-                           Foreground="#475569"
+                           Foreground="{DynamicResource Brush.TextSecondary}"
                            VerticalAlignment="Center"/>
                 <PasswordBox x:Name="ConnectionPasswordBox"
                              Grid.Row="5"
@@ -143,13 +143,13 @@
 
         <DockPanel Grid.Row="2">
             <TextBlock Text="保存后会写入软件根目录下的 config/appsettings.json"
-                       Foreground="#64748B"
+                       Foreground="{DynamicResource Brush.TextMuted}"
                        VerticalAlignment="Center"/>
             <WrapPanel DockPanel.Dock="Right">
                 <Button Content="加载通讯配置"
                         Command="{Binding LoadConfigCommand}"
                         Background="#E2E8F0"
-                        Foreground="#0F172A"
+                        Foreground="{DynamicResource Brush.Text}"
                         BorderBrush="#CBD5E1"
                         Padding="12,8"
                         Margin="0,0,8,0"/>
@@ -163,7 +163,7 @@
                 <Button Content="关闭"
                         Click="CloseButton_Click"
                         Background="#E2E8F0"
-                        Foreground="#0F172A"
+                        Foreground="{DynamicResource Brush.Text}"
                         BorderBrush="#CBD5E1"
                         Padding="12,8"/>
             </WrapPanel>

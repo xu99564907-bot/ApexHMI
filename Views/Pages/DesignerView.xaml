@@ -13,7 +13,7 @@
                         <!-- Row 0: 程序生成标题与导航栏 -->
                         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,0,12">
                             <DockPanel>
-                                <TextBlock Text="{Binding CurrentDesignerTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding CurrentDesignerTitle}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                     <Button Content="手动程序生成" Command="{Binding NavigateCommand}" CommandParameter="手动程序生成" Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="10,6" Margin="0,0,8,0"/>
                                     <Button Content="自动程序生成" Command="{Binding NavigateCommand}" CommandParameter="自动程序生成" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,8,0"/>
@@ -29,23 +29,23 @@
                             <Border Grid.Column="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,10,0">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
                                     <StackPanel>
-                                        <TextBlock Text="手动程序生成" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+                                        <TextBlock Text="手动程序生成" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                                         <TextBlock Text="{Binding IoGenerationHeadline}" Foreground="#2563EB" FontWeight="SemiBold"/>
-                                        <TextBlock Text="{Binding IoImportSummary}" Foreground="#0F172A" Margin="0,6,0,0"/>
-                                        <TextBlock Text="{Binding IoGenerationCountSummary}" Foreground="#64748B" Margin="0,4,0,12"/>
+                                        <TextBlock Text="{Binding IoImportSummary}" Foreground="{DynamicResource Brush.Text}" Margin="0,6,0,0"/>
+                                        <TextBlock Text="{Binding IoGenerationCountSummary}" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,4,0,12"/>
 
-                                        <TextBlock Text="PLC 模板" Foreground="#475569"/>
+                                        <TextBlock Text="PLC 模板" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                         <ComboBox ItemsSource="{Binding IoPlcTemplateOptions}" SelectedItem="{Binding SelectedIoPlcTemplate}" Margin="0,4,0,10"/>
-                                        <TextBlock Text="工位号 / OP 编号" Foreground="#475569"/>
+                                        <TextBlock Text="工位号 / OP 编号" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                         <TextBox Text="{Binding IoOperationNumber, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,12"/>
-                                        <TextBlock Text="保存间隔 / 分钟" Foreground="#475569"/>
+                                        <TextBlock Text="保存间隔 / 分钟" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                         <Grid Margin="0,4,0,12">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="72"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBox Grid.Column="0" Text="{Binding IoSaveIntervalMinutes, UpdateSourceTrigger=PropertyChanged}" HorizontalContentAlignment="Center"/>
-                                            <TextBlock Grid.Column="1" Text="小于 5 分钟时，重复保存会写入同一文件并追加履历" Foreground="#64748B" VerticalAlignment="Center" Margin="8,0,0,0" TextWrapping="Wrap"/>
+                                            <TextBlock Grid.Column="1" Text="小于 5 分钟时，重复保存会写入同一文件并追加履历" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="8,0,0,0" TextWrapping="Wrap"/>
                                         </Grid>
 
                                         <WrapPanel Margin="0,0,0,4">
@@ -54,14 +54,14 @@
                                             <Button Content="生成程序" Command="{Binding GenerateIoProgramsCommand}" Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,6" Margin="0,0,6,6"
                                                     ToolTip="D1: 生成前自动校验，存在地址重复 / 类型不匹配会被阻止"/>
                                             <Button Content="打开目录" Command="{Binding OpenGeneratedIoFolderCommand}" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,6,6"/>
-                                            <Button Content="清空" Command="{Binding ClearIoTableCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,6" Margin="0,0,6,6"/>
+                                            <Button Content="清空" Command="{Binding ClearIoTableCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="10,6" Margin="0,0,6,6"/>
                                         </WrapPanel>
 
                                         <!-- D3: 多工位批量生成 -->
                                         <Border Background="#EEF2F7" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,12">
                                             <StackPanel>
-                                                <TextBlock Text="多工位批量生成 (D3)" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,4"/>
-                                                <TextBlock Text="工位号 CSV (e.g. OP30,OP40,OP50)" Foreground="#475569" FontSize="11"/>
+                                                <TextBlock Text="多工位批量生成 (D3)" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4"/>
+                                                <TextBlock Text="工位号 CSV (e.g. OP30,OP40,OP50)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                                 <Grid Margin="0,4,0,0">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
@@ -79,61 +79,61 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <Border Background="#F8FAFC" BorderBrush="#D7DFEA" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
+                                        <Border Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="12" Margin="0,12,0,0">
                                             <StackPanel>
                                                 <DockPanel LastChildFill="False">
-                                                    <TextBlock DockPanel.Dock="Left" Text="Git 代码拉取" FontSize="16" FontWeight="SemiBold" Foreground="#0F172A"/>
+                                                    <TextBlock DockPanel.Dock="Left" Text="Git 代码拉取" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"/>
                                                     <TextBlock DockPanel.Dock="Right" Text="{Binding GitPullStatus}" Foreground="#2563EB" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" Margin="8,0,0,0"/>
                                                 </DockPanel>
-                                                <TextBlock Text="从远程 Git 仓库拉取最新代码到指定目录，支持首次克隆与后续增量拉取。" Foreground="#64748B" Margin="0,4,0,8" TextWrapping="Wrap"/>
+                                                <TextBlock Text="从远程 Git 仓库拉取最新代码到指定目录，支持首次克隆与后续增量拉取。" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,4,0,8" TextWrapping="Wrap"/>
 
-                                                <TextBlock Text="仓库地址 (Repository URL)" Foreground="#475569"/>
+                                                <TextBlock Text="仓库地址 (Repository URL)" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                                 <TextBox Text="{Binding GitRepositoryUrl, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" ToolTip="例如 https://github.com/your/repo.git"/>
 
-                                                <TextBlock Text="分支 (可选，留空使用默认分支)" Foreground="#475569"/>
+                                                <TextBlock Text="分支 (可选，留空使用默认分支)" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                                 <TextBox Text="{Binding GitBranch, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
 
-                                                <TextBlock Text="保存目录" Foreground="#475569"/>
+                                                <TextBlock Text="保存目录" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                                 <Grid Margin="0,4,0,8">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*"/>
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBox Grid.Column="0" Text="{Binding GitTargetFolder, UpdateSourceTrigger=PropertyChanged}" ToolTip="本地目录。首次拉取时若目录非空且非 Git 仓库将报错。"/>
-                                                    <Button Grid.Column="1" Content="浏览..." Command="{Binding BrowseGitTargetFolderCommand}" Margin="6,0,0,0" Padding="10,4" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1"/>
+                                                    <Button Grid.Column="1" Content="浏览..." Command="{Binding BrowseGitTargetFolderCommand}" Margin="6,0,0,0" Padding="10,4" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"/>
                                                 </Grid>
 
-                                                <TextBlock Text="项目文件夹 / 分支名" Foreground="#475569"/>
+                                                <TextBlock Text="项目文件夹 / 分支名" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                                 <TextBox Text="{Binding GitProjectFolderName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,4" ToolTip="留空则直接拉到保存目录。若填写，将作为保存目录下的子文件夹名（总文件夹），并在拉取后自动 checkout 到同名本地分支（不存在则基于源分支创建）。"/>
-                                                <TextBlock Text="例如填写 OP80，将克隆到 保存目录/OP80，并自动切换到本地分支 OP80。" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                                                <TextBlock Text="例如填写 OP80，将克隆到 保存目录/OP80，并自动切换到本地分支 OP80。" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
 
                                                 <!-- D6: 场内代理 (HTTP_PROXY / HTTPS_PROXY) -->
-                                                <TextBlock Text="代理地址 (可选, 场内代理需求)" Foreground="#475569"/>
+                                                <TextBlock Text="代理地址 (可选, 场内代理需求)" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                                 <TextBox Text="{Binding GitProxyUrl, UpdateSourceTrigger=PropertyChanged}"
                                                          Margin="0,4,0,8"
                                                          ToolTip="形如 http://proxy.local:8080。运行时通过 HTTP_PROXY / HTTPS_PROXY 环境变量传给 git 子进程，留空则不启用代理。"/>
 
-                                                <Expander Header="认证 (可选 · 私有仓库)" Foreground="#475569" Margin="0,0,0,8">
+                                                <Expander Header="认证 (可选 · 私有仓库)" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,0,0,8">
                                                     <StackPanel Margin="0,6,0,0">
-                                                        <TextBlock Text="用户名" Foreground="#475569"/>
+                                                        <TextBlock Text="用户名" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                                         <TextBox Text="{Binding GitUsername, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8"/>
-                                                        <TextBlock Text="访问令牌 / Personal Access Token" Foreground="#475569"/>
+                                                        <TextBlock Text="访问令牌 / Personal Access Token" Foreground="{DynamicResource Brush.TextSecondary}"/>
                                                         <TextBox Text="{Binding GitAccessToken, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0"/>
-                                                        <TextBlock Text="令牌将写入本地配置文件，请妥善保管。" Foreground="#94A3B8" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                                        <TextBlock Text="令牌将写入本地配置文件，请妥善保管。" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                                     </StackPanel>
                                                 </Expander>
 
-                                                <CheckBox Content="生成程序后自动追加到 Git 目录对应 .st 文件" IsChecked="{Binding IsSyncGeneratedToGitEnabled}" Margin="0,0,0,4" Foreground="#0F172A" ToolTip="按映射规则把 DBXX_IO → 2.Main/Main_IO.ST；DI/DO_ACT_Comment → OPXX_DI/DO_Mirror/ACT_Comment.st；ACT_* → OPXX_DriveControl/ACT_*.st"/>
+                                                <CheckBox Content="生成程序后自动追加到 Git 目录对应 .st 文件" IsChecked="{Binding IsSyncGeneratedToGitEnabled}" Margin="0,0,0,4" Foreground="{DynamicResource Brush.Text}" ToolTip="按映射规则把 DBXX_IO → 2.Main/Main_IO.ST；DI/DO_ACT_Comment → OPXX_DI/DO_Mirror/ACT_Comment.st；ACT_* → OPXX_DriveControl/ACT_*.st"/>
 
-                                                <CheckBox Content="拉取 .project 工程文件" IsChecked="{Binding IsIncludeProjectFilesOnPullEnabled}" Margin="0,0,0,4" Foreground="#0F172A" ToolTip="默认不勾选：拉取代码时不会把远端 *.project 检出到本地，避免覆盖/锁定现场工程文件。勾选后会完整检出 .project 文件。"/>
+                                                <CheckBox Content="拉取 .project 工程文件" IsChecked="{Binding IsIncludeProjectFilesOnPullEnabled}" Margin="0,0,0,4" Foreground="{DynamicResource Brush.Text}" ToolTip="默认不勾选：拉取代码时不会把远端 *.project 检出到本地，避免覆盖/锁定现场工程文件。勾选后会完整检出 .project 文件。"/>
 
                                                 <CheckBox Content="强制覆盖本地 (reset --hard origin/branch + clean -fd)" IsChecked="{Binding IsForceResetLocalEnabled}" Margin="0,0,0,4" Foreground="#B91C1C" ToolTip="勾选后拉取时会丢弃本地所有未提交改动（含生成追加内容），把工作区重置成远端分支的状态。"/>
 
-                                                <CheckBox Content="拉取后把新分支推送到远端 (git push -u origin branch)" IsChecked="{Binding IsPushProjectBranchToRemoteEnabled}" Margin="0,0,0,4" Foreground="#0F172A" ToolTip="勾选后若本地项目分支还没有上游，会执行 git push -u origin 分支名 把分支上传到远端。需要仓库写权限。"/>
+                                                <CheckBox Content="拉取后把新分支推送到远端 (git push -u origin branch)" IsChecked="{Binding IsPushProjectBranchToRemoteEnabled}" Margin="0,0,0,4" Foreground="{DynamicResource Brush.Text}" ToolTip="勾选后若本地项目分支还没有上游，会执行 git push -u origin 分支名 把分支上传到远端。需要仓库写权限。"/>
 
-                                                <CheckBox Content="生成程序后自动 commit + push 到远端" IsChecked="{Binding IsCommitAndPushAfterGenerateEnabled}" Margin="0,0,0,4" Foreground="#0F172A" ToolTip="勾选后每次点击&quot;生成程序&quot;结束，如果产生了追加内容，会自动 git add -A → commit → push 到远端当前分支。没有实际变更时不会产生空 commit。"/>
+                                                <CheckBox Content="生成程序后自动 commit + push 到远端" IsChecked="{Binding IsCommitAndPushAfterGenerateEnabled}" Margin="0,0,0,4" Foreground="{DynamicResource Brush.Text}" ToolTip="勾选后每次点击&quot;生成程序&quot;结束，如果产生了追加内容，会自动 git add -A → commit → push 到远端当前分支。没有实际变更时不会产生空 commit。"/>
 
-                                                <TextBlock Text="自动提交消息 (可选，支持 {time} / {op})" Foreground="#475569" Visibility="{Binding IsCommitAndPushAfterGenerateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                <TextBlock Text="自动提交消息 (可选，支持 {time} / {op})" Foreground="{DynamicResource Brush.TextSecondary}" Visibility="{Binding IsCommitAndPushAfterGenerateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                                 <TextBox Text="{Binding GitAutoCommitMessageTemplate, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" Visibility="{Binding IsCommitAndPushAfterGenerateEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="留空使用默认模板 &quot;HMI 生成程序 ({op}) @ {time}&quot;。{op} 替换为当前工位号，{time} 替换为提交时间戳。"/>
 
 
@@ -143,8 +143,8 @@
                                                     <TextBlock Text="拉取中..." Foreground="#0F766E" VerticalAlignment="Center" Margin="4,0,0,0" Visibility="{Binding IsGitPullRunning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                                 </WrapPanel>
 
-                                                <TextBlock Text="执行日志" Foreground="#475569" Margin="0,6,0,4"/>
-                                                <TextBox Text="{Binding GitPullLog, Mode=OneWay}" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="120" FontFamily="Consolas" Background="#FFFFFF" BorderBrush="#D7DFEA" Foreground="#0F172A"/>
+                                                <TextBlock Text="执行日志" Foreground="{DynamicResource Brush.TextSecondary}" Margin="0,6,0,4"/>
+                                                <TextBox Text="{Binding GitPullLog, Mode=OneWay}" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Height="120" FontFamily="Consolas" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" Foreground="{DynamicResource Brush.Text}"/>
                                             </StackPanel>
                                         </Border>
                                     </StackPanel>
@@ -168,12 +168,12 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="IO 表预览" FontSize="18" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
-                                            <Button Grid.Column="2" Width="30" Height="30" Margin="8,0,0,0" Padding="0" HorizontalAlignment="Right" Command="{Binding SaveIoTableToSourceCommand}" IsEnabled="{Binding CanSaveIoTable}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" ToolTip="保存 IO 表 (Ctrl+S)">
+                                            <TextBlock Grid.Column="0" Text="IO 表预览" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
+                                            <Button Grid.Column="2" Width="30" Height="30" Margin="8,0,0,0" Padding="0" HorizontalAlignment="Right" Command="{Binding SaveIoTableToSourceCommand}" IsEnabled="{Binding CanSaveIoTable}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" ToolTip="保存 IO 表 (Ctrl+S)">
                                                 <materialDesign:PackIcon Kind="ContentSaveOutline" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                             </Button>
                                         </Grid>
-                                        <DataGrid x:Name="IoPreviewDataGrid" Grid.Row="1" ItemsSource="{Binding IoTableRows}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserSortColumns="False" HeadersVisibility="Column" Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#D7DFEA" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC" PreviewMouseWheel="IoPreviewDataGrid_PreviewMouseWheel" ScrollViewer.CanContentScroll="True" MaxHeight="340" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <DataGrid x:Name="IoPreviewDataGrid" Grid.Row="1" ItemsSource="{Binding IoTableRows}" AutoGenerateColumns="False" CanUserAddRows="False" CanUserSortColumns="False" HeadersVisibility="Column" Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.Border}" RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC" PreviewMouseWheel="IoPreviewDataGrid_PreviewMouseWheel" ScrollViewer.CanContentScroll="True" MaxHeight="340" ScrollViewer.VerticalScrollBarVisibility="Auto">
                                             <DataGrid.RowStyle>
                                                 <!-- D1: 校验失败行红底 + tooltip 显示原因 -->
                                                 <Style TargetType="DataGridRow">
@@ -210,17 +210,17 @@
                                                 <ColumnDefinition Width="Auto"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="程序预览" FontSize="18" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                            <TextBlock Text="程序预览" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="3" Width="220" ItemsSource="{Binding GeneratedIoPrograms}" SelectedItem="{Binding SelectedGeneratedIoProgram}" DisplayMemberPath="DisplayName" Margin="0,0,8,0" VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="4" Orientation="Horizontal">
                                                 <Button Content="对比 Git" Command="{Binding ShowGeneratedDiffCommand}" CommandParameter="{Binding SelectedGeneratedIoProgram}"
                                                         Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="8,4" Margin="0,0,8,0"
                                                         ToolTip="D2: 弹层 side-by-side 对比 Git 当前版本 vs 本次生成"/>
-                                                <Button Content="复制当前文件" Click="CopyCurrentIoProgramButton_Click" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,8,0"/>
-                                                <Button Content="打开当前文件" Command="{Binding OpenGeneratedIoFileCommand}" CommandParameter="{Binding SelectedGeneratedIoProgram}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4"/>
+                                                <Button Content="复制当前文件" Click="CopyCurrentIoProgramButton_Click" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,8,0"/>
+                                                <Button Content="打开当前文件" Command="{Binding OpenGeneratedIoFileCommand}" CommandParameter="{Binding SelectedGeneratedIoProgram}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="8,4"/>
                                             </StackPanel>
                                         </Grid>
-                                        <TextBox x:Name="IoProgramPreviewTextBox" Grid.Row="1" Text="{Binding SelectedGeneratedIoProgramContent, Mode=OneWay}" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" Background="#F8FAFC" BorderBrush="#D7DFEA" Foreground="#0F172A" PreviewMouseWheel="CodePreviewTextBox_PreviewMouseWheel"/>
+                                        <TextBox x:Name="IoProgramPreviewTextBox" Grid.Row="1" Text="{Binding SelectedGeneratedIoProgramContent, Mode=OneWay}" IsReadOnly="True" TextWrapping="NoWrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" FontFamily="Consolas" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" Foreground="{DynamicResource Brush.Text}" PreviewMouseWheel="CodePreviewTextBox_PreviewMouseWheel"/>
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -246,7 +246,7 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Text="SFC 步骤列表" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,10"/>
+                                    <TextBlock Grid.Row="0" Text="SFC 步骤列表" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,10"/>
 
                                     <!-- 程序设置 -->
                                     <Grid Grid.Row="1" Margin="0,0,0,10">
@@ -255,11 +255,11 @@
                                             <ColumnDefinition Width="80"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                            <TextBlock Text="程序名称" Foreground="#475569" FontSize="12"/>
+                                            <TextBlock Text="程序名称" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                             <TextBox Text="{Binding SfcProgramName, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" FontSize="13"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1">
-                                            <TextBlock Text="工位号" Foreground="#475569" FontSize="12"/>
+                                            <TextBlock Text="工位号" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                             <TextBox Text="{Binding SfcStationNo, UpdateSourceTrigger=LostFocus}" Padding="6,4" FontSize="13"/>
                                         </StackPanel>
                                     </Grid>
@@ -268,8 +268,8 @@
                                     <WrapPanel Grid.Row="2" Margin="0,0,0,8">
                                         <Button Content="+ 添加" Command="{Binding AddSfcStepCommand}" Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="8,4" Margin="0,0,4,4"/>
                                         <Button Content="删除" Command="{Binding DeleteSfcStepCommand}" Background="#DC2626" Foreground="White" BorderBrush="#DC2626" Padding="8,4" Margin="0,0,4,4"/>
-                                        <Button Content="↑" Command="{Binding MoveSfcStepUpCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
-                                        <Button Content="↓" Command="{Binding MoveSfcStepDownCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                        <Button Content="↑" Command="{Binding MoveSfcStepUpCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                        <Button Content="↓" Command="{Binding MoveSfcStepDownCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
                                     </WrapPanel>
 
                                     <!-- 步骤表格 -->
@@ -279,7 +279,7 @@
                                               AutoGenerateColumns="False"
                                               CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False"
                                               HeadersVisibility="Column" SelectionMode="Single"
-                                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#D7DFEA"
+                                              Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.Border}"
                                               RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                                               GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EDF2F7"
                                               MinHeight="300">
@@ -296,22 +296,22 @@
                             <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,8,0">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
                                     <StackPanel>
-                                        <TextBlock Text="步骤属性" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                                        <TextBlock Text="步骤属性" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
 
                                         <!-- 无选中提示 -->
-                                        <TextBlock Text="← 在左侧选择一个步骤" Foreground="#94A3B8" FontStyle="Italic" TextWrapping="Wrap"
+                                        <TextBlock Text="← 在左侧选择一个步骤" Foreground="{DynamicResource Brush.TextPlaceholder}" FontStyle="Italic" TextWrapping="Wrap"
                                                    Visibility="{Binding SelectedSfcStep, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
 
                                         <!-- 属性面板（有选中时显示） -->
                                         <StackPanel Visibility="{Binding SelectedSfcStep, Converter={StaticResource NullToVisibilityConverter}}">
 
                                             <!-- 步序号 -->
-                                            <TextBlock Text="步序号" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBlock Text="步序号" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedSfcStep.StepNo, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,12"/>
 
                                             <!-- 动作列表标题栏 -->
                                             <DockPanel Margin="0,0,0,4">
-                                                <TextBlock Text="动作列表" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <TextBlock Text="动作列表" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" FontSize="13" VerticalAlignment="Center"/>
                                                 <Button DockPanel.Dock="Right" Content="+ 添加动作" Command="{Binding AddSfcActionCommand}"
                                                         Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
                                                         Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
@@ -321,7 +321,7 @@
                                             <ItemsControl ItemsSource="{Binding SelectedSfcStep.Actions}" Margin="0,0,0,12">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4"
+                                                        <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1" CornerRadius="4"
                                                                 Padding="4,3" Margin="0,0,0,4" Background="#FAFAFA">
                                                             <Grid>
                                                                 <Grid.ColumnDefinitions>
@@ -412,7 +412,7 @@
 
                                             <!-- 跳转分支标题栏 -->
                                             <DockPanel Margin="0,0,0,4">
-                                                <TextBlock Text="跳转分支" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <TextBlock Text="跳转分支" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" FontSize="13" VerticalAlignment="Center"/>
                                                 <Button DockPanel.Dock="Right" Content="+ 添加分支" Command="{Binding AddSfcBranchCommand}"
                                                         Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                                                         Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
@@ -438,7 +438,7 @@
                                                                          Text="{Binding Condition, UpdateSourceTrigger=PropertyChanged}"
                                                                          Padding="3,2" FontSize="12"/>
                                                                 <TextBlock Grid.Column="2" Text="→" VerticalAlignment="Center"
-                                                                           FontSize="13" Foreground="#64748B" HorizontalAlignment="Center"/>
+                                                                           FontSize="13" Foreground="{DynamicResource Brush.TextMuted}" HorizontalAlignment="Center"/>
                                                                 <TextBox Grid.Column="4"
                                                                          Text="{Binding TargetStep, UpdateSourceTrigger=PropertyChanged}"
                                                                          Padding="3,2" FontSize="12"/>
@@ -454,14 +454,14 @@
                                             </ItemsControl>
 
                                             <!-- 分支说明（有分支时显示） -->
-                                            <TextBlock Text="无分支时使用下方默认跳转" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,6"/>
+                                            <TextBlock Text="无分支时使用下方默认跳转" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" Margin="0,0,0,6"/>
 
                                             <!-- 默认下一步 -->
-                                            <TextBlock Text="默认下一步（步序号 或 END）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBlock Text="默认下一步（步序号 或 END）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedSfcStep.NextStep, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,10"/>
 
                                             <!-- 完成条件（覆盖自动生成） -->
-                                            <TextBlock Text="完成条件（留空则自动生成）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBlock Text="完成条件（留空则自动生成）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedSfcStep.CompletionCondition, UpdateSourceTrigger=PropertyChanged}"
                                                      Padding="6,4" Margin="0,0,0,4"/>
                                             <Button Content="自动填充完成条件" Command="{Binding AutoFillSelectedSfcStepCommand}"
@@ -470,7 +470,7 @@
 
                                             <!-- 报警条目 -->
                                             <DockPanel Margin="0,0,0,4">
-                                                <TextBlock Text="报警条目" Foreground="#475569" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <TextBlock Text="报警条目" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                                 <Button Content="+" DockPanel.Dock="Right"
                                                         Command="{Binding AddSfcAlarmCommand}"
                                                         Background="#FEF3C7" Foreground="#92400E" BorderBrush="#FDE68A"
@@ -535,12 +535,12 @@
 
                                     <!-- 工具栏 -->
                                     <DockPanel Grid.Row="0" Margin="0,0,0,10" MouseLeftButtonDown="SfcCodePreviewHeader_MouseLeftButtonDown">
-                                        <TextBlock Text="生成代码" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                        <TextBlock Text="生成代码" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                             <Button Content="生成代码" Command="{Binding GenerateSfcCodeCommand}"
                                                     Background="#0F766E" Foreground="White" BorderBrush="#0F766E" Padding="10,5" Margin="0,0,6,0"/>
                                             <Button Content="复制" Command="{Binding CopySfcCodeCommand}"
-                                                    Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,5" Margin="0,0,6,0"/>
+                                                    Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="10,5" Margin="0,0,6,0"/>
                                             <Button Content="保存文件" Command="{Binding SaveSfcCodeToFileCommand}"
                                                     Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,5" Margin="0,0,6,0"/>
                                             <Button Content="术语表" Click="OpenAlarmTermsDialog_Click"
@@ -556,7 +556,7 @@
                                              AcceptsReturn="True" TextWrapping="NoWrap"
                                              VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
                                              FontFamily="Consolas" FontSize="13"
-                                             Background="#F8FAFC" BorderBrush="#D7DFEA" Foreground="#0F172A"
+                                             Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" Foreground="{DynamicResource Brush.Text}"
                                              MouseLeftButtonDown="SfcCodePreviewHeader_MouseLeftButtonDown"
                                              PreviewMouseWheel="CodePreviewTextBox_PreviewMouseWheel"/>
                                 </Grid>
@@ -583,7 +583,7 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Text="初始化步骤列表" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,10"/>
+                                    <TextBlock Grid.Row="0" Text="初始化步骤列表" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,10"/>
 
                                     <!-- 程序设置 -->
                                     <Grid Grid.Row="1" Margin="0,0,0,10">
@@ -592,11 +592,11 @@
                                             <ColumnDefinition Width="80"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                            <TextBlock Text="程序名称" Foreground="#475569" FontSize="12"/>
+                                            <TextBlock Text="程序名称" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                             <TextBox Text="{Binding SfcInitProgramName, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" FontSize="13"/>
                                         </StackPanel>
                                         <StackPanel Grid.Column="1">
-                                            <TextBlock Text="工位号" Foreground="#475569" FontSize="12"/>
+                                            <TextBlock Text="工位号" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                             <TextBox Text="{Binding SfcInitStationNo, UpdateSourceTrigger=LostFocus}" Padding="6,4" FontSize="13"/>
                                         </StackPanel>
                                     </Grid>
@@ -605,8 +605,8 @@
                                     <WrapPanel Grid.Row="2" Margin="0,0,0,8">
                                         <Button Content="+ 添加" Command="{Binding AddSfcInitStepCommand}" Background="#9333EA" Foreground="White" BorderBrush="#9333EA" Padding="8,4" Margin="0,0,4,4"/>
                                         <Button Content="删除" Command="{Binding DeleteSfcInitStepCommand}" Background="#DC2626" Foreground="White" BorderBrush="#DC2626" Padding="8,4" Margin="0,0,4,4"/>
-                                        <Button Content="↑" Command="{Binding MoveSfcInitStepUpCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
-                                        <Button Content="↓" Command="{Binding MoveSfcInitStepDownCommand}" Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                        <Button Content="↑" Command="{Binding MoveSfcInitStepUpCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
+                                        <Button Content="↓" Command="{Binding MoveSfcInitStepDownCommand}" Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="8,4" Margin="0,0,4,4" FontWeight="Bold"/>
                                     </WrapPanel>
 
                                     <!-- 步骤表格 -->
@@ -616,7 +616,7 @@
                                               AutoGenerateColumns="False"
                                               CanUserAddRows="False" CanUserDeleteRows="False" CanUserSortColumns="False"
                                               HeadersVisibility="Column" SelectionMode="Single"
-                                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#D7DFEA"
+                                              Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.Border}"
                                               RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                                               GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#EDF2F7"
                                               MinHeight="300">
@@ -633,22 +633,22 @@
                             <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="12" Margin="0,0,8,0">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" PreviewMouseLeftButtonDown="PageScrollViewer_PreviewMouseLeftButtonDown" PreviewGotKeyboardFocus="PageScrollViewer_PreviewGotKeyboardFocus" RequestBringIntoView="PageScrollViewer_RequestBringIntoView">
                                     <StackPanel>
-                                        <TextBlock Text="步骤属性" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                                        <TextBlock Text="步骤属性" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
 
                                         <!-- 无选中提示 -->
-                                        <TextBlock Text="← 在左侧选择一个步骤" Foreground="#94A3B8" FontStyle="Italic" TextWrapping="Wrap"
+                                        <TextBlock Text="← 在左侧选择一个步骤" Foreground="{DynamicResource Brush.TextPlaceholder}" FontStyle="Italic" TextWrapping="Wrap"
                                                    Visibility="{Binding SelectedSfcInitStep, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
 
                                         <!-- 属性面板（有选中时显示） -->
                                         <StackPanel Visibility="{Binding SelectedSfcInitStep, Converter={StaticResource NullToVisibilityConverter}}">
 
                                             <!-- 步序号 -->
-                                            <TextBlock Text="步序号" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBlock Text="步序号" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedSfcInitStep.StepNo, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,12"/>
 
                                             <!-- 动作列表标题栏 -->
                                             <DockPanel Margin="0,0,0,4">
-                                                <TextBlock Text="动作列表" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <TextBlock Text="动作列表" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" FontSize="13" VerticalAlignment="Center"/>
                                                 <Button DockPanel.Dock="Right" Content="+ 添加动作" Command="{Binding AddSfcInitActionCommand}"
                                                         Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
                                                         Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
@@ -658,7 +658,7 @@
                                             <ItemsControl ItemsSource="{Binding SelectedSfcInitStep.Actions}" Margin="0,0,0,12">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Border BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="4"
+                                                        <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1" CornerRadius="4"
                                                                 Padding="4,3" Margin="0,0,0,4" Background="#FAFAFA">
                                                             <Grid>
                                                                 <Grid.ColumnDefinitions>
@@ -749,7 +749,7 @@
 
                                             <!-- 跳转分支标题栏 -->
                                             <DockPanel Margin="0,0,0,4">
-                                                <TextBlock Text="跳转分支" FontWeight="SemiBold" Foreground="#0F172A" FontSize="13" VerticalAlignment="Center"/>
+                                                <TextBlock Text="跳转分支" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" FontSize="13" VerticalAlignment="Center"/>
                                                 <Button DockPanel.Dock="Right" Content="+ 添加分支" Command="{Binding AddSfcInitBranchCommand}"
                                                         Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                                                         Padding="6,3" FontSize="12" HorizontalAlignment="Right"/>
@@ -775,7 +775,7 @@
                                                                          Text="{Binding Condition, UpdateSourceTrigger=PropertyChanged}"
                                                                          Padding="3,2" FontSize="12"/>
                                                                 <TextBlock Grid.Column="2" Text="→" VerticalAlignment="Center"
-                                                                           FontSize="13" Foreground="#64748B" HorizontalAlignment="Center"/>
+                                                                           FontSize="13" Foreground="{DynamicResource Brush.TextMuted}" HorizontalAlignment="Center"/>
                                                                 <TextBox Grid.Column="4"
                                                                          Text="{Binding TargetStep, UpdateSourceTrigger=PropertyChanged}"
                                                                          Padding="3,2" FontSize="12"/>
@@ -791,14 +791,14 @@
                                             </ItemsControl>
 
                                             <!-- 分支说明（有分支时显示） -->
-                                            <TextBlock Text="无分支时使用下方默认跳转" Foreground="#94A3B8" FontSize="11" Margin="0,0,0,6"/>
+                                            <TextBlock Text="无分支时使用下方默认跳转" Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="11" Margin="0,0,0,6"/>
 
                                             <!-- 默认下一步 -->
-                                            <TextBlock Text="默认下一步（步序号 或 END）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBlock Text="默认下一步（步序号 或 END）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedSfcInitStep.NextStep, UpdateSourceTrigger=PropertyChanged}" Padding="6,4" Margin="0,0,0,10"/>
 
                                             <!-- 完成条件（覆盖自动生成） -->
-                                            <TextBlock Text="完成条件（留空则自动生成）" Foreground="#475569" FontSize="12" Margin="0,0,0,2"/>
+                                            <TextBlock Text="完成条件（留空则自动生成）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" Margin="0,0,0,2"/>
                                             <TextBox Text="{Binding SelectedSfcInitStep.CompletionCondition, UpdateSourceTrigger=PropertyChanged}"
                                                      Padding="6,4" Margin="0,0,0,4"/>
                                             <Button Content="自动填充完成条件" Command="{Binding AutoFillSelectedSfcInitStepCommand}"
@@ -807,7 +807,7 @@
 
                                             <!-- 报警条目 -->
                                             <DockPanel Margin="0,0,0,4">
-                                                <TextBlock Text="报警条目" Foreground="#475569" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                                <TextBlock Text="报警条目" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                                 <Button Content="+" DockPanel.Dock="Right"
                                                         Command="{Binding AddSfcInitAlarmCommand}"
                                                         Background="#FEF3C7" Foreground="#92400E" BorderBrush="#FDE68A"
@@ -871,12 +871,12 @@
                                     </Grid.RowDefinitions>
 
                                     <DockPanel Grid.Row="0" Margin="0,0,0,10">
-                                        <TextBlock Text="初始化程序代码" FontSize="16" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                        <TextBlock Text="初始化程序代码" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                             <Button Content="生成初始化程序" Command="{Binding GenerateSfcInitCodeCommand}"
                                                     Background="#9333EA" Foreground="White" BorderBrush="#9333EA" Padding="10,5" Margin="0,0,6,0"/>
                                             <Button Content="复制" Command="{Binding CopySfcInitCodeCommand}"
-                                                    Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1" Padding="10,5" Margin="0,0,6,0"/>
+                                                    Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1" Padding="10,5" Margin="0,0,6,0"/>
                                             <Button Content="保存文件" Command="{Binding SaveSfcInitCodeToFileCommand}"
                                                     Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,5"/>
                                         </StackPanel>
@@ -887,7 +887,7 @@
                                              AcceptsReturn="True" TextWrapping="NoWrap"
                                              VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Auto"
                                              FontFamily="Consolas" FontSize="13"
-                                             Background="#F8FAFC" BorderBrush="#D7DFEA" Foreground="#0F172A"
+                                             Background="#F8FAFC" BorderBrush="{DynamicResource Brush.Border}" Foreground="{DynamicResource Brush.Text}"
                                              PreviewMouseWheel="CodePreviewTextBox_PreviewMouseWheel"/>
                                 </Grid>
                             </Border>

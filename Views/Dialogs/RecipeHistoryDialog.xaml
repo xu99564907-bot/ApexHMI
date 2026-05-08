@@ -11,11 +11,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#0F172A">
+            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}">
                 <Run Text="配方："/>
                 <Run Text="{Binding Name}"/>
             </TextBlock>
-            <TextBlock FontSize="12" Foreground="#64748B" Margin="0,4,0,0"
+            <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,4,0,0"
                        Text="每次【用当前参数覆盖配方】会自动入栈，最近 10 条。选择一条点【回滚】恢复到该版本。"/>
         </StackPanel>
         <DataGrid Grid.Row="1" x:Name="HistoryGrid"

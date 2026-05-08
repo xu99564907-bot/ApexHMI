@@ -11,9 +11,9 @@
         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,0,10">
             <DockPanel>
                 <StackPanel>
-                    <TextBlock Text="操作履历审计" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
+                    <TextBlock Text="操作履历审计" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                     <TextBlock Text="记录登录、确认框、联锁拦截、设备操作、弹窗提示等行为。"
-                               Foreground="#64748B" Margin="0,8,0,0"/>
+                               Foreground="{DynamicResource Brush.TextMuted}" Margin="0,8,0,0"/>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                     <Button Content="导出 PDF 报表"
@@ -33,15 +33,15 @@
         <!-- AU1/AU2/AU3/AU6 过滤工具栏 -->
         <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="12,8" Margin="0,0,0,10">
             <WrapPanel>
-                <TextBlock Text="时间：" FontSize="13" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="时间：" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <ComboBox Width="100" Height="26" Margin="0,0,12,0"
                           ItemsSource="{Binding TimeRangeOptions}"
                           SelectedItem="{Binding SelectedTimeRange}"/>
-                <TextBlock Text="用户：" FontSize="13" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="用户：" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <ComboBox Width="120" Height="26" Margin="0,0,12,0"
                           ItemsSource="{Binding UserOptions}"
                           SelectedItem="{Binding SelectedUser}"/>
-                <TextBlock Text="分类：" FontSize="13" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <TextBlock Text="分类：" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <ComboBox Width="120" Height="26" Margin="0,0,12,0"
                           ItemsSource="{Binding CategoryOptions}"
                           SelectedItem="{Binding SelectedCategory}"/>
@@ -57,7 +57,7 @@
                   ItemsSource="{Binding AuditView}"
                   SelectedItem="{Binding SelectedAudit, Mode=TwoWay}"
                   AutoGenerateColumns="False"
-                  Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#E2E8F0"
+                  Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.BorderSoft}"
                   RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                   HeadersVisibility="Column" GridLinesVisibility="Horizontal"
                   CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
@@ -96,7 +96,7 @@
                                     Command="{Binding DataContext.ShowEventChainCommand,
                                                       RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}"
-                                    Background="Transparent" BorderBrush="#CBD5E1" Foreground="#475569"
+                                    Background="Transparent" BorderBrush="#CBD5E1" Foreground="{DynamicResource Brush.TextSecondary}"
                                     FontSize="11" Padding="6,2" Height="22"
                                     ToolTip="AU5: 按 Target 关键字串联审计 + 报警历史"/>
                         </DataTemplate>

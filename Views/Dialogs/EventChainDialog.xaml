@@ -11,11 +11,11 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#0F172A">
+            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}">
                 <Run Text="关联关键字："/>
                 <Run Text="{Binding Keyword}"/>
             </TextBlock>
-            <TextBlock FontSize="12" Foreground="#64748B" Margin="0,4,0,0"
+            <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,4,0,0"
                        Text="按时间顺序串联：审计动作（蓝） + 报警历史（红），覆盖 触发 → 确认 → 复位 → 恢复 整条链。"
                        TextWrapping="Wrap"/>
         </StackPanel>

@@ -353,9 +353,9 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="0,0,0,1" Padding="0">
+        <Border Grid.Row="0" Grid.ColumnSpan="2" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0,0,0,1" Padding="0">
             <DockPanel>
-                <Border DockPanel.Dock="Top" Background="#FFFFFF" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
+                <Border DockPanel.Dock="Top" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="0,0,0,1">
                 <Grid Height="40" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -495,10 +495,10 @@
                             <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="参数设定"/></MultiBinding></Button.Background>
                             <materialDesign:PackIcon Kind="Cog" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="参数设定"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
-                        <Border Grid.Column="4" Margin="12,8" CornerRadius="14" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1">
+                        <Border Grid.Column="4" Margin="12,8" CornerRadius="14" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="{l:Loc Nav_CurrentSection}" Foreground="#64748B" FontSize="12" HorizontalAlignment="Center"/>
-                                <TextBlock Text="{Binding CurrentSection}" Foreground="#0F172A" FontSize="22" FontWeight="Bold" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{l:Loc Nav_CurrentSection}" Foreground="{DynamicResource Brush.TextMuted}" FontSize="12" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding CurrentSection}" Foreground="{DynamicResource Brush.Text}" FontSize="22" FontWeight="Bold" Margin="0,6,0,0" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Border>
                         <Button Grid.Column="5" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="配方管理" ToolTip="配方管理">
@@ -564,7 +564,7 @@
                 </Style>
             </Border.Style>
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Text="{l:Loc Nav_SubNav}" FontSize="18" FontWeight="Bold" Foreground="#0F172A" Margin="4,0,0,12"/>
+                <TextBlock DockPanel.Dock="Top" Text="{l:Loc Nav_SubNav}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" Margin="4,0,0,12"/>
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <ItemsControl ItemsSource="{Binding NavigationItems}">
                         <ItemsControl.ItemTemplate>
@@ -586,11 +586,11 @@
                                             </Style.Triggers>
                                         </Style>
                                     </StackPanel.Style>
-                                    <TextBlock Text="{Binding Title}" Foreground="#64748B" FontWeight="SemiBold" Margin="4,0,0,8"/>
+                                    <TextBlock Text="{Binding Title}" Foreground="{DynamicResource Brush.TextMuted}" FontWeight="SemiBold" Margin="4,0,0,8"/>
                                     <ItemsControl ItemsSource="{Binding Children}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Button Content="{Binding Title}" Command="{Binding DataContext.NavigateNavItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Padding="8" Margin="20,0,0,4" Background="#F8FAFC" Foreground="#334155" BorderBrush="#D7DFEA"/>
+                                                <Button Content="{Binding Title}" Command="{Binding DataContext.NavigateNavItemCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Padding="8" Margin="20,0,0,4" Background="#F8FAFC" Foreground="#334155" BorderBrush="{DynamicResource Brush.Border}"/>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
@@ -606,7 +606,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TabControl Grid.Row="0" Background="#FFFFFF" BorderThickness="0" Foreground="#0F172A" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+            <TabControl Grid.Row="0" Background="#FFFFFF" BorderThickness="0" Foreground="{DynamicResource Brush.Text}" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabControl.Template>
                     <ControlTemplate TargetType="{x:Type TabControl}">
                         <ContentPresenter ContentSource="SelectedContent"/>
@@ -661,7 +661,7 @@
             </TabControl>
         </Grid>
 
-        <Border Grid.Row="2" Grid.ColumnSpan="2" Background="#FFFFFF" BorderBrush="#D7DFEA" BorderThickness="1,1,0,0" Padding="12,6">
+        <Border Grid.Row="2" Grid.ColumnSpan="2" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1,1,0,0" Padding="12,6">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Visible"/>
@@ -702,9 +702,9 @@
                             <TextBlock Text="{Binding HourlyThroughput, StringFormat={}{0} UPH}" Foreground="#047857" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
-                    <TextBlock Text="{Binding SystemMessage}" Foreground="#0F172A" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SystemMessage}" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                 </WrapPanel>
-                    <TextBlock DockPanel.Dock="Right" Text="{l:Loc StatusBar_AppTagline}" Foreground="#64748B" VerticalAlignment="Center"/>
+                    <TextBlock DockPanel.Dock="Right" Text="{l:Loc StatusBar_AppTagline}" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center"/>
             </DockPanel>
         </Border>
         </Grid>

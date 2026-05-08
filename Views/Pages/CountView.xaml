@@ -18,8 +18,8 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0">
-                        <TextBlock Text="生产计数" FontSize="20" FontWeight="Bold" Foreground="#0F172A"/>
-                        <TextBlock Text="数据源" Foreground="#64748B" Margin="0,12,0,6"/>
+                        <TextBlock Text="生产计数" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
+                        <TextBlock Text="数据源" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,12,0,6"/>
                         <StackPanel Orientation="Horizontal">
                             <Button Content="总计数" Command="{Binding SwitchSourceCommand}" CommandParameter="Total"
                                     Width="84" Height="34" Margin="0,0,8,0">
@@ -114,10 +114,10 @@
             </Border>
 
             <!-- Row 1: 提示 -->
-            <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+            <Border Grid.Row="1" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
                     CornerRadius="6" Padding="10,6" Margin="0,0,0,12">
                 <TextBlock Text="数据来自 SQLite 计数账本（config/production.db）。PLC 端只暴露累计计数，分时 / 班次 / 历史均由 HMI 用差值法计算。"
-                           Foreground="#475569" FontSize="12" TextWrapping="Wrap"/>
+                           Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12" TextWrapping="Wrap"/>
             </Border>
 
             <!-- Row 2: 分时 24 行 + 31 天历史 -->
@@ -134,7 +134,7 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Text="今日分时（按白班开始时间归桶）"
-                                   FontSize="15" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,8"/>
+                                   FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"/>
                         <DataGrid Grid.Row="1" ItemsSource="{Binding Hours}"
                                   AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
                                   HeadersVisibility="Column" GridLinesVisibility="Horizontal"
@@ -156,11 +156,11 @@
                         </Grid.RowDefinitions>
                         <DockPanel Grid.Row="0" Margin="0,0,0,8">
                             <TextBlock Text="最近 31 天历史"
-                                       FontSize="15" FontWeight="SemiBold" Foreground="#0F172A"
+                                       FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"
                                        VerticalAlignment="Center"/>
                             <Button DockPanel.Dock="Right" Content="刷新"
                                     Command="{Binding RefreshNowCommand}"
-                                    Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1"
+                                    Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
                                     Padding="10,4" HorizontalAlignment="Right"/>
                         </DockPanel>
                         <DataGrid Grid.Row="1" ItemsSource="{Binding History}"

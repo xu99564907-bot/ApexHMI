@@ -12,7 +12,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" FontSize="14" Foreground="#0F172A"
+        <TextBlock Grid.Row="0" FontSize="14" Foreground="{DynamicResource Brush.Text}"
                    Text="选择要与当前参数对比的配方：" Margin="0,0,0,8"/>
         <ComboBox Grid.Row="1" x:Name="RecipeCombo"
                   ItemsSource="{Binding}"
@@ -20,8 +20,8 @@
                   Height="32" FontSize="14"/>
         <CheckBox Grid.Row="2" x:Name="ApplyCheck"
                   Content="对比后一键应用该配方到当前参数（差异行 → 配方值）"
-                  Margin="0,12,0,0" FontSize="13" Foreground="#475569"/>
-        <TextBlock Grid.Row="3" FontSize="12" Foreground="#94A3B8"
+                  Margin="0,12,0,0" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}"/>
+        <TextBlock Grid.Row="3" FontSize="12" Foreground="{DynamicResource Brush.TextPlaceholder}"
                    Text="点击「对比」后，所有 HMI 变量值与配方不同的行会以蓝底高亮。再次切换/清除可点「关闭」。"
                    TextWrapping="Wrap" Margin="0,12,0,0"/>
         <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">

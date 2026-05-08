@@ -62,7 +62,7 @@
                         </StackPanel>
                     </Button>
                     <Button Command="{Binding BrowsePlcVariableFileCommand}"
-                            Background="#E2E8F0" Foreground="#0F172A" BorderBrush="#CBD5E1"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
                             Padding="6,5" Margin="0,0,8,0"
                             ToolTip="手动选择 Device.Application.xml 文件">
                         <materialDesign:PackIcon Kind="FolderOpen" Width="14" Height="14"/>
@@ -107,7 +107,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Margin="0,0,14,0">
-                                    <TextBlock Text="{Binding Title}" FontSize="10" Foreground="#64748B" Margin="2,0,0,3"/>
+                                    <TextBlock Text="{Binding Title}" FontSize="10" Foreground="{DynamicResource Brush.TextMuted}" Margin="2,0,0,3"/>
                                     <ItemsControl ItemsSource="{Binding Items}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
@@ -118,7 +118,7 @@
                                             <DataTemplate>
                                                 <Button Margin="0,0,4,0" Padding="8,5"
                                                         Background="#F8FAFC" Foreground="#334155"
-                                                        BorderBrush="#D7DFEA" FontWeight="Normal"
+                                                        BorderBrush="{DynamicResource Brush.Border}" FontWeight="Normal"
                                                         Command="{Binding DataContext.AddWidgetCommand,
                                                             RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                         CommandParameter="{Binding TypeId}"
@@ -159,12 +159,12 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <!-- 工程名称 -->
-                        <TextBlock Text="工程名称" Foreground="#475569"/>
+                        <TextBlock Text="工程名称" Foreground="{DynamicResource Brush.TextSecondary}"/>
                         <TextBox Text="{Binding Document.ProjectName, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,8"/>
 
                         <!-- P3.1 模板页 RouteKey -->
-                        <TextBlock Text="模板页 RouteKey (页眉/页脚共享)" Foreground="#475569" FontSize="11"/>
+                        <TextBlock Text="模板页 RouteKey (页眉/页脚共享)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                         <ComboBox ItemsSource="{Binding Document.Pages}"
                                   DisplayMemberPath="Title" SelectedValuePath="RouteKey"
                                   SelectedValue="{Binding Document.TemplatePageRouteKey}"
@@ -173,23 +173,23 @@
 
                         <!-- 页面下拉框 -->
                         <TextBlock Text="当前页面" FontSize="14" FontWeight="SemiBold"
-                                   Foreground="#0F172A" Margin="0,0,0,8"/>
+                                   Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"/>
                         <ComboBox ItemsSource="{Binding Document.Pages}"
                                   SelectedItem="{Binding SelectedPage}"
                                   DisplayMemberPath="Title"
-                                  BorderBrush="#D7DFEA"
+                                  BorderBrush="{DynamicResource Brush.Border}"
                                   Background="#FFFFFF"
                                   Margin="0,0,0,8"/>
 
                         <!-- 新建页面 -->
-                        <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                        <Border Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
                                 CornerRadius="6" Padding="8" Margin="0,0,0,10">
                             <StackPanel>
-                                <TextBlock Text="新建页面" Foreground="#0F172A" FontWeight="SemiBold" FontSize="12"/>
-                                <TextBlock Text="标题 (留空 = 自动)" Foreground="#475569" FontSize="11" Margin="0,6,0,2"/>
+                                <TextBlock Text="新建页面" Foreground="{DynamicResource Brush.Text}" FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="标题 (留空 = 自动)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" Margin="0,6,0,2"/>
                                 <TextBox Text="{Binding NewPageTitle, UpdateSourceTrigger=PropertyChanged}"
                                          FontSize="12"/>
-                                <TextBlock Text="挂到父页面 (软件固定画面;留空 = 顶层)" Foreground="#475569" FontSize="11" Margin="0,6,0,2"/>
+                                <TextBlock Text="挂到父页面 (软件固定画面;留空 = 顶层)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" Margin="0,6,0,2"/>
                                 <ComboBox ItemsSource="{Binding BuiltInParentSections}"
                                           SelectedValue="{Binding NewPageParentRouteKey, UpdateSourceTrigger=PropertyChanged}"
                                           IsEditable="False" FontSize="12"
@@ -206,19 +206,19 @@
 
                         <!-- 当前页面属性 -->
                         <TextBlock Text="页面设置" FontSize="14" FontWeight="SemiBold"
-                                   Foreground="#0F172A" Margin="0,0,0,8"/>
-                        <TextBlock Text="页面标题" Foreground="#475569"/>
+                                   Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"/>
+                        <TextBlock Text="页面标题" Foreground="{DynamicResource Brush.TextSecondary}"/>
                         <TextBox Text="{Binding SelectedPage.Title, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,8"/>
-                        <TextBlock Text="路由键" Foreground="#475569"/>
+                        <TextBlock Text="路由键" Foreground="{DynamicResource Brush.TextSecondary}"/>
                         <TextBox Text="{Binding SelectedPage.RouteKey, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,8"/>
-                        <TextBlock Text="父页面 (软件固定画面;留空 = 顶层)" Foreground="#475569" FontSize="11"/>
+                        <TextBlock Text="父页面 (软件固定画面;留空 = 顶层)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                         <ComboBox ItemsSource="{Binding BuiltInParentSections}"
                                   SelectedValue="{Binding SelectedPage.ParentRouteKey, UpdateSourceTrigger=PropertyChanged}"
                                   IsEditable="False" Margin="0,4,0,8" FontSize="12"
                                   ToolTip="把当前页挂到软件内置固定画面之下;留空表示独立顶层页"/>
-                        <TextBlock Text="画布尺寸" Foreground="#475569"/>
+                        <TextBlock Text="画布尺寸" Foreground="{DynamicResource Brush.TextSecondary}"/>
                         <UniformGrid Columns="2" Margin="0,4,0,10">
                             <TextBox Text="{Binding SelectedPage.CanvasWidth, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,6,0"/>
@@ -228,11 +228,11 @@
 
                         <!-- 主导航 -->
                         <CheckBox Content="挂到主导航顶栏" IsChecked="{Binding SelectedPage.ShowInTopNav}"
-                                  Margin="0,0,0,6" FontWeight="SemiBold" Foreground="#0F172A"/>
-                        <TextBlock Text="导航图标 (MaterialDesign Kind, 如 ViewDashboard)" Foreground="#475569" FontSize="11"/>
+                                  Margin="0,0,0,6" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"/>
+                        <TextBlock Text="导航图标 (MaterialDesign Kind, 如 ViewDashboard)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                         <TextBox Text="{Binding SelectedPage.NavIcon, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,6" FontSize="12"/>
-                        <TextBlock Text="导航排序 (数字越小越靠前)" Foreground="#475569" FontSize="11"/>
+                        <TextBlock Text="导航排序 (数字越小越靠前)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                         <TextBox Text="{Binding SelectedPage.NavOrder, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,10" FontSize="12"/>
 
@@ -243,7 +243,7 @@
                                 <TextBlock Text="批量生成功能块" FontSize="14" FontWeight="SemiBold"
                                            Foreground="#0369A1" Margin="0,0,0,8"/>
 
-                                <TextBlock Text="功能块类型" Foreground="#475569" FontSize="12"/>
+                                <TextBlock Text="功能块类型" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                 <ComboBox ItemsSource="{Binding BatchBlockTypes}"
                                           SelectedValue="{Binding BatchBlockType}"
                                           Margin="0,4,0,8" FontSize="12">
@@ -260,15 +260,15 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
 
-                                <TextBlock Text="命名前缀（如 CYL → CYL1, CYL2…）" Foreground="#475569" FontSize="12"/>
+                                <TextBlock Text="命名前缀（如 CYL → CYL1, CYL2…）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                 <TextBox Text="{Binding BatchNamePrefix, UpdateSourceTrigger=PropertyChanged}"
                                          Margin="0,4,0,8" FontSize="12"/>
 
-                                <TextBlock Text="数量（1-20）" Foreground="#475569" FontSize="12"/>
+                                <TextBlock Text="数量（1-20）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                 <TextBox Text="{Binding BatchCount, UpdateSourceTrigger=PropertyChanged}"
                                          Margin="0,4,0,8" FontSize="12"/>
 
-                                <TextBlock Text="起始位置 (X, Y)" Foreground="#475569" FontSize="12"/>
+                                <TextBlock Text="起始位置 (X, Y)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
                                 <UniformGrid Columns="2" Margin="0,4,0,8">
                                     <TextBox Text="{Binding BatchStartX, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0,0,4,0" FontSize="12"/>
@@ -278,7 +278,7 @@
 
                                 <CheckBox Content="水平排列（取消则垂直）"
                                           IsChecked="{Binding BatchLayoutHorizontal}"
-                                          Margin="0,0,0,10" FontSize="12" Foreground="#475569"/>
+                                          Margin="0,0,0,10" FontSize="12" Foreground="{DynamicResource Brush.TextSecondary}"/>
 
                                 <Button Content="批量生成" Command="{Binding BatchGenerateCommand}"
                                         Background="#0369A1" Foreground="White" BorderBrush="#0369A1"
@@ -298,15 +298,15 @@
                     </Grid.RowDefinitions>
                     <StackPanel Margin="0,0,0,10">
                         <DockPanel>
-                            <TextBlock Text="设计画布" FontSize="18" FontWeight="Bold" Foreground="#0F172A"/>
+                            <TextBlock Text="设计画布" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                                 <CheckBox Content="网格" IsChecked="{Binding ShowGrid}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <CheckBox Content="吸附" IsChecked="{Binding SnapToGrid}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="间距" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <TextBlock Text="间距" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                 <TextBox Text="{Binding GridSize, UpdateSourceTrigger=PropertyChanged}" Width="44" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                                <TextBlock Text="{Binding MouseCoord, StringFormat=({0})}" Foreground="#64748B" VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="Consolas"/>
+                                <TextBlock Text="{Binding MouseCoord, StringFormat=({0})}" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="Consolas"/>
                                 <TextBlock Text="{Binding CurrentWidgets.Count, Mode=OneWay, StringFormat=控件数: {0}}"
-                                           Foreground="#64748B" VerticalAlignment="Center"/>
+                                           Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </DockPanel>
                         <!-- 对齐工具栏：多选时显示 -->
@@ -492,11 +492,11 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <TextBlock Text="属性编辑器" FontSize="18" FontWeight="Bold" 
-                                   Foreground="#0F172A" Margin="0,0,0,12"/>
+                                   Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
 
                         <!-- 未选中控件时的提示 -->
                         <TextBlock Text="请从画布中选中一个控件"
-                                   Foreground="#94A3B8" FontSize="13"
+                                   Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="13"
                                    Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
 
                         <!-- 控件基本信息 -->
@@ -505,19 +505,19 @@
                                 <Button Content="🗑 删除" Command="{Binding RemoveSelectedWidgetCommand}"
                                         Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
                                         Padding="10,4" Margin="0,0,6,6"/>
-                                <TextBlock Text="{Binding SelectedWidget.TypeId}" Foreground="#64748B"
+                                <TextBlock Text="{Binding SelectedWidget.TypeId}" Foreground="{DynamicResource Brush.TextMuted}"
                                            VerticalAlignment="Center" FontSize="11"/>
                             </WrapPanel>
 
                             <!-- 几何 -->
-                            <Expander Header="几何" IsExpanded="True" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,0,0,4">
+                            <Expander Header="几何" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <TextBlock Text="位置 (X, Y)" Foreground="#475569" FontSize="11"/>
+                                    <TextBlock Text="位置 (X, Y)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <UniformGrid Columns="2" Margin="0,4,0,6">
                                         <TextBox Text="{Binding SelectedWidget.X, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
                                         <TextBox Text="{Binding SelectedWidget.Y, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
                                     </UniformGrid>
-                                    <TextBlock Text="尺寸 (宽, 高)" Foreground="#475569" FontSize="11"/>
+                                    <TextBlock Text="尺寸 (宽, 高)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <UniformGrid Columns="2" Margin="0,4,0,2">
                                         <TextBox Text="{Binding SelectedWidget.Width, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
                                         <TextBox Text="{Binding SelectedWidget.Height, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
@@ -526,7 +526,7 @@
                             </Expander>
 
                             <!-- 外观 / 控件属性 -->
-                            <Expander Header="外观 / 属性" IsExpanded="True" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,4,0,4">
+                            <Expander Header="外观 / 属性" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                             <ItemsControl ItemsSource="{Binding CurrentWidgetProperties}">
                                 <ItemsControl.ItemTemplate>
@@ -539,7 +539,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0"
                                                        Text="{Binding DisplayName}"
-                                                       Foreground="#475569"
+                                                       Foreground="{DynamicResource Brush.TextSecondary}"
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0"
                                                        ToolTip="{Binding Key}"/>
@@ -590,9 +590,9 @@
                             </Expander>
 
                             <!-- 数据绑定 -->
-                            <Expander Header="数据绑定" IsExpanded="True" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,4,0,4">
+                            <Expander Header="数据绑定" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <TextBlock Text="绑定 Tag" Foreground="#475569" FontSize="11"/>
+                                    <TextBlock Text="绑定 Tag" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <DockPanel Margin="0,4,0,4">
                                         <Button DockPanel.Dock="Right" Content="🔍"
                                                 Command="{Binding OpenTagBrowserCommand}"
@@ -609,9 +609,9 @@
                             </Expander>
 
                             <!-- 事件 / 动作 -->
-                            <Expander Header="事件 / 动作" IsExpanded="True" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,4,0,4">
+                            <Expander Header="事件 / 动作" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <TextBlock Text="点击动作" Foreground="#475569" FontSize="11"/>
+                                    <TextBlock Text="点击动作" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <ComboBox Margin="0,4,0,4"
                                               SelectedValue="{Binding SelectedWidget.ActionType, UpdateSourceTrigger=PropertyChanged}">
                                         <ComboBoxItem Content="无"/>
@@ -621,7 +621,7 @@
                                         <ComboBoxItem Content="navigate"/>
                                         <ComboBoxItem Content="show-dialog"/>
                                     </ComboBox>
-                                    <TextBlock Text="动作参数" Foreground="#475569" FontSize="11"/>
+                                    <TextBlock Text="动作参数" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <TextBox Text="{Binding SelectedWidget.ActionParam, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0,4,0,4"
                                              ToolTip="write-bool: TagName|True/False; navigate: 目标 RouteKey"/>
@@ -629,7 +629,7 @@
                             </Expander>
 
                             <!-- 状态动画 -->
-                            <Expander Header="状态动画" IsExpanded="False" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,4,0,4">
+                            <Expander Header="状态动画" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                                     <Button Content="+ 添加动画" Command="{Binding AddAnimationCommand}"
                                             Padding="8,4" Margin="0,0,0,6" HorizontalAlignment="Left"
@@ -637,7 +637,7 @@
                                     <ItemsControl ItemsSource="{Binding CurrentAnimations}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1"
+                                                <Border Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
                                                         CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                     <StackPanel>
                                                         <DockPanel Margin="0,0,0,4">
@@ -645,14 +645,14 @@
                                                                     Command="{Binding DataContext.RemoveAnimationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                                     CommandParameter="{Binding}"
                                                                     Padding="6,0" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"/>
-                                                            <TextBlock Text="动画规则" Foreground="#475569" FontSize="11" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="动画规则" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" VerticalAlignment="Center"/>
                                                         </DockPanel>
                                                         <Grid Margin="0,2,0,2">
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="50"/>
                                                                 <ColumnDefinition Width="*"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <TextBlock Grid.Column="0" Text="Tag" Foreground="#64748B" VerticalAlignment="Center" FontSize="11"/>
+                                                            <TextBlock Grid.Column="0" Text="Tag" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" FontSize="11"/>
                                                             <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}" FontSize="11"/>
                                                         </Grid>
                                                         <Grid Margin="0,2,0,2">
@@ -661,7 +661,7 @@
                                                                 <ColumnDefinition Width="80"/>
                                                                 <ColumnDefinition Width="*"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <TextBlock Grid.Column="0" Text="条件" Foreground="#64748B" VerticalAlignment="Center" FontSize="11"/>
+                                                            <TextBlock Grid.Column="0" Text="条件" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" FontSize="11"/>
                                                             <ComboBox Grid.Column="1" Text="{Binding Op, UpdateSourceTrigger=PropertyChanged}" IsEditable="True" FontSize="11" Margin="0,0,4,0">
                                                                 <ComboBoxItem>true</ComboBoxItem>
                                                                 <ComboBoxItem>false</ComboBoxItem>
@@ -680,7 +680,7 @@
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="*"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <TextBlock Grid.Column="0" Text="设置" Foreground="#64748B" VerticalAlignment="Center" FontSize="11"/>
+                                                            <TextBlock Grid.Column="0" Text="设置" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" FontSize="11"/>
                                                             <TextBox Grid.Column="1" Text="{Binding TargetProperty, UpdateSourceTrigger=PropertyChanged}" FontSize="11" Margin="0,0,4,0" ToolTip="属性 key (如 background)"/>
                                                             <TextBox Grid.Column="2" Text="{Binding TargetValue, UpdateSourceTrigger=PropertyChanged}" FontSize="11" ToolTip="目标值"/>
                                                         </Grid>
@@ -693,9 +693,9 @@
                             </Expander>
 
                             <!-- 安全 -->
-                            <Expander Header="安全 / 权限" IsExpanded="False" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,4,0,4">
+                            <Expander Header="安全 / 权限" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <TextBlock Text="所需角色 (留空 = 所有人)" Foreground="#475569" FontSize="11"/>
+                                    <TextBlock Text="所需角色 (留空 = 所有人)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <ComboBox Margin="0,4,0,4"
                                               Text="{Binding SelectedWidget.RequiredRole, UpdateSourceTrigger=LostFocus}"
                                               IsEditable="True">
@@ -708,9 +708,9 @@
                             </Expander>
 
                             <!-- 控件 ID（折叠默认） -->
-                            <Expander Header="高级 / ID" IsExpanded="False" FontWeight="SemiBold" Foreground="#0F172A" Margin="0,4,0,4">
+                            <Expander Header="高级 / ID" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <TextBlock Text="控件 ID" Foreground="#475569" FontSize="11"/>
+                                    <TextBlock Text="控件 ID" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <TextBox Text="{Binding SelectedWidget.Id, Mode=OneWay}" IsReadOnly="True"
                                              Background="#F1F5F9" Margin="0,4,0,0" FontFamily="Consolas" FontSize="11"/>
                                 </StackPanel>

@@ -11,13 +11,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Margin="0,0,0,8">
-            <TextBlock FontSize="16" FontWeight="Bold" Foreground="#0F172A">
+            <TextBlock FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}">
                 <Run Text="参数："/>
                 <Run Text="{Binding Name}"/>
             </TextBlock>
-            <TextBlock FontSize="12" Foreground="#64748B" Margin="0,4,0,0"
+            <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,4,0,0"
                        Text="{Binding Description}" TextWrapping="Wrap"/>
-            <TextBlock FontSize="12" Foreground="#94A3B8" Margin="0,4,0,0">
+            <TextBlock FontSize="12" Foreground="{DynamicResource Brush.TextPlaceholder}" Margin="0,4,0,0">
                 <Run Text="基线值（OriginalValue）："/>
                 <Run Text="{Binding OriginalValue}"/>
                 <Run Text="    当前值："/>
