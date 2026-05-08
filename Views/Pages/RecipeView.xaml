@@ -5,7 +5,7 @@
                   HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="12">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="360"/>
+                <ColumnDefinition Width="380"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -14,66 +14,86 @@
                     Padding="16"
                     Margin="0,0,10,0">
                 <StackPanel>
-                    <TextBlock Text="配方管理" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,12"/>
-                    <TextBlock Text="当前配方" Foreground="#94A3B8"/>
+                    <TextBlock Text="配方管理" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
+                    <TextBlock Text="当前配方" Foreground="#64748B"/>
                     <ComboBox ItemsSource="{Binding Recipes}"
                               SelectedValuePath="Name"
                               DisplayMemberPath="Name"
                               SelectedValue="{Binding SelectedRecipeName}"
                               Margin="0,6,0,12"/>
-                    <WrapPanel>
-                        <Button Content="加载到参数"
+
+                    <!-- 第 1 组：基础操作 -->
+                    <WrapPanel Margin="0,0,0,4">
+                        <Button Content="加载到参数（含预校验）"
                                 Command="{Binding ApplyRecipeCommand}"
                                 CommandParameter="{Binding SelectedRecipeName}"
-                                Style="{StaticResource PrimaryButtonStyle}"/>
-                        <Button Content="新建配方"
-                                Command="{Binding CreateRecipeCommand}"
-                                Background="#374151"
-                                Foreground="White"
-                                BorderBrush="#374151"
-                                Padding="12,8"
-                                Margin="0,0,8,8"/>
-                        <Button Content="复制当前"
-                                Command="{Binding DuplicateRecipeCommand}"
-                                Background="#374151"
-                                Foreground="White"
-                                BorderBrush="#374151"
-                                Padding="12,8"
-                                Margin="0,0,8,8"/>
-                        <Button Content="删除当前"
-                                Command="{Binding DeleteRecipeCommand}"
-                                Background="#B91C1C"
-                                Foreground="White"
-                                BorderBrush="#B91C1C"
-                                Padding="12,8"
-                                Margin="0,0,8,8"/>
+                                Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                Padding="10,6" Margin="0,0,6,6"
+                                ToolTip="R3: 加载前自动检查参数合法性 + 生产兼容性"/>
+                        <Button Content="切换向导（停机→切→启）"
+                                Command="{Binding SwitchRecipeWizardCommand}"
+                                Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
+                                Padding="10,6" Margin="0,0,6,6"
+                                ToolTip="R4: 三步流程化向导切换配方"/>
+                        <Button Content="新建" Command="{Binding CreateRecipeCommand}"
+                                Background="#374151" Foreground="White" BorderBrush="#374151"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                        <Button Content="复制当前" Command="{Binding DuplicateRecipeCommand}"
+                                Background="#374151" Foreground="White" BorderBrush="#374151"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                        <Button Content="删除当前" Command="{Binding DeleteRecipeCommand}"
+                                Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                Padding="10,6" Margin="0,0,6,6"
+                                ToolTip="R6: 删除前需填写原因（写入审计）"/>
                     </WrapPanel>
-                    <WrapPanel>
-                        <Button Content="用当前参数覆盖配方"
+
+                    <!-- 第 2 组：覆盖 / 历史 / 试运行 -->
+                    <WrapPanel Margin="0,0,0,4">
+                        <Button Content="用当前参数覆盖（自动留快照）"
                                 Command="{Binding CaptureCurrentParametersToRecipeCommand}"
-                                Background="#0F766E"
-                                Foreground="White"
-                                BorderBrush="#0F766E"
-                                Padding="12,8"
-                                Margin="0,0,8,8"/>
-                        <Button Content="加载配方文件"
-                                Command="{Binding LoadRecipesCommand}"
-                                Background="#374151"
-                                Foreground="White"
-                                BorderBrush="#374151"
-                                Padding="12,8"
-                                Margin="0,0,8,8"/>
-                        <Button Content="保存配方文件"
-                                Command="{Binding SaveRecipesCommand}"
-                                Background="#0F766E"
-                                Foreground="White"
-                                BorderBrush="#0F766E"
-                                Padding="12,8"/>
+                                Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
+                                Padding="10,6" Margin="0,0,6,6"
+                                ToolTip="R5: 覆盖前自动入栈历史（最近 10 条可回滚）"/>
+                        <Button Content="对比配方"
+                                Command="{Binding CompareRecipesCommand}"
+                                Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                Padding="10,6" Margin="0,0,6,6"
+                                ToolTip="R1: 选两个配方 → 仅显示差异参数"/>
+                        <Button Content="试运行"
+                                Command="{Binding StartTrialRunCommand}"
+                                Background="#F59E0B" Foreground="White" BorderBrush="#F59E0B"
+                                Padding="10,6" Margin="0,0,6,6"
+                                ToolTip="R9: 加载到参数页空跑 N 件验证"/>
                     </WrapPanel>
-                    <TextBlock Text="说明：支持新建 / 复制 / 删除 / 保存当前参数快照 / 加载到参数页。"
-                               Foreground="#94A3B8"
-                               Margin="0,12,0,0"
-                               TextWrapping="Wrap"/>
+
+                    <!-- 第 3 组：导入导出 -->
+                    <WrapPanel Margin="0,0,0,4">
+                        <Button Content="导入 CSV" Command="{Binding ImportRecipeCsvCommand}"
+                                Background="#374151" Foreground="White" BorderBrush="#374151"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                        <Button Content="导出 CSV" Command="{Binding ExportRecipeCsvCommand}"
+                                Background="#374151" Foreground="White" BorderBrush="#374151"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                        <Button Content="导入 JSON" Command="{Binding ImportRecipeJsonCommand}"
+                                Background="#374151" Foreground="White" BorderBrush="#374151"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                        <Button Content="导出 JSON" Command="{Binding ExportRecipeJsonCommand}"
+                                Background="#374151" Foreground="White" BorderBrush="#374151"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                    </WrapPanel>
+
+                    <!-- 第 4 组：整体加载 / 保存（recipes.json） -->
+                    <WrapPanel>
+                        <Button Content="加载配方文件" Command="{Binding LoadRecipesCommand}"
+                                Background="#374151" Foreground="White" BorderBrush="#374151"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                        <Button Content="保存配方文件" Command="{Binding SaveRecipesCommand}"
+                                Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
+                                Padding="10,6" Margin="0,0,6,6"/>
+                    </WrapPanel>
+
+                    <TextBlock Text="提示：每行末有【历史】按钮看历史版本（R5）；产线兼容标签可直接编辑（R8）。"
+                               Foreground="#64748B" Margin="0,12,0,0" TextWrapping="Wrap" FontSize="11"/>
                 </StackPanel>
             </Border>
 
@@ -81,32 +101,51 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
-                        <RowDefinition Height="220"/>
+                        <RowDefinition Height="240"/>
                     </Grid.RowDefinitions>
                     <DataGrid ItemsSource="{Binding Recipes}"
                               AutoGenerateColumns="False"
-                              Background="#111827"
-                              Foreground="White"
-                              BorderBrush="#1F2937"
+                              Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#E2E8F0"
+                              RowBackground="#FFFFFF" AlternatingRowBackground="#F8FAFC"
                               Margin="0,0,0,12">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="配方名" Binding="{Binding Name}" Width="*"/>
                             <DataGridTextColumn Header="产品编码" Binding="{Binding ProductCode}" Width="*"/>
-                            <DataGridTextColumn Header="版本" Binding="{Binding Version}" Width="*"/>
+                            <DataGridTextColumn Header="版本" Binding="{Binding Version}" Width="80"/>
+                            <DataGridTextColumn Header="产线兼容"
+                                                Binding="{Binding LineCompatibility, UpdateSourceTrigger=LostFocus}"
+                                                Width="*"/>
                             <DataGridTextColumn Header="说明" Binding="{Binding Description}" Width="2*"/>
-                            <DataGridTextColumn Header="更新时间" Binding="{Binding UpdatedAt}" Width="*"/>
-                            <DataGridTextColumn Header="更新人" Binding="{Binding UpdatedBy}" Width="*"/>
-                            <DataGridCheckBoxColumn Header="启用" Binding="{Binding IsActive}" Width="*"/>
+                            <DataGridTextColumn Header="上次使用"
+                                                Binding="{Binding LastUsedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                                Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="更新时间"
+                                                Binding="{Binding UpdatedAt, StringFormat='yyyy-MM-dd HH:mm'}"
+                                                Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="更新人" Binding="{Binding UpdatedBy}" Width="*" IsReadOnly="True"/>
+                            <DataGridCheckBoxColumn Header="启用" Binding="{Binding IsActive}" Width="60" IsReadOnly="True"/>
+                            <DataGridCheckBoxColumn Header="试运行" Binding="{Binding IsTrialRun}" Width="60" IsReadOnly="True"/>
+                            <DataGridTemplateColumn Header="" Width="60">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="历史"
+                                                Command="{Binding DataContext.ShowRecipeHistoryCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                Background="Transparent" BorderBrush="#CBD5E1" Foreground="#475569"
+                                                FontSize="11" Padding="6,2" Height="22"
+                                                ToolTip="R5: 查看历史版本，可回滚"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Border Grid.Row="1" Background="#0B1324" CornerRadius="8" Padding="12">
+                    <Border Grid.Row="1" Background="#F1F5F9" CornerRadius="8" Padding="12">
                         <StackPanel>
-                            <TextBlock Text="当前配方参数快照" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,8"/>
+                            <TextBlock Text="当前配方参数快照" FontSize="16" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,8"/>
                             <DataGrid ItemsSource="{Binding ActiveRecipeParameters}"
                                       AutoGenerateColumns="False"
-                                      Background="#111827"
-                                      Foreground="White"
-                                      BorderBrush="#1F2937">
+                                      Background="#FFFFFF" Foreground="#0F172A" BorderBrush="#E2E8F0">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="分类" Binding="{Binding Category}" Width="*"/>
                                     <DataGridTextColumn Header="参数名" Binding="{Binding Name}" Width="*"/>
