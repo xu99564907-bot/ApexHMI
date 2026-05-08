@@ -544,6 +544,13 @@ public partial class MainViewModel
             return;
         }
 
+        // MA10 记录"最近一条操作"到卡片底部
+        if (block is not null)
+        {
+            var label = extend ? block.WorkCommandLabel : block.HomeCommandLabel;
+            block.LastOperationText = $"{DateTime.Now:HH:mm:ss} → {label}";
+        }
+
         {
             var commandSuffix = extend ? ".Cmd.ManuToWork" : ".Cmd.ManuToHome";
             var configuredCommandTag = block is not null

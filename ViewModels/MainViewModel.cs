@@ -271,19 +271,65 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string opcUaBrowserStatus = "连接 OPC UA 后，可在这里浏览服务器节点。";
 
     public ICollectionView ManualCylinderBlocksView { get; }
-    public IEnumerable<ManualAxisBlockItem> ManualAxisBlockCards =>
-        ManualAxisBlocks
-            .GroupBy(item => item.AxisIndex)
-            .Select(group => group.OrderBy(item => item.DisplayOrder).First())
-            .OrderBy(item => item.DisplayOrder)
-            .ThenBy(item => item.AxisIndex);
 
-    public IEnumerable<ManualCylinderBlockItem> ManualCylinderBlockCards =>
-        ManualCylinderBlocks
-            .GroupBy(item => item.CylinderIndex)
-            .Select(group => group.OrderBy(item => item.DisplayOrder).First())
-            .OrderBy(item => item.DisplayOrder)
-            .ThenBy(item => item.CylinderIndex);
+    public IEnumerable<ManualAxisBlockItem> ManualAxisBlockCards
+    {
+        get
+        {
+            var distinct = ManualAxisBlocks
+                .GroupBy(item => item.AxisIndex)
+                .Select(group => group.OrderBy(item => item.DisplayOrder).First())
+                .OrderBy(item => item.DisplayOrder)
+                .ThenBy(item => item.AxisIndex);
+
+            // MA9 轴搜索（按 DisplayName 模糊过滤）
+            var keyword = ManualAxisSearchText?.Trim();
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                distinct = distinct.Where(item =>
+                    (item.DisplayName?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0)
+                    .OrderBy(item => item.DisplayOrder)
+                    .ThenBy(item => item.AxisIndex);
+            }
+            return distinct;
+        }
+    }
+
+    // MA9 轴搜索文本
+    [ObservableProperty] private string manualAxisSearchText = string.Empty;
+    partial void OnManualAxisSearchTextChanged(string value) => OnPropertyChanged(nameof(ManualAxisBlockCards));
+
+    public IEnumerable<ManualCylinderBlockItem> ManualCylinderBlockCards
+    {
+        get
+        {
+            var distinct = ManualCylinderBlocks
+                .GroupBy(item => item.CylinderIndex)
+                .Select(group => group.OrderBy(item => item.DisplayOrder).First())
+                .OrderBy(item => item.DisplayOrder)
+                .ThenBy(item => item.CylinderIndex);
+
+            // MA5 按 DisplayName / 命令地址 模糊过滤
+            var keyword = ManualCylinderSearchText?.Trim();
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                distinct = distinct.Where(item =>
+                    (item.DisplayName?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
+                    || (item.WorkCommandAddress?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
+                    || (item.HomeCommandAddress?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
+                    || (item.WorkSensorAddress?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0
+                    || (item.HomeSensorAddress?.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) ?? -1) >= 0)
+                    .OrderBy(item => item.DisplayOrder)
+                    .ThenBy(item => item.CylinderIndex);
+            }
+            return distinct;
+        }
+    }
+
+    // MA5 气缸搜索文本（按 DisplayName / 命令 / 传感器地址过滤）
+    [ObservableProperty] private string manualCylinderSearchText = string.Empty;
+
+    partial void OnManualCylinderSearchTextChanged(string value) => OnPropertyChanged(nameof(ManualCylinderBlockCards));
 
     public ICollectionView MonitorTagsView => CollectionViewSource.GetDefaultView(Tags);
     public ICollectionView ParametersView => CollectionViewSource.GetDefaultView(Parameters);
@@ -701,6 +747,22 @@ public partial class MainViewModel : ObservableObject, IDisposable
             }
             return true;
         };
+    }
+
+    // MA6 双击气缸名 → 跳到参数设定页（后续 P1 完成后会自动按设备名过滤参数表）
+    [RelayCommand]
+    private void JumpToParameterByDevice(object? device)
+    {
+        var deviceName = device switch
+        {
+            Models.ManualCylinderBlockItem cyl => cyl.DisplayName,
+            Models.ManualAxisBlockItem axis => axis.DisplayName,
+            string s => s,
+            _ => string.Empty,
+        };
+        Navigate("参数设定");
+        if (!string.IsNullOrWhiteSpace(deviceName))
+            SystemMessage = $"已跳转到参数页：{deviceName}";
     }
 
     // H4 重点报警跳转：点击主界面"重点报警"卡 → 跳报警页对应记录

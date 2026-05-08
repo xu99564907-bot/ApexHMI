@@ -100,6 +100,10 @@ public partial class ManualCylinderBlockItem : ObservableObject
     [ObservableProperty]
     private string interlockHint = string.Empty;
 
+    // MA10 卡片底部显示最近一条操作（点击工作/原点 后由 SetCylinderPositionAsync 写入）
+    [ObservableProperty]
+    private string lastOperationText = string.Empty;
+
     public string WorkCommandLabel => !string.IsNullOrWhiteSpace(WorkCommandDisplayName)
         ? WorkCommandDisplayName
         : IsVerticalNaming ? "上升" : "伸出";
