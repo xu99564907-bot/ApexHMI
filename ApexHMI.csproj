@@ -10,7 +10,7 @@
     <UseWPF>true</UseWPF>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\exe\</OutputPath>
-    <DefaultItemExcludes>$(DefaultItemExcludes);backup\**;backup_*\**;dist\**;tests\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);backup\**;backup_*\**;dist\**;tests\**;tools\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +29,12 @@
     <Resource Remove="tests\**" />
     <None Remove="tests\**" />
     <EmbeddedResource Remove="tests\**" />
+    <!-- tools/SmokeVerify 是独立 net8.0 项目，不能纳入主项目 (net48 + WPF) build -->
+    <Compile Remove="tools\**" />
+    <Page Remove="tools\**" />
+    <Resource Remove="tools\**" />
+    <None Remove="tools\**" />
+    <EmbeddedResource Remove="tools\**" />
   </ItemGroup>
 
   <ItemGroup>
