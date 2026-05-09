@@ -492,9 +492,14 @@
                         </MenuItem>
                     </Menu>
                     <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" shell:WindowChrome.IsHitTestVisibleInChrome="True">
-                        <!-- G4 事件中心铃铛 -->
-                        <ToggleButton x:Name="EventCenterToggle" Style="{StaticResource WindowControlButtonStyle}"
-                                      ToolTip="事件中心 (聚合最近报警/系统事件)" Width="44">
+                        <!-- G4 事件中心铃铛 (ToggleButton 不能用 TargetType=Button 的 Style) -->
+                        <ToggleButton x:Name="EventCenterToggle"
+                                      ToolTip="事件中心 (聚合最近报警/系统事件)"
+                                      Width="44" Height="32"
+                                      Background="Transparent"
+                                      Foreground="#475569"
+                                      BorderBrush="Transparent" BorderThickness="0"
+                                      Padding="0" Margin="0">
                             <Grid>
                                 <materialDesign:PackIcon Kind="BellOutline" Width="18" Height="18"/>
                                 <Border Background="#DC2626" CornerRadius="8" Padding="3,0" MinWidth="14" Height="14"
