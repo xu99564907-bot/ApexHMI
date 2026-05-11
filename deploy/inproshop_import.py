@@ -283,35 +283,87 @@ def find_object_by_path(proj, path_or_parts):
 
 def set_text_content(doc, new_text):
     """
-    设置 ScriptTextDocument 的内容
-    InProShop V1.9 的 text 属性是只读的，需要用 replace 方法
+    设置 ScriptTextDocument 的内容。
+
+    历史 bug:
+    InProShop V1.9 的 ScriptTextDocument 内部表示偶尔带有 Python `doc.text`
+    暴露不出来的隐藏字符 (LF/CRLF 不一致 / EOF 标记 / 自动换行),
+    `doc.replace(0, len(doc.text), new_text)` 删除范围比 doc 实际长度短,
+    在末尾残留几个旧字符 —— 表现为生成的程序末尾出现"几个无关字符"。
+
+    修复:
+    1) 把 new_text 换行统一成 \n (CODESYS 内部 LF 标准)
+    2) 替换/插入后调 `_verify_and_clean_tail` 校验, 残留多余字符就再删
     """
+    # 统一换行 → \n, 避免 CRLF 字符差导致 length 计算偏移
+    if new_text is None:
+        new_text = ''
+    new_text = new_text.replace('\r\n', '\n').replace('\r', '\n')
+
     # 方法1: 直接赋值 (CODESYS 3.5.16+)
     try:
         doc.text = new_text
+        _verify_and_clean_tail(doc, new_text)
         return True
     except:
         pass
-    
+
     # 方法2: 用 replace 方法替换全部内容 (InProShop V1.9)
     try:
-        old_text = doc.text or ''
-        doc.replace(0, len(old_text), new_text)
+        cur_len = len(doc.text or '')
+        doc.replace(0, cur_len, new_text)
+        _verify_and_clean_tail(doc, new_text)
         return True
     except:
         pass
-    
+
     # 方法3: 清空后插入
     try:
-        old_text = doc.text or ''
-        if old_text:
-            doc.remove(0, len(old_text))
+        cur_len = len(doc.text or '')
+        if cur_len > 0:
+            doc.remove(0, cur_len)
+        # 再次清空（防止 remove 一次没清干净）
+        rem = len(doc.text or '')
+        if rem > 0:
+            doc.remove(0, rem)
         doc.insert(0, new_text)
+        _verify_and_clean_tail(doc, new_text)
         return True
     except:
         pass
-    
+
     return False
+
+
+def _verify_and_clean_tail(doc, expected_text):
+    """
+    校验 doc 当前内容是否等于 expected_text；
+    若末尾多出几个字符（CODESYS 内部隐藏标记 / 旧残留），
+    用 doc.remove 把超出的部分删掉，最多重试 3 次。
+    """
+    try:
+        for _ in range(3):
+            actual = doc.text or ''
+            # 已对齐就退出
+            if actual == expected_text:
+                return
+            # 长度超出 → 把多余部分删掉 (从 expected_text 长度位置开始 remove)
+            if len(actual) > len(expected_text) and actual.startswith(expected_text):
+                extra = len(actual) - len(expected_text)
+                try:
+                    doc.remove(len(expected_text), extra)
+                    continue
+                except:
+                    return
+            # 不是简单尾部残留 (前面也不一致, 走整体覆盖回退)
+            try:
+                doc.text = expected_text
+            except:
+                pass
+            return
+    except:
+        # doc 不支持 text 读 / remove 写：保持沉默, 用调用方的初次写入结果
+        return
 
 
 def update_object_text(obj, file_type, content, log_lines, file_path):
