@@ -1061,6 +1061,7 @@ public partial class MainViewModel
             AxisConfigEntries = _axisConfigEntries,
             GitPull = BuildGitPullSettingsForConfig(),
             SfcPrograms = BuildSfcProgramsForConfig(),
+            SfcInitPrograms = BuildSfcInitProgramsForPersist(),
             SfcInitProgram = BuildSfcInitProgramForConfig()
         };
     }

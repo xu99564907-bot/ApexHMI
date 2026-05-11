@@ -80,7 +80,7 @@ public partial class MainViewModel
         RebindCylinderDbByOperation();
         RestoreGitPullSettings(config.GitPull);
         RestoreAllSfcStations(config);
-        RestoreSfcInitSteps(config.SfcInitProgram);
+        RestoreAllSfcInitStations(config);
         RefreshIoGenerationSummary();
         OnPropertyChanged(nameof(TagCount));
         RefreshMonitorView();
@@ -1146,6 +1146,112 @@ public partial class MainViewModel
             SfcInitSteps.Add(step);
         }
         SelectedSfcInitStep = SfcInitSteps.FirstOrDefault();
+    }
+
+    /// <summary>从 AppConfig 启动加载所有工位的初始化程序到字典 + 显示首个工位。</summary>
+    private void RestoreAllSfcInitStations(AppConfig config)
+    {
+        _suppressInitStationSwitch = true;
+        try
+        {
+            _sfcInitProgramsByStation.Clear();
+
+            // 兼容旧版单数 SfcInitProgram 字段
+            if (config.SfcInitProgram?.Steps?.Count > 0)
+            {
+                var key = string.IsNullOrWhiteSpace(config.SfcInitProgram.StationNo) ? "1" : config.SfcInitProgram.StationNo;
+                _sfcInitProgramsByStation[key] = config.SfcInitProgram;
+            }
+
+            // 加载多工位列表
+            foreach (var sfcCfg in config.SfcInitPrograms ?? Enumerable.Empty<SfcProgramConfig>())
+            {
+                var key = string.IsNullOrWhiteSpace(sfcCfg.StationNo) ? "1" : sfcCfg.StationNo;
+                _sfcInitProgramsByStation[key] = sfcCfg;
+            }
+
+            var targetStation = _sfcInitProgramsByStation.Keys.OrderBy(k => k).FirstOrDefault() ?? "1";
+            if (_sfcInitProgramsByStation.TryGetValue(targetStation, out var stationConfig))
+                RestoreSfcInitSteps(stationConfig);
+            else
+                SfcInitStationNo = targetStation;
+
+            _prevSfcInitStationNo = SfcInitStationNo;
+        }
+        finally
+        {
+            _suppressInitStationSwitch = false;
+        }
+    }
+
+    /// <summary>工位号变更钩子：保存旧工位 Init → 加载新工位 → 持久化</summary>
+    partial void OnSfcInitStationNoChanged(string value)
+    {
+        if (_suppressInitStationSwitch) return;
+        FlushCurrentSfcInitToDict(_prevSfcInitStationNo);
+        _prevSfcInitStationNo = value;
+        LoadSfcInitFromDictInternal(value);
+        _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    /// <summary>把当前 UI 中的 SfcInitSteps 快照保存到工位字典。</summary>
+    internal void FlushCurrentSfcInitToDict(string stationNo)
+    {
+        if (string.IsNullOrWhiteSpace(stationNo)) return;
+        _sfcInitProgramsByStation[stationNo] = new SfcProgramConfig
+        {
+            ProgramName = SfcInitProgramName,
+            StationNo = stationNo,
+            Steps = SfcInitSteps.Select(s => new SfcStepDto
+            {
+                StepNo = s.StepNo,
+                CompletionCondition = s.CompletionCondition,
+                NextStep = s.NextStep,
+                Actions = s.Actions.Select(a => new SfcStepActionDto
+                {
+                    DeviceType = a.DeviceType, DeviceIndex = a.DeviceIndex, DeviceName = a.DeviceName,
+                    ActionType = a.ActionType, PointIndex = a.PointIndex,
+                    CustomCommand = a.CustomCommand, CustomCondition = a.CustomCondition
+                }).ToList(),
+                Branches = s.Branches.Select(b => new SfcStepBranchDto
+                {
+                    Condition = b.Condition, TargetStep = b.TargetStep
+                }).ToList(),
+                Alarms = s.AlarmEntries.Select(al => new SfcStepAlarmDto
+                {
+                    AlarmMessage = al.AlarmMessage, AlarmCondition = al.AlarmCondition, AlarmType = al.AlarmType
+                }).ToList()
+            }).ToList()
+        };
+    }
+
+    /// <summary>从字典加载指定工位的 Init steps（不改 SfcInitStationNo，避免循环触发）</summary>
+    private void LoadSfcInitFromDictInternal(string stationNo)
+    {
+        _suppressInitStationSwitch = true;
+        try
+        {
+            if (_sfcInitProgramsByStation.TryGetValue(stationNo, out var cfg))
+            {
+                RestoreSfcInitSteps(cfg);
+            }
+            else
+            {
+                SfcInitSteps.Clear();
+                SelectedSfcInitStep = null;
+            }
+        }
+        finally
+        {
+            _suppressInitStationSwitch = false;
+        }
+    }
+
+    /// <summary>构建持久化用的 Init Programs 列表。</summary>
+    internal List<SfcProgramConfig> BuildSfcInitProgramsForPersist()
+    {
+        FlushCurrentSfcInitToDict(SfcInitStationNo);
+        return _sfcInitProgramsByStation.Values.ToList();
     }
 
     private void RestoreSfcSteps(SfcProgramConfig? config)

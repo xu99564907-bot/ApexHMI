@@ -259,10 +259,16 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private SfcStep? _prevSfcStep;
     /// <summary>各工位 SFC 配置缓存，key = 工位号字符串（如 "1"）</summary>
     internal readonly Dictionary<string, SfcProgramConfig> _sfcProgramsByStation = new();
+    /// <summary>各工位 SFC 初始化程序配置缓存（与上面对称）</summary>
+    internal readonly Dictionary<string, SfcProgramConfig> _sfcInitProgramsByStation = new();
     /// <summary>上一个生效的工位号，用于切站前保存</summary>
     private string _prevSfcStationNo = "1";
+    /// <summary>上一个生效的初始化工位号</summary>
+    private string _prevSfcInitStationNo = "1";
     /// <summary>初始化阶段禁止切站钩子触发，避免递归</summary>
     private bool _suppressStationSwitch;
+    /// <summary>初始化阶段禁止 Init 切站钩子触发</summary>
+    private bool _suppressInitStationSwitch;
 
     [ObservableProperty] private OpcUaBrowseNode? selectedOpcUaBrowseNode;
     [ObservableProperty] private string selectedOpcUaNodeValue = "--";

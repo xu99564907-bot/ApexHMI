@@ -15,7 +15,10 @@ public class AppConfig
     public GitPullSettings GitPull { get; set; } = new();
     /// <summary>所有工位的 SFC 自动程序配置</summary>
     public List<SfcProgramConfig> SfcPrograms { get; set; } = new();
-    /// <summary>初始化程序配置（ACT_InitSTxx.st）</summary>
+    /// <summary>所有工位的 SFC 初始化程序配置（ACT_InitSTxx.st）</summary>
+    public List<SfcProgramConfig> SfcInitPrograms { get; set; } = new();
+    /// <summary>已废弃，仅用于从旧版本迁移到 SfcInitPrograms 列表</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public SfcProgramConfig? SfcInitProgram { get; set; }
     /// <summary>已废弃，仅用于从旧版本迁移</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
