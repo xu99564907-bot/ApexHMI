@@ -687,11 +687,28 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     [RelayCommand]
     private void RemovePage()
     {
-        if (SelectedPage is null) return;
+        if (SelectedPage is null)
+        {
+            Shell.ShowPopup("删除页面", "请先在下拉列表中选中要删除的页面", "Warning");
+            return;
+        }
+
+        if (Document.Pages.Count <= 1)
+        {
+            Shell.ShowPopup("删除页面", "工程至少需要保留一个页面，当前不能删除最后一个", "Warning");
+            return;
+        }
+
+        var pageTitle = SelectedPage.Title;
+        if (!Shell.RequestConfirmation("删除页面", $"确定删除页面【{pageTitle}】？"))
+        {
+            return;
+        }
 
         if (!_projectEditor.RemovePage(Document, SelectedPage.Id, out var error))
         {
             Log.Warning("DesignerEditor: 删除页面被阻止 —— {Error}", error);
+            Shell.ShowPopup("删除被阻止", error ?? $"页面【{pageTitle}】无法删除", "Warning");
             return;
         }
 
@@ -702,6 +719,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             SelectedWidget = null;
             CurrentWidgets.Clear();
         }
+        Shell.AddLog("设计器", $"已删除页面：{pageTitle}", "Info");
     }
 
     // ========== 控件命令 ==========
