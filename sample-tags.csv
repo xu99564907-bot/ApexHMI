@@ -1,5 +1,45 @@
 Name,NodeId,DataType,Category,Group,Direction,Description,IsAlarm,IsWritable
 X_Start,"ns=2;s=Channel1.Device1.X_Start",Boolean,IO,Input,Input,启动按钮,false,false
 Y_RunLamp,"ns=2;s=Channel1.Device1.Y_RunLamp",Boolean,IO,Output,Output,运行指示灯,false,true
+Device_Start,"ns=2;s=Channel1.Device1.Device_Start",Boolean,IO,Status,Output,设备启动状态,false,true
+Mode_Auto,"ns=2;s=Channel1.Device1.Mode_Auto",Boolean,IO,Mode,Output,自动模式,false,true
+Mode_Manual,"ns=2;s=Channel1.Device1.Mode_Manual",Boolean,IO,Mode,Output,手动模式,false,true
+Mode_Debug,"ns=2;s=Channel1.Device1.Mode_Debug",Boolean,IO,Mode,Output,调试模式,false,true
+Mode_DryRun,"ns=2;s=Channel1.Device1.Mode_DryRun",Boolean,IO,Mode,Output,空运行模式,false,true
+Mode_BypassStation,"ns=2;s=Channel1.Device1.Mode_BypassStation",Boolean,IO,Mode,Output,跳过工位模式,false,true
 Axis1_Pos,"ns=2;s=Channel1.Device1.Axis1_Pos",Double,Axis,Motion,Output,1轴当前位置,false,true
+Axis1_Enable,"ns=2;s=Channel1.Device1.Axis1_Enable",Boolean,Axis,Motion,Output,1轴使能,false,true
+Axis1_Alarm,"ns=2;s=Channel1.Device1.Axis1_Alarm",Boolean,Axis,Alarm,Input,1轴报警,true,false
+Axis1_AlarmReset,"ns=2;s=Channel1.Device1.Axis1_AlarmReset",Boolean,Axis,Motion,Output,1轴报警复位,false,true
+Cylinder_Extend,"ns=2;s=Channel1.Device1.Cylinder_Extend",Boolean,Cylinder,Cmd,Output,气缸伸出指令,false,true
+Cylinder_FwdLS,"ns=2;s=Channel1.Device1.Cylinder_FwdLS",Boolean,Cylinder,Sensor,Input,气缸伸出到位,false,false
+Cylinder_BwdLS,"ns=2;s=Channel1.Device1.Cylinder_BwdLS",Boolean,Cylinder,Sensor,Input,气缸退回到位,false,false
+Motor1_Fault,"ns=2;s=Channel1.Device1.Motor1_Fault",Boolean,Motor,Alarm,Input,1#电机故障,true,false
+Motor1_Reset,"ns=2;s=Channel1.Device1.Motor1_Reset",Boolean,Motor,Cmd,Output,1#电机复位,false,true
+Robot_Run,"ns=2;s=Channel1.Device1.Robot_Run",Boolean,Robot,Cmd,Output,机械手运行指令,false,true
+Robot_Pause,"ns=2;s=Channel1.Device1.Robot_Pause",Boolean,Robot,Cmd,Output,机械手暂停指令,false,true
+Stopper_Up,"ns=2;s=Channel1.Device1.Stopper_Up",Boolean,Stopper,Cmd,Output,挡停升起指令,false,true
 Alarm_EStop,"ns=2;s=Channel1.Device1.Alarm_EStop",Boolean,Alarm,Alarm,Input,急停报警,true,false
+Alarm_AirLow,"ns=2;s=Channel1.Device1.Alarm_AirLow",Boolean,Alarm,Alarm,Input,气压低报警,true,false
+Alarm_VacuumTimeout,"ns=2;s=Channel1.Device1.Alarm_VacuumTimeout",Boolean,Alarm,Alarm,Input,真空超时报警,true,false
+Alarm_ServoOverload,"ns=2;s=Channel1.Device1.Alarm_ServoOverload",Boolean,Alarm,Alarm,Input,伺服过载报警,true,false
+Production_Count,"ns=2;s=Channel1.Device1.Production_Count",Int32,Production,Count,Output,总产量计数,false,true
+Production_GoodCount,"ns=2;s=Channel1.Device1.Production_GoodCount",Int32,Production,Count,Output,良品计数,false,true
+Production_NgCount,"ns=2;s=Channel1.Device1.Production_NgCount",Int32,Production,Count,Output,不良品计数,false,true
+Production_TargetCount,"ns=2;s=Channel1.Device1.Production_TargetCount",Int32,Production,Count,Output,目标产量,false,true
+Production_Availability,"ns=2;s=Channel1.Device1.Production_Availability",Double,Production,OEE,Output,设备利用率 Availability %,false,true
+Production_Performance,"ns=2;s=Channel1.Device1.Production_Performance",Double,Production,OEE,Output,效率 Performance %,false,true
+Production_Quality,"ns=2;s=Channel1.Device1.Production_Quality",Double,Production,OEE,Output,合格率 Quality %,false,true
+Shift_ProductionCount,"ns=2;s=Channel1.Device1.Shift_ProductionCount",Int32,Production,Count,Output,本班次产量,false,true
+Shift_GoodCount,"ns=2;s=Channel1.Device1.Shift_GoodCount",Int32,Production,Count,Output,本班次良品,false,true
+Shift_NgCount,"ns=2;s=Channel1.Device1.Shift_NgCount",Int32,Production,Count,Output,本班次不良,false,true
+Daily_ProductionCount,"ns=2;s=Channel1.Device1.Daily_ProductionCount",Int32,Production,Count,Output,日累计产量,false,true
+Daily_GoodCount,"ns=2;s=Channel1.Device1.Daily_GoodCount",Int32,Production,Count,Output,日累计良品,false,true
+Daily_NgCount,"ns=2;s=Channel1.Device1.Daily_NgCount",Int32,Production,Count,Output,日累计不良,false,true
+WorkOrder_No,"ns=2;s=Channel1.Device1.WorkOrder_No",String,Production,Info,Output,当前工单号,false,true
+Recipe_Name,"ns=2;s=Channel1.Device1.Recipe_Name",String,Production,Info,Output,当前配方名,false,true
+Cycle_Time,"ns=2;s=Channel1.Device1.Cycle_Time",Double,Production,OEE,Output,实际节拍秒数,false,true
+Ideal_Cycle_Time,"ns=2;s=Channel1.Device1.Ideal_Cycle_Time",Double,Production,OEE,Output,理论节拍秒数,false,true
+Machine_RunTimeMin,"ns=2;s=Channel1.Device1.Machine_RunTimeMin",Int32,Production,OEE,Output,本班次累计运行分钟,false,true
+Machine_StopTimeMin,"ns=2;s=Channel1.Device1.Machine_StopTimeMin",Int32,Production,OEE,Output,本班次累计停机分钟,false,true
+Throughput_Hourly,"ns=2;s=Channel1.Device1.Throughput_Hourly",Int32,Production,OEE,Output,小时 UPH 产量,false,true
