@@ -14,7 +14,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:l="clr-namespace:ApexHMI.Converters"
         mc:Ignorable="d"
-        Title="PLC OPC UA HMI Designer" Height="1080" Width="1880" WindowStartupLocation="CenterScreen" Background="#F3F6FB" WindowStyle="None" ResizeMode="CanResize"
+        Title="ApexHMI V0.8" Height="1080" Width="1880" WindowStartupLocation="CenterScreen" Background="#F3F6FB" WindowStyle="None" ResizeMode="CanResize"
         UseLayoutRounding="True" SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"
         PreviewMouseWheel="MainWindow_PreviewMouseWheel">
@@ -455,7 +455,7 @@
                                 <Rectangle Width="9" Height="9" Fill="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
-                        <TextBlock Text="PLC OPC UA HMI Designer" Foreground="#334155" VerticalAlignment="Center" FontSize="13" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
+                        <TextBlock Text="ApexHMI V0.8" Foreground="#334155" VerticalAlignment="Center" FontSize="13" shell:WindowChrome.IsHitTestVisibleInChrome="True"/>
                     </StackPanel>
                     <Menu Grid.Column="1" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                         <MenuItem Header="{l:Loc Menu_File}">

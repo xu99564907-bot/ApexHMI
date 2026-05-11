@@ -11,6 +11,17 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\$(Configuration)\exe\</OutputPath>
     <DefaultItemExcludes>$(DefaultItemExcludes);backup\**;backup_*\**;dist\**;tests\**;tools\**</DefaultItemExcludes>
+
+    <!-- ApexHMI 版本号管理 (从 V0.8 起跟踪, 后续修改这里就行) -->
+    <Product>ApexHMI</Product>
+    <AssemblyTitle>ApexHMI</AssemblyTitle>
+    <AssemblyName>ApexHMI</AssemblyName>
+    <Version>0.8.0</Version>
+    <AssemblyVersion>0.8.0.0</AssemblyVersion>
+    <FileVersion>0.8.0.0</FileVersion>
+    <InformationalVersion>V0.8</InformationalVersion>
+    <Company>ApexHMI</Company>
+    <Copyright>© 2026 ApexHMI</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
