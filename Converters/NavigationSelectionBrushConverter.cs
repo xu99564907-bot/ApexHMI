@@ -32,8 +32,14 @@ public sealed class NavigationSelectionBrushConverter : IMultiValueConverter
     {
         var currentSection = values.Length > 0 ? values[0] as string : string.Empty;
         var title = values.Length > 1 ? values[1] as string : string.Empty;
+        // 第 3 个 binding（可选）：CurrentNavigationGroup
+        // 用户在某主导航下添加的画布子页跳转后, CurrentSection="运行页面"
+        // 但 CurrentNavigationGroup=ParentTitle (如"手动操作"), 用它来 active 主导航
+        var currentGroup = values.Length > 2 ? values[2] as string : null;
         var mode = parameter as string ?? "Background";
-        var isActive = IsActive(currentSection ?? string.Empty, title ?? string.Empty);
+        var isActive = (!string.IsNullOrEmpty(currentGroup)
+                        && string.Equals(currentGroup, title, StringComparison.Ordinal))
+                    || IsActive(currentSection ?? string.Empty, title ?? string.Empty);
 
         return mode switch
         {

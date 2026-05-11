@@ -617,29 +617,29 @@
                             <Button.Background>
                                 <MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}">
                                     <Binding Path="CurrentSection"/>
-                                    <Binding Source="主界面"/>
+                                    <Binding Source="主界面"/><Binding Path="CurrentNavigationGroup"/>
                                 </MultiBinding>
                             </Button.Background>
                             <materialDesign:PackIcon Kind="HomeOutline" Width="70" Height="70">
                                 <materialDesign:PackIcon.Foreground>
                                     <MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground">
                                         <Binding Path="CurrentSection"/>
-                                        <Binding Source="主界面"/>
+                                        <Binding Source="主界面"/><Binding Path="CurrentNavigationGroup"/>
                                     </MultiBinding>
                                 </materialDesign:PackIcon.Foreground>
                             </materialDesign:PackIcon>
                         </Button>
                         <Button Grid.Column="1" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="监控" ToolTip="监控">
-                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="监控"/></MultiBinding></Button.Background>
-                            <materialDesign:PackIcon Kind="FileTableBoxOutline" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="监控"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
+                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="监控"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></Button.Background>
+                            <materialDesign:PackIcon Kind="FileTableBoxOutline" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="监控"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
                         <Button Grid.Column="2" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="手动操作" ToolTip="手动操作">
-                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="手动操作"/></MultiBinding></Button.Background>
-                            <materialDesign:PackIcon Kind="WrenchOutline" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="手动操作"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
+                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="手动操作"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></Button.Background>
+                            <materialDesign:PackIcon Kind="WrenchOutline" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="手动操作"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
                         <Button Grid.Column="3" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="参数设定" ToolTip="参数设定">
-                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="参数设定"/></MultiBinding></Button.Background>
-                            <materialDesign:PackIcon Kind="Cog" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="参数设定"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
+                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="参数设定"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></Button.Background>
+                            <materialDesign:PackIcon Kind="Cog" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="参数设定"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
                         <Border Grid.Column="4" Margin="12,8" CornerRadius="14" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -648,16 +648,16 @@
                             </StackPanel>
                         </Border>
                         <Button Grid.Column="5" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="配方管理" ToolTip="配方管理">
-                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="配方管理"/></MultiBinding></Button.Background>
-                            <materialDesign:PackIcon Kind="CrosshairsGps" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="配方管理"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
+                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="配方管理"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></Button.Background>
+                            <materialDesign:PackIcon Kind="CrosshairsGps" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="配方管理"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
                         <Button Grid.Column="6" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="报警画面" ToolTip="报警画面">
-                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="报警画面"/></MultiBinding></Button.Background>
-                            <materialDesign:PackIcon Kind="ChartBellCurveCumulative" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="报警画面"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
+                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="报警画面"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></Button.Background>
+                            <materialDesign:PackIcon Kind="ChartBellCurveCumulative" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="报警画面"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
                         <Button Grid.Column="7" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="登录" ToolTip="登录">
-                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="登录"/></MultiBinding></Button.Background>
-                            <materialDesign:PackIcon Kind="AccountMultipleOutline" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="登录"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
+                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="登录"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></Button.Background>
+                            <materialDesign:PackIcon Kind="AccountMultipleOutline" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="登录"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
                         <!-- 用户挂载到主导航的页面（ShowInTopNav=True 的设计页） -->
                         <ItemsControl Grid.Column="8" ItemsSource="{Binding TopNavUserPages}">
@@ -687,8 +687,8 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <Button Grid.Column="9" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="设计器" ToolTip="设计器" Visibility="{Binding IsDesignMode, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="设计器"/></MultiBinding></Button.Background>
-                            <materialDesign:PackIcon Kind="PencilRuler" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="设计器"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
+                            <Button.Background><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}"><Binding Path="CurrentSection"/><Binding Source="设计器"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></Button.Background>
+                            <materialDesign:PackIcon Kind="PencilRuler" Width="70" Height="70"><materialDesign:PackIcon.Foreground><MultiBinding Converter="{StaticResource NavigationSelectionBrushConverter}" ConverterParameter="Foreground"><Binding Path="CurrentSection"/><Binding Source="设计器"/><Binding Path="CurrentNavigationGroup"/></MultiBinding></materialDesign:PackIcon.Foreground></materialDesign:PackIcon>
                         </Button>
                     </Grid>
                 </Grid>

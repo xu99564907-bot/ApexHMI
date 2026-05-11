@@ -263,8 +263,9 @@ public sealed partial class MainWindowViewModel : MainViewModel
         {
             await NavigateToRuntimePageAsync(item.RouteKey!);
             NavigateCommand.Execute("运行页面");
-            // NavigateCommand 中会先清空 override；用户页跳转后再覆盖回父段，
-            // 让侧栏继续显示父段（如"手动操作"）的子项。
+            // 把 CurrentSection 改为子项 Title (如"电批操作")，让子导航 active trigger 命中
+            // 同时 SetNavigationGroupOverride(ParentTitle) 让主导航也保持高亮
+            CurrentSection = item.Title;
             SetNavigationGroupOverride(item.ParentTitle);
             // 从侧栏父段进入用户画布页时，不显示运行页顶部的"页面切换"按钮条 —
             // 那些跳转应当只通过侧栏进行。
