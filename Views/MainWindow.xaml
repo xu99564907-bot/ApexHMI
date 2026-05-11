@@ -860,7 +860,6 @@
                     </Border>
                     <TextBlock Text="{Binding SystemMessage}" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
                 </WrapPanel>
-                    <TextBlock DockPanel.Dock="Right" Text="{l:Loc StatusBar_AppTagline}" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center"/>
             </DockPanel>
         </Border>
         </Grid>

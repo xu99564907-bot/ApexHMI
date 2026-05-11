@@ -41,14 +41,7 @@
                     <Grid x:Name="ManualRootGrid" Margin="12" DataContext="{Binding ShellViewModel}">
                         <Border Style="{StaticResource CardBorderStyle}" Padding="16">
                             <StackPanel>
-                                <DockPanel Margin="0,0,0,12">
-                                    <TextBlock Text="{Binding CurrentManualTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" VerticalAlignment="Center"/>
-                                    <CheckBox DockPanel.Dock="Right" Content="🎨 使用设计器布局"
-                                              IsChecked="{Binding UseDesignerManualLayout}"
-                                              Foreground="#0F172A" FontWeight="SemiBold"
-                                              VerticalAlignment="Center" Margin="20,0,0,0"
-                                              ToolTip="启用后,本页直接显示设计器中编辑的 manual.* 页面;关闭则恢复原硬编码 UI。"/>
-                                </DockPanel>
+                                <TextBlock Text="{Binding CurrentManualTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
                                 <!-- 路径B：设计器布局视图 -->
                                 <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF"
                                         Padding="6" Margin="0,0,0,12"
