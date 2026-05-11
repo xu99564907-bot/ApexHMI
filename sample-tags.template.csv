@@ -23,23 +23,23 @@ Alarm_EStop,"ns=4;s=|var|Application.DB{OP70}_Fault.Estop.EstopButton",Boolean,A
 Alarm_AirLow,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.AirPresure",Boolean,Alarm,Alarm,Input,气压低 (OP{OP} false=低),true,false
 Alarm_VacuumTimeout,"ns=4;s=|var|Application.DB{OP50}_DriveControl.VacCtrl[1].Status.Error",Boolean,Alarm,Alarm,Input,真空建立超时 (OP{OP}),true,false
 Alarm_ServoOverload,"ns=4;s=|var|Application.DB{OP50}_DriveControl.AxisCtrl[1].Status.Error",Boolean,Alarm,Alarm,Input,伺服过载 (OP{OP}),true,false
-Production_Count,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Total",Int32,Production,Count,Output,产线总产量 (终端 OP{OP_TERM}),false,true
-Production_GoodCount,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Total",Int32,Production,Count,Output,产线良品 (终端 OP{OP_TERM}),false,true
-Production_NgCount,"ns=4;s=|var|Application.DB{TERM03}_Count.NG.Total",Int32,Production,Count,Output,产线不良 (终端 OP{OP_TERM}),false,true
-Production_TargetCount,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Num",Int32,Production,Count,Output,目标产量 (终端),false,true
+Production_Count,"ns=4;s=|var|Application.DB{OP03}_Count.Total.Total",Int32,Production,Count,Output,产线总产量 (当前工位 OP{OP}),false,true
+Production_GoodCount,"ns=4;s=|var|Application.DB{OP03}_Count.OK.Total",Int32,Production,Count,Output,产线良品 (当前工位 OP{OP}),false,true
+Production_NgCount,"ns=4;s=|var|Application.DB{OP03}_Count.NG.Total",Int32,Production,Count,Output,产线不良 (当前工位 OP{OP}),false,true
+Production_TargetCount,"ns=4;s=|var|Application.DB{OP03}_Count.Total.Num",Int32,Production,Count,Output,目标产量 (当前工位 OP{OP}),false,true
 Production_Availability,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.EfficencyResult",Double,Production,OEE,Output,设备利用率% (OP{OP}),false,true
 Production_Performance,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.Speed",Double,Production,OEE,Output,生产速度 (OP{OP}),false,true
-Production_Quality,"ns=4;s=|var|Application.DB{TERM03}_Count.Yield",Double,Production,OEE,Output,合格率% (终端),false,true
-Shift_ProductionCount,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Today.Total",Int32,Production,Count,Output,本班次总 (终端),false,true
-Shift_GoodCount,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Today.Total",Int32,Production,Count,Output,本班次良 (终端),false,true
-Shift_NgCount,"ns=4;s=|var|Application.DB{TERM03}_Count.NG.Today.Total",Int32,Production,Count,Output,本班次不良 (终端),false,true
-Daily_ProductionCount,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Total",Int32,Production,Count,Output,日累计 (终端 同 Production_Count),false,true
-Daily_GoodCount,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Total",Int32,Production,Count,Output,日累计良 (终端),false,true
-Daily_NgCount,"ns=4;s=|var|Application.DB{TERM03}_Count.NG.Total",Int32,Production,Count,Output,日累计不良 (终端),false,true
+Production_Quality,"ns=4;s=|var|Application.DB{OP03}_Count.Yield",Double,Production,OEE,Output,合格率% (当前工位 OP{OP}),false,true
+Shift_ProductionCount,"ns=4;s=|var|Application.DB{OP03}_Count.Total.Today.Total",Int32,Production,Count,Output,本班次总 (当前工位 OP{OP}),false,true
+Shift_GoodCount,"ns=4;s=|var|Application.DB{OP03}_Count.OK.Today.Total",Int32,Production,Count,Output,本班次良 (当前工位 OP{OP}),false,true
+Shift_NgCount,"ns=4;s=|var|Application.DB{OP03}_Count.NG.Today.Total",Int32,Production,Count,Output,本班次不良 (当前工位 OP{OP}),false,true
+Daily_ProductionCount,"ns=4;s=|var|Application.DB{OP03}_Count.Total.Total",Int32,Production,Count,Output,日累计 ( 当前工位 OP{OP} 同 Production_Count),false,true
+Daily_GoodCount,"ns=4;s=|var|Application.DB{OP03}_Count.OK.Total",Int32,Production,Count,Output,日累计良 (当前工位 OP{OP}),false,true
+Daily_NgCount,"ns=4;s=|var|Application.DB{OP03}_Count.NG.Total",Int32,Production,Count,Output,日累计不良 (当前工位 OP{OP}),false,true
 WorkOrder_No,"ns=4;s=|var|Application.DB{OP02}_Recipe.RecipeNameTemp",String,Production,Info,Output,当前工单显示 (OP{OP}),false,true
 Recipe_Name,"ns=4;s=|var|Application.DB{OP02}_Recipe.RecipeName",String,Production,Info,Output,当前配方名 (OP{OP}),false,true
 Cycle_Time,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.CycleTime.Average",Double,Production,OEE,Output,平均节拍秒 (OP{OP}),false,true
 Ideal_Cycle_Time,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.CycleTime.Plan",Double,Production,OEE,Output,理论节拍秒 (OP{OP}),false,true
 Machine_RunTimeMin,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.RunTime",Int32,Production,OEE,Output,累计运行分钟 (OP{OP}),false,true
 Machine_StopTimeMin,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.PowerOnTime",Int32,Production,OEE,Output,累计上电分钟 (OP{OP}),false,true
-Throughput_Hourly,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Befor[0]",Int32,Production,OEE,Output,小时 UPH (终端 环形缓冲),false,true
+Throughput_Hourly,"ns=4;s=|var|Application.DB{OP03}_Count.OK.Befor[0]",Int32,Production,OEE,Output,小时 UPH ( 当前工位 OP{OP} 环形缓冲),false,true
