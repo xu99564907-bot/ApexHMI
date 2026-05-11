@@ -963,6 +963,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         OnPropertyChanged(nameof(IoGenerationHeadline));
         RebindCylinderDbByOperation();
+        // 工位号变化 → 所有带模板的 Tag NodeId 重新 resolve
+        ReresolveTagNodeIdsForCurrentOperation();
     }
     partial void OnCylinderHomeMaskEnabledChanged(bool value) => OnPropertyChanged(nameof(CylinderHomeMaskButtonText));
     partial void OnCylinderWorkMaskEnabledChanged(bool value) => OnPropertyChanged(nameof(CylinderWorkMaskButtonText));

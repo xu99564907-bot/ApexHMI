@@ -1,0 +1,45 @@
+Name,NodeId,DataType,Category,Group,Direction,Description,IsAlarm,IsWritable
+X_Start,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.OP_StartButton",Boolean,IO,Input,Input,启动按钮 (当前工位 OP{OP}),false,false
+Y_RunLamp,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.StartLamp",Boolean,IO,Output,Output,运行指示灯 (OP{OP}),false,true
+Device_Start,"ns=4;s=|var|Application.DB{OP00}_Control.Mode.Out.AutoRun_R",Boolean,IO,Status,Output,设备自动运行中 (OP{OP}),false,true
+Mode_Auto,"ns=4;s=|var|Application.DB{OP00}_Control.Mode.Status.AutoMode",Boolean,IO,Mode,Output,自动模式 (OP{OP}),false,true
+Mode_Manual,"ns=4;s=|var|Application.DB{OP00}_Control.Mode.Status.ManualMode",Boolean,IO,Mode,Output,手动模式 (OP{OP}),false,true
+Mode_Debug,"ns=4;s=|var|Application.DB{OP00}_Control.Mode.Status.StepMode",Boolean,IO,Mode,Output,单步/调试模式 (OP{OP}),false,true
+Mode_DryRun,"ns=4;s=|var|Application.DB{OP00}_Control.Mode.Status.DryMode",Boolean,IO,Mode,Output,空运行模式 (OP{OP}),false,true
+Mode_BypassStation,"ns=4;s=|var|Application.DB{OP00}_Control.Mode.Status.StationMode",Boolean,IO,Mode,Output,工位跳过模式 (OP{OP}),false,true
+Axis1_Pos,"ns=4;s=|var|Application.DB{OP50}_DriveControl.AxisCtrl[1].Status.ActPosition",Double,Axis,Motion,Output,1轴位置 (OP{OP}),false,true
+Axis1_Enable,"ns=4;s=|var|Application.DB{OP50}_DriveControl.AxisCtrl[1].DevStatus.PowerOn",Boolean,Axis,Motion,Output,1轴使能 (OP{OP}),false,true
+Axis1_Alarm,"ns=4;s=|var|Application.DB{OP50}_DriveControl.AxisCtrl[1].Status.Error",Boolean,Axis,Alarm,Input,1轴报警 (OP{OP}),true,false
+Axis1_AlarmReset,"ns=4;s=|var|Application.DB{OP50}_DriveControl.AxisCtrl[1].Cmd.ErrorReset",Boolean,Axis,Motion,Output,1轴报警复位 (OP{OP}),false,true
+Cylinder_Extend,"ns=4;s=|var|Application.DB{OP50}_DriveControl.CylCtrl[1].Cmd.ManuToWork",Boolean,Cylinder,Cmd,Output,气缸1伸出 (OP{OP}),false,true
+Cylinder_FwdLS,"ns=4;s=|var|Application.DB{OP50}_DriveControl.CylCtrl[1].Status.InWork",Boolean,Cylinder,Sensor,Input,气缸1伸到位 (OP{OP}),false,false
+Cylinder_BwdLS,"ns=4;s=|var|Application.DB{OP50}_DriveControl.CylCtrl[1].Status.InHome",Boolean,Cylinder,Sensor,Input,气缸1退到位 (OP{OP}),false,false
+Motor1_Fault,"ns=4;s=|var|Application.DB{OP50}_DriveControl.Motor[1].DevStatus.Fault",Boolean,Motor,Alarm,Input,1#电机故障 (OP{OP}),true,false
+Motor1_Reset,"ns=4;s=|var|Application.DB{OP50}_DriveControl.Motor[1].Cmd.Reset",Boolean,Motor,Cmd,Output,1#电机复位 (OP{OP}),false,true
+Robot_Run,"ns=4;s=|var|Application.DB{OP50}_DriveControl.Kuka[1].Cmd.EXT_START",Boolean,Robot,Cmd,Output,机械手运行 (OP{OP} Kuka[1]),false,true
+Robot_Pause,"ns=4;s=|var|Application.DB{OP50}_DriveControl.Kuka[1].Cmd.MOVE_ENABLE",Boolean,Robot,Cmd,Output,机械手允许移动 (OP{OP}),false,true
+Stopper_Up,"ns=4;s=|var|Application.DB{OP50}_DriveControl.Stopper[1].Cmd.ManuToWork",Boolean,Stopper,Cmd,Output,挡停1升起 (OP{OP}),false,true
+Alarm_EStop,"ns=4;s=|var|Application.DB{OP70}_Fault.Estop.EstopButton",Boolean,Alarm,Alarm,Input,急停按钮 (OP{OP} Fault),true,false
+Alarm_AirLow,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.AirPresure",Boolean,Alarm,Alarm,Input,气压低 (OP{OP} false=低),true,false
+Alarm_VacuumTimeout,"ns=4;s=|var|Application.DB{OP50}_DriveControl.VacCtrl[1].Status.Error",Boolean,Alarm,Alarm,Input,真空建立超时 (OP{OP}),true,false
+Alarm_ServoOverload,"ns=4;s=|var|Application.DB{OP50}_DriveControl.AxisCtrl[1].Status.Error",Boolean,Alarm,Alarm,Input,伺服过载 (OP{OP}),true,false
+Production_Count,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Total",Int32,Production,Count,Output,产线总产量 (终端 OP{OP_TERM}),false,true
+Production_GoodCount,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Total",Int32,Production,Count,Output,产线良品 (终端 OP{OP_TERM}),false,true
+Production_NgCount,"ns=4;s=|var|Application.DB{TERM03}_Count.NG.Total",Int32,Production,Count,Output,产线不良 (终端 OP{OP_TERM}),false,true
+Production_TargetCount,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Num",Int32,Production,Count,Output,目标产量 (终端),false,true
+Production_Availability,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.EfficencyResult",Double,Production,OEE,Output,设备利用率% (OP{OP}),false,true
+Production_Performance,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.Speed",Double,Production,OEE,Output,生产速度 (OP{OP}),false,true
+Production_Quality,"ns=4;s=|var|Application.DB{TERM03}_Count.Yield",Double,Production,OEE,Output,合格率% (终端),false,true
+Shift_ProductionCount,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Today.Total",Int32,Production,Count,Output,本班次总 (终端),false,true
+Shift_GoodCount,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Today.Total",Int32,Production,Count,Output,本班次良 (终端),false,true
+Shift_NgCount,"ns=4;s=|var|Application.DB{TERM03}_Count.NG.Today.Total",Int32,Production,Count,Output,本班次不良 (终端),false,true
+Daily_ProductionCount,"ns=4;s=|var|Application.DB{TERM03}_Count.Total.Total",Int32,Production,Count,Output,日累计 (终端 同 Production_Count),false,true
+Daily_GoodCount,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Total",Int32,Production,Count,Output,日累计良 (终端),false,true
+Daily_NgCount,"ns=4;s=|var|Application.DB{TERM03}_Count.NG.Total",Int32,Production,Count,Output,日累计不良 (终端),false,true
+WorkOrder_No,"ns=4;s=|var|Application.DB{OP02}_Recipe.RecipeNameTemp",String,Production,Info,Output,当前工单显示 (OP{OP}),false,true
+Recipe_Name,"ns=4;s=|var|Application.DB{OP02}_Recipe.RecipeName",String,Production,Info,Output,当前配方名 (OP{OP}),false,true
+Cycle_Time,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.CycleTime.Average",Double,Production,OEE,Output,平均节拍秒 (OP{OP}),false,true
+Ideal_Cycle_Time,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.CycleTime.Plan",Double,Production,OEE,Output,理论节拍秒 (OP{OP}),false,true
+Machine_RunTimeMin,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.RunTime",Int32,Production,OEE,Output,累计运行分钟 (OP{OP}),false,true
+Machine_StopTimeMin,"ns=4;s=|var|Application.DB{OP00}_Control.Machine.PowerOnTime",Int32,Production,OEE,Output,累计上电分钟 (OP{OP}),false,true
+Throughput_Hourly,"ns=4;s=|var|Application.DB{TERM03}_Count.OK.Befor[0]",Int32,Production,OEE,Output,小时 UPH (终端 环形缓冲),false,true

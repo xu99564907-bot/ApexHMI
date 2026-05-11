@@ -261,11 +261,27 @@ public partial class MainViewModel
         if (dialog.ShowDialog() != true) return;
         var imported = await _csvImportService.ImportTagsAsync(dialog.FileName);
         Tags.Clear();
-        foreach (var tag in imported) Tags.Add(tag);
+        foreach (var tag in imported)
+        {
+            // 保留模板 + 立即按当前 IoOperationNumber resolve 一次
+            tag.NodeIdTemplate = tag.NodeId;
+            tag.NodeId = TagNodeIdResolver.Resolve(tag.NodeId, IoOperationNumber);
+            Tags.Add(tag);
+        }
         OnPropertyChanged(nameof(TagCount));
         RefreshMonitorView();
-        SystemMessage = $"已导入变量表：{Path.GetFileName(dialog.FileName)}，共 {Tags.Count} 项";
+        SystemMessage = $"已导入变量表：{Path.GetFileName(dialog.FileName)}，共 {Tags.Count} 项 (工位 {IoOperationNumber})";
         AddLog("配置", SystemMessage, "Info");
+    }
+
+    /// <summary>工位号变化时重新 resolve 所有带模板的 Tag。</summary>
+    internal void ReresolveTagNodeIdsForCurrentOperation()
+    {
+        foreach (var tag in Tags)
+        {
+            if (string.IsNullOrEmpty(tag.NodeIdTemplate)) continue;
+            tag.NodeId = TagNodeIdResolver.Resolve(tag.NodeIdTemplate, IoOperationNumber);
+        }
     }
 
     [RelayCommand]

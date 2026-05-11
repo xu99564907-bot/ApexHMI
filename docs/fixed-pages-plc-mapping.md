@@ -189,7 +189,58 @@ OP80 → DB80{03,50,70} → 终端 / 总计数（已用作 Production_*）
 
 如果 PLC 端字段名不同，调整 csv 中 `Cycle_Time` / `Ideal_Cycle_Time` 的 NodeId 末段即可。
 
-## 七、连接验证
+## 七、占位符 → 动态工位号
+
+⚠ **DB 编号不是固定的**！每次"手动程序生成"页填的工位号变化时，对应所有 DB 也跟着变。
+公式（来自 `MainViewModel.Designer.cs`）：
+
+```
+controlDb = opNo * 100 + controlDbOffset       (默认 controlDbOffset=0)
+recipeDb  = controlDb + 2
+countDb   = controlDb + 3
+commDb    = controlDb + 5
+driveDb   = controlDb + driveDbOffset           (默认 driveDbOffset=50)
+faultDb   = controlDb + 70
+```
+
+**所以 csv 里 NodeId 用占位符模板，加载时按 IoOperationNumber 实时替换**：
+
+| 模板占位符 | 含义 | OP10 时 | OP30 时 | OP80 时 |
+|---|---|---|---|---|
+| `{OP}` | 工位数字 | 10 | 30 | 80 |
+| `{OP00}` | Control DB | 1000 | 3000 | 8000 |
+| `{OP02}` | Recipe DB | 1002 | 3002 | 8002 |
+| `{OP03}` | Count DB | 1003 | 3003 | 8003 |
+| `{OP05}` | Comm DB | 1005 | 3005 | 8005 |
+| `{OP50}` | DriveControl DB | 1050 | 3050 | 8050 |
+| `{OP70}` | Fault DB | 1070 | 3070 | 8070 |
+| `{OP_TERM}` | 终端工位（固定 80）| 80 | 80 | 80 |
+| `{TERM00}` ~ `{TERM70}` | 终端各 DB | 8000~8070 | 同左 | 同左 |
+
+**模板示例**：
+
+```
+ns=4;s=|var|Application.DB{OP00}_Control.Mode.Status.AutoMode
+   ↓ IoOperationNumber="OP30"
+ns=4;s=|var|Application.DB3000_Control.Mode.Status.AutoMode
+
+ns=4;s=|var|Application.DB{OP50}_DriveControl.CylCtrl[1].Status.Error
+   ↓ IoOperationNumber="OP40"
+ns=4;s=|var|Application.DB4050_DriveControl.CylCtrl[1].Status.Error
+
+ns=4;s=|var|Application.DB{TERM03}_Count.OK.Total       (产线总良品)
+   ↓ 任何时候
+ns=4;s=|var|Application.DB8003_Count.OK.Total
+```
+
+**实现位置**：
+- 占位符解析：[Services/TagNodeIdResolver.cs](../Services/TagNodeIdResolver.cs)
+- 加载 csv 时调用：[MainViewModel.Monitor.cs](../ViewModels/MainViewModel.Monitor.cs) `ImportTagsAsync`
+- 工位号变化自动重 resolve：[MainViewModel.cs](../ViewModels/MainViewModel.cs) `OnIoOperationNumberChanged`
+
+模板文件：[sample-tags.template.csv](../sample-tags.template.csv)（39 条 Tag 全部用占位符）
+
+## 八、连接验证
 
 1. 启动 InoProShop OPC UA Server（默认端口 4840）
 2. HMI → 监控-通讯调试 → Browse `Application.DB1000_Control`
