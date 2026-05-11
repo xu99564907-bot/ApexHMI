@@ -86,8 +86,7 @@
                                                 </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate DataType="{x:Type model:ManualCylinderBlockItem}">
-                                                        <!-- MA2 报警态: ErrorActive=true 时整卡红边框 + 浅红底
-                                                             MA7 IO 详情 ToolTip: hover 显示完整命令/传感器/互锁绑定 -->
+                                                        <!-- MA2 报警态: ErrorActive=true 时整卡红边框 + 浅红底 -->
                                                         <Border Padding="8" Margin="0,0,10,10">
                                                             <Border.Style>
                                                                 <Style TargetType="Border" BasedOn="{StaticResource CardBorderStyle}">
@@ -100,22 +99,6 @@
                                                                     </Style.Triggers>
                                                                 </Style>
                                                             </Border.Style>
-                                                            <Border.ToolTip>
-                                                                <ToolTip>
-                                                                    <StackPanel MinWidth="280">
-                                                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="13" Foreground="#0F172A" Margin="0,0,0,6"/>
-                                                                        <TextBlock Text="{Binding WorkCommandTagName, StringFormat=工作命令: {0}}" Foreground="#475569" FontSize="11"/>
-                                                                        <TextBlock Text="{Binding WorkCommandAddress, StringFormat=  地址: {0}}" Foreground="#94A3B8" FontSize="11"/>
-                                                                        <TextBlock Text="{Binding HomeCommandTagName, StringFormat=原点命令: {0}}" Foreground="#475569" FontSize="11" Margin="0,4,0,0"/>
-                                                                        <TextBlock Text="{Binding HomeCommandAddress, StringFormat=  地址: {0}}" Foreground="#94A3B8" FontSize="11"/>
-                                                                        <TextBlock Text="{Binding WorkSensorTagName, StringFormat=工作传感器: {0}}" Foreground="#475569" FontSize="11" Margin="0,4,0,0"/>
-                                                                        <TextBlock Text="{Binding WorkSensorAddress, StringFormat=  地址: {0}}" Foreground="#94A3B8" FontSize="11"/>
-                                                                        <TextBlock Text="{Binding HomeSensorTagName, StringFormat=原点传感器: {0}}" Foreground="#475569" FontSize="11" Margin="0,4,0,0"/>
-                                                                        <TextBlock Text="{Binding HomeSensorAddress, StringFormat=  地址: {0}}" Foreground="#94A3B8" FontSize="11"/>
-                                                                        <TextBlock Text="{Binding InterlockHint}" Foreground="#0F172A" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"/>
-                                                                    </StackPanel>
-                                                                </ToolTip>
-                                                            </Border.ToolTip>
                                                             <Grid>
                                                                 <Grid.RowDefinitions>
                                                                     <RowDefinition Height="Auto"/>
