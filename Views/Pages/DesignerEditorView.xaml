@@ -236,55 +236,6 @@
                         <TextBox Text="{Binding SelectedPage.NavOrder, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,10" FontSize="12"/>
 
-                        <!-- 批量生成功能块 -->
-                        <Border Margin="0,16,0,0" Padding="10" CornerRadius="8"
-                                Background="#F0F9FF" BorderBrush="#BAE6FD" BorderThickness="1">
-                            <StackPanel>
-                                <TextBlock Text="批量生成功能块" FontSize="14" FontWeight="SemiBold"
-                                           Foreground="#0369A1" Margin="0,0,0,8"/>
-
-                                <TextBlock Text="功能块类型" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
-                                <ComboBox ItemsSource="{Binding BatchBlockTypes}"
-                                          SelectedValue="{Binding BatchBlockType}"
-                                          Margin="0,4,0,8" FontSize="12">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock>
-                                                <TextBlock.Text>
-                                                    <MultiBinding StringFormat="{}{0}">
-                                                        <Binding/>
-                                                    </MultiBinding>
-                                                </TextBlock.Text>
-                                            </TextBlock>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
-
-                                <TextBlock Text="命名前缀（如 CYL → CYL1, CYL2…）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
-                                <TextBox Text="{Binding BatchNamePrefix, UpdateSourceTrigger=PropertyChanged}"
-                                         Margin="0,4,0,8" FontSize="12"/>
-
-                                <TextBlock Text="数量（1-20）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
-                                <TextBox Text="{Binding BatchCount, UpdateSourceTrigger=PropertyChanged}"
-                                         Margin="0,4,0,8" FontSize="12"/>
-
-                                <TextBlock Text="起始位置 (X, Y)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="12"/>
-                                <UniformGrid Columns="2" Margin="0,4,0,8">
-                                    <TextBox Text="{Binding BatchStartX, UpdateSourceTrigger=PropertyChanged}"
-                                             Margin="0,0,4,0" FontSize="12"/>
-                                    <TextBox Text="{Binding BatchStartY, UpdateSourceTrigger=PropertyChanged}"
-                                             Margin="4,0,0,0" FontSize="12"/>
-                                </UniformGrid>
-
-                                <CheckBox Content="水平排列（取消则垂直）"
-                                          IsChecked="{Binding BatchLayoutHorizontal}"
-                                          Margin="0,0,0,10" FontSize="12" Foreground="{DynamicResource Brush.TextSecondary}"/>
-
-                                <Button Content="批量生成" Command="{Binding BatchGenerateCommand}"
-                                        Background="#0369A1" Foreground="White" BorderBrush="#0369A1"
-                                        Padding="10,8" FontSize="13" FontWeight="SemiBold"/>
-                            </StackPanel>
-                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
