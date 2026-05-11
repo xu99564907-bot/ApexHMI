@@ -894,7 +894,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         OnPropertyChanged(nameof(CurrentNavigationGroup));
         var targetTabIndex = ResolveTabIndex(value);
-        if (SelectedTabIndex != targetTabIndex)
+        // -1 表示未知 section（用户画布子页等），保持当前 Tab 不动
+        if (targetTabIndex >= 0 && SelectedTabIndex != targetTabIndex)
         {
             SelectedTabIndex = targetTabIndex;
         }
@@ -908,7 +909,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     partial void OnSelectedTabIndexChanged(int value)
     {
         var section = GetSectionNameByTabIndex(value);
-        if (ResolveTabIndex(CurrentSection) == value)
+        var currentResolved = ResolveTabIndex(CurrentSection);
+        // 已经对齐 (固定段) 或 CurrentSection 是用户画布页 (-1) 时不反向重置
+        if (currentResolved < 0 || currentResolved == value)
         {
             return;
         }
@@ -1584,7 +1587,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
             "画布设计" => 9,
             "运行页面" => 10,
             "生产计数" => 11,
-            _ => 0
+            // -1 表示"未知 section"（如用户在设计器新建的画布页 Title 不是上述固定值），
+            // 调用方应保持当前 SelectedTabIndex 不动，避免误切回主界面
+            _ => -1
         };
     }
 
