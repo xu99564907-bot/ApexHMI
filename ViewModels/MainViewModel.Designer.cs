@@ -1184,13 +1184,14 @@ public partial class MainViewModel
         }
     }
 
-    /// <summary>工位号变更钩子：保存旧工位 Init → 加载新工位 → 持久化</summary>
+    /// <summary>工位号变更钩子：保存旧工位 Init → 加载新工位 → 加载已有代码 → 持久化</summary>
     partial void OnSfcInitStationNoChanged(string value)
     {
         if (_suppressInitStationSwitch) return;
         FlushCurrentSfcInitToDict(_prevSfcInitStationNo);
         _prevSfcInitStationNo = value;
         LoadSfcInitFromDictInternal(value);
+        LoadSfcGeneratedCodeForStation(value, isInit: true);
         _ = PersistConfigAsync(updateStatus: false);
     }
 
@@ -1344,14 +1345,85 @@ public partial class MainViewModel
         }
     }
 
-    /// <summary>工位号变更钩子：保存旧工位 → 加载新工位 → 持久化</summary>
+    /// <summary>工位号变更钩子：保存旧工位 → 加载新工位 → 加载已有生成的程序文件 → 持久化</summary>
     partial void OnSfcStationNoChanged(string value)
     {
         if (_suppressStationSwitch) return;
         FlushCurrentSfcToDict(_prevSfcStationNo);
         _prevSfcStationNo = value;
         LoadSfcFromDictInternal(value);
+        LoadSfcGeneratedCodeForStation(value, isInit: false);
         _ = PersistConfigAsync(updateStatus: false);
+    }
+
+    /// <summary>
+    /// 从 Generated/SfcProgram 目录读取对应工位的代码文件填充 SfcGeneratedCode /
+    /// SfcInitGeneratedCode 显示框；找不到就提示。
+    /// 文件名规则跟 GenerateSfcCode / GenerateSfcInitCode 生成时一致。
+    /// </summary>
+    private void LoadSfcGeneratedCodeForStation(string stationNo, bool isInit)
+    {
+        try
+        {
+            var outputDir = Path.Combine(AppContext.BaseDirectory, "Generated", "SfcProgram");
+            if (!Directory.Exists(outputDir))
+            {
+                if (isInit) SfcInitGeneratedCode = "（尚未为此工位生成程序）";
+                else SfcGeneratedCode = "（尚未为此工位生成程序）";
+                return;
+            }
+
+            string? matchedFile = null;
+            if (isInit)
+            {
+                // 优先按当前 SfcInitProgramName 精确匹配
+                var safeName = Regex.Replace(SfcInitProgramName?.Trim() ?? string.Empty, @"[\\/:*?""<>|]", "_");
+                var preferred = string.IsNullOrWhiteSpace(safeName)
+                    ? Path.Combine(outputDir, $"{IoOperationNumber}_Init_S{stationNo}.txt")
+                    : Path.Combine(outputDir, $"{IoOperationNumber}_Init_{safeName}_S{stationNo}.txt");
+                if (File.Exists(preferred)) matchedFile = preferred;
+                else
+                {
+                    // 回退：扫所有该工位的 Init 文件取最新
+                    matchedFile = Directory.EnumerateFiles(outputDir, $"{IoOperationNumber}_Init_*_S{stationNo}.txt")
+                        .Concat(Directory.EnumerateFiles(outputDir, $"{IoOperationNumber}_Init_S{stationNo}.txt"))
+                        .OrderByDescending(File.GetLastWriteTime)
+                        .FirstOrDefault();
+                }
+            }
+            else
+            {
+                var preferred = Path.Combine(outputDir, $"{IoOperationNumber}_{SfcProgramName}_S{stationNo}.txt");
+                if (File.Exists(preferred)) matchedFile = preferred;
+                else
+                {
+                    // 回退：扫所有该工位 (非 Init) 文件取最新
+                    matchedFile = Directory.EnumerateFiles(outputDir, $"{IoOperationNumber}_*_S{stationNo}.txt")
+                        .Where(f => !Path.GetFileName(f).Contains("_Init_", StringComparison.OrdinalIgnoreCase)
+                                 && !Path.GetFileName(f).EndsWith($"_Init_S{stationNo}.txt"))
+                        .OrderByDescending(File.GetLastWriteTime)
+                        .FirstOrDefault();
+                }
+            }
+
+            if (matchedFile is null)
+            {
+                if (isInit) SfcInitGeneratedCode = $"（工位 {stationNo} 尚未生成初始化程序，点【生成代码】可生成）";
+                else SfcGeneratedCode = $"（工位 {stationNo} 尚未生成自动程序，点【生成代码】可生成）";
+                return;
+            }
+
+            var code = File.ReadAllText(matchedFile, Encoding.UTF8);
+            if (isInit) SfcInitGeneratedCode = code;
+            else SfcGeneratedCode = code;
+            AddLog(isInit ? "Init 生成" : "SFC 生成",
+                $"已加载工位 {stationNo} 已有代码：{Path.GetFileName(matchedFile)}", "Info");
+        }
+        catch (Exception ex)
+        {
+            AddLog(isInit ? "Init 生成" : "SFC 生成",
+                $"加载工位 {stationNo} 代码失败：{ex.Message}", "Warning");
+        }
     }
 
     /// <summary>将当前 UI 状态快照保存到工位字典</summary>
