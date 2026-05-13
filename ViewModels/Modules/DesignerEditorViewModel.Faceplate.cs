@@ -93,28 +93,40 @@ public partial class DesignerEditorViewModel
 
     // ========== P7E: 版本升级命令 ==========
 
+    /// <summary>升级单个选中 Faceplate 实例到当前 Faceplate 定义的版本。</summary>
+    /// <remarks>
+    /// 版本号匹配规则极简：直接 string 不等即视为过期。
+    /// <para>TODO（v2.0）：</para>
+    /// <list type="bullet">
+    ///   <item>SemVer 解析 + Major 增量时弹窗确认（破坏性升级）</item>
+    ///   <item>类型变更检查（DataType 改变时提示兼容性，旧值无法转换则恢复 DefaultValue）</item>
+    ///   <item>批量升级当前页 / 整工程的同源实例</item>
+    /// </list>
+    /// </remarks>
     [RelayCommand]
     private void UpgradeFaceplateInstance()
     {
         var fp = SelectedWidgetFaceplate;
         if (fp is null || SelectedWidget is null) return;
 
-        // 新增 key 用默认值填充
+        int added = 0;
+        // 新增 key 用默认值填充；删除的 key 保留旧值（按需求不动）
         foreach (var def in fp.InterfaceProperties)
         {
             if (!SelectedWidget.Properties.ContainsKey(def.Key))
+            {
                 SelectedWidget.Properties[def.Key] = def.DefaultValue ?? string.Empty;
+                added++;
+            }
         }
-        // 删除的 key 保留旧值（按需求不动）
-        // TODO: 类型变更检查（DataType 改变时给出兼容提示）
 
         var oldVer = SelectedWidget.FaceplateVersion;
         SelectedWidget.FaceplateVersion = fp.Version;
         SelectedWidget.NotifyPropertiesChanged();
         MarkPageEdited();
         RefreshFaceplateInterfaceArgs();
-        Log.Information("DesignerEditor: 已升级 Faceplate 实例 widgetId={Wid} {Old} → {New}",
-            SelectedWidget.Id, oldVer ?? "(null)", fp.Version);
+        Log.Information("DesignerEditor: 升级 Faceplate 实例 widgetId={Wid} {Old} → {New}, 新增 {Added} 个接口属性",
+            SelectedWidget.Id, oldVer ?? "(null)", fp.Version, added);
     }
 }
 
