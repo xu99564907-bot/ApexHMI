@@ -47,7 +47,25 @@ internal static class WidgetSchemaCatalogSeed
         Add(map, BuildBar());
         Add(map, BuildGauge());
         Add(map, BuildTrendView());
+
+        // P8A 配方视图
+        Add(map, BuildRecipeView());
     }
+
+    // ---------------- recipe-view (P8A) ----------------
+    private static WidgetSchema BuildRecipeView() => new()
+    {
+        TypeId = "recipe-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "recipeId", DisplayName = "配方", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "ProjectDocument.Recipes 中的 Recipe.Id" },
+            new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "allowEditDataset", DisplayName = "允许编辑数据集", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "showFieldDescription", DisplayName = "显示字段描述", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+        }
+    };
 
     private static void Add(Dictionary<string, WidgetSchema> map, WidgetSchema schema)
         => map[schema.TypeId] = schema;

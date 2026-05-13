@@ -43,4 +43,7 @@ public class ProjectDocument
 
     /// <summary>P7: 工程级 Faceplate 库（可复用 / 有接口属性 / 有版本号的复合控件模板）。</summary>
     public FaceplateLibrary? Faceplates { get; set; } = new();
+
+    /// <summary>P8A: 工程级配方库。recipe-view 通过 recipeId 引用其中的 Recipe。</summary>
+    public RecipeLibrary? Recipes { get; set; } = new();
 }

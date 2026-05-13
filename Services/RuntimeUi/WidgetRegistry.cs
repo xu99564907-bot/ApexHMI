@@ -52,6 +52,9 @@ public class WidgetRegistry : IWidgetViewFactory
         Register("table-view",    (m, ctx) => CreateView(new TableViewWidgetViewModel(m, ctx),    new TableViewWidget()));
         Register("alarm-view",    (m, ctx) => CreateView(new AlarmViewWidgetViewModel(m, ctx),    new AlarmViewWidget()));
         Register("trend-view",    (m, ctx) => CreateView(new TrendViewWidgetViewModel(m, ctx),    new TrendViewWidget()));
+
+        // P8A 配方视图
+        Register("recipe-view",   (m, ctx) => CreateView(new RecipeViewWidgetViewModel(m, ctx),   new RecipeViewWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

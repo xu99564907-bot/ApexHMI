@@ -420,7 +420,7 @@ class FaceplateInstance : WidgetInstance {
 
 ---
 
-## P8 — 高级控件 业务类（5-7 天）
+## P8 — 高级控件 业务类（5-7 天） ✅ 2026-05-13
 
 ### 控件清单
 

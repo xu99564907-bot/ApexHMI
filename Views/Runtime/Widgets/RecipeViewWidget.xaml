@@ -1,0 +1,48 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.RecipeViewWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+    <Border BorderBrush="#94A3B8" BorderThickness="1"
+            Background="{Binding Background}">
+        <DockPanel>
+            <!-- 工具栏 -->
+            <Border DockPanel.Dock="Top" Background="#F1F5F9" Padding="4"
+                    Visibility="{Binding ShowToolbar, Converter={StaticResource BoolToVis}, FallbackValue=Visible}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="配方：" VerticalAlignment="Center" Margin="4,0"/>
+                    <TextBlock Text="{Binding CurrentRecipe.Name, FallbackValue=(未配置)}"
+                               FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="当前数据集：" VerticalAlignment="Center" Margin="4,0"/>
+                    <ComboBox ItemsSource="{Binding Datasets}"
+                              SelectedItem="{Binding SelectedDataset, Mode=TwoWay}"
+                              DisplayMemberPath="Name"
+                              Width="140" Margin="0,0,8,0"/>
+                    <Button Content="新建数据集" Command="{Binding AddDatasetCommand}"   Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="删除"       Command="{Binding RemoveDatasetCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Separator Margin="4,0"/>
+                    <Button Content="读出 PLC" Command="{Binding ReadFromPlcCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="写入 PLC" Command="{Binding WriteToPlcCommand}" Margin="2" Padding="6,2" FontSize="12"
+                            Background="#FBBF24"/>
+                    <Separator Margin="4,0"/>
+                    <Button Content="导出 CSV" Command="{Binding ExportCsvCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="导入 CSV" Command="{Binding ImportCsvCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                </StackPanel>
+            </Border>
+
+            <!-- DataGrid：列在代码后置动态构建 -->
+            <DataGrid x:Name="Grid"
+                      ItemsSource="{Binding Rows}"
+                      AutoGenerateColumns="False"
+                      HeadersVisibility="Column"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      GridLinesVisibility="All"
+                      RowHeight="24"
+                      FontSize="12"
+                      Foreground="{Binding Foreground}"/>
+        </DockPanel>
+    </Border>
+</UserControl>
