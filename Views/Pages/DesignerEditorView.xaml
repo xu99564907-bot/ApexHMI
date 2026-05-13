@@ -9,6 +9,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              d:DesignHeight="720" d:DesignWidth="1280">
+    <UserControl.Resources>
+        <!-- P7C: Faceplate 接口属性类型枚举（用于 ComboBox.ItemsSource） -->
+        <ObjectDataProvider x:Key="FaceplatePropertyTypes"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type system:Enum}"
+                            xmlns:system="clr-namespace:System;assembly=mscorlib">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="model:FaceplatePropertyType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </UserControl.Resources>
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -115,6 +126,15 @@
                             <TextBlock Text="列表" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
+                    <!-- P7C: Faceplate 编辑模式切换 -->
+                    <ToggleButton IsChecked="{Binding IsFaceplateEditMode}"
+                                  Padding="6,4" Margin="0,0,4,0"
+                                  ToolTip="切换到 Faceplate 编辑模式：复用画布编辑 Faceplate 的内部画面与接口属性">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ViewModule" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="Faceplate" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </ToggleButton>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                             Padding="8,5"
@@ -209,6 +229,97 @@
                         <TextBlock Text="工程名称" Foreground="{DynamicResource Brush.TextSecondary}"/>
                         <TextBox Text="{Binding Document.ProjectName, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,8"/>
+
+                        <!-- ===== P7C: Faceplate 编辑模式专属面板 ===== -->
+                        <StackPanel Visibility="{Binding IsFaceplateEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Border Background="#FFEDD5" BorderBrush="#F97316" BorderThickness="1"
+                                    CornerRadius="4" Padding="8,4" Margin="0,0,0,8">
+                                <TextBlock Text="正在 Faceplate 编辑模式" Foreground="#9A3412" FontSize="11" FontWeight="SemiBold"/>
+                            </Border>
+                            <TextBlock Text="Faceplate 列表" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4"/>
+                            <ListBox ItemsSource="{Binding AvailableFaceplates}"
+                                     SelectedItem="{Binding SelectedFaceplate}"
+                                     DisplayMemberPath="Name"
+                                     MaxHeight="180"
+                                     BorderBrush="{DynamicResource Brush.Border}" Margin="0,0,0,6"/>
+                            <WrapPanel Margin="0,0,0,10">
+                                <Button Content="+ 新建" Command="{Binding AddNewFaceplateCommand}"
+                                        Background="#374151" Foreground="White" BorderBrush="#374151"
+                                        Padding="8,4" Margin="0,0,4,0"/>
+                                <Button Content="🗑 删除" Command="{Binding DeleteFaceplateCommand}"
+                                        Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                        Padding="8,4"/>
+                            </WrapPanel>
+                            <!-- Faceplate 元数据 -->
+                            <Expander Header="Faceplate 元数据" IsExpanded="True"
+                                      FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"
+                                      Visibility="{Binding SelectedFaceplate, Converter={StaticResource NullToVisibilityConverter}}">
+                                <StackPanel TextElement.FontWeight="Normal" Margin="6,4,0,0">
+                                    <TextBlock Text="名称" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="版本" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.Version, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="分类" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.Category, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="图标 (MaterialDesign Kind)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.IconKind, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="默认尺寸 (W, H)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <UniformGrid Columns="2" Margin="0,2,0,8">
+                                        <TextBox Text="{Binding SelectedFaceplate.DefaultWidth, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                                        <TextBox Text="{Binding SelectedFaceplate.DefaultHeight, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                                    </UniformGrid>
+                                    <TextBlock Text="接口属性 (内部 widget 用 {prop:key} 引用)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" FontWeight="SemiBold"/>
+                                    <ItemsControl ItemsSource="{Binding SelectedFaceplateProperties}" Margin="0,4,0,4">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                                        CornerRadius="3" Padding="4" Margin="0,0,0,4">
+                                                    <StackPanel>
+                                                        <DockPanel Margin="0,0,0,2">
+                                                            <Button DockPanel.Dock="Right" Content="✕" Padding="4,0" FontSize="10"
+                                                                    Background="Transparent" BorderThickness="0" Foreground="#B91C1C"
+                                                                    Command="{Binding DataContext.RemoveInterfacePropertyCommand,
+                                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                    CommandParameter="{Binding}"/>
+                                                            <TextBox Text="{Binding Key, UpdateSourceTrigger=PropertyChanged}"
+                                                                     ToolTip="Key（内部 widget 通过 {prop:Key} 引用）" FontSize="11"/>
+                                                        </DockPanel>
+                                                        <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                                                 ToolTip="显示名" FontSize="11" Margin="0,0,0,2"/>
+                                                        <DockPanel>
+                                                            <ComboBox DockPanel.Dock="Left" Width="100" FontSize="11"
+                                                                      SelectedItem="{Binding Type}"
+                                                                      ItemsSource="{Binding Source={StaticResource FaceplatePropertyTypes}}"/>
+                                                            <TextBox Text="{Binding DefaultValue, UpdateSourceTrigger=PropertyChanged}"
+                                                                     ToolTip="默认值" FontSize="11" Margin="4,0,0,0"/>
+                                                        </DockPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Content="+ 添加接口属性" Command="{Binding AddInterfacePropertyCommand}"
+                                            Background="#475569" Foreground="White" BorderBrush="#475569"
+                                            Padding="8,4" HorizontalAlignment="Left" FontSize="11"/>
+                                    <TextBlock Text="TODO: 内部 widget 属性中 [插入接口属性] 下拉留 v2.0" FontSize="10"
+                                               Foreground="{DynamicResource Brush.TextMuted}" FontStyle="Italic" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+
+                        <!-- ===== 页面编辑模式专属面板（与 Faceplate 编辑模式互斥） ===== -->
+                      <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFaceplateEditMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
 
                         <!-- P3.1 模板页 RouteKey -->
                         <TextBlock Text="模板页 RouteKey (页眉/页脚共享)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
@@ -412,6 +523,7 @@
                                 </ListBox>
                             </Border>
                         </Expander>
+                      </StackPanel> <!-- /P7C 页面编辑模式专属面板 -->
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -425,6 +537,13 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <StackPanel Margin="0,0,0,10">
+                        <!-- P7C: Faceplate 编辑模式 banner -->
+                        <Border Background="#FFEDD5" BorderBrush="#F97316" BorderThickness="1"
+                                CornerRadius="4" Padding="8,6" Margin="0,0,0,6"
+                                Visibility="{Binding IsFaceplateEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock Text="{Binding FaceplateEditBannerText}" Foreground="#9A3412"
+                                       FontSize="12" FontWeight="SemiBold"/>
+                        </Border>
                         <DockPanel>
                             <TextBlock Text="设计画布" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">

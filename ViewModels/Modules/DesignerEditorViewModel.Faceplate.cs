@@ -15,6 +15,147 @@ namespace ApexHMI.ViewModels.Modules;
 /// </summary>
 public partial class DesignerEditorViewModel
 {
+    // ========== P7C: Faceplate 编辑模式 ==========
+
+    /// <summary>是否处于 Faceplate 编辑模式（与普通页面编辑互斥）。</summary>
+    [ObservableProperty]
+    private bool _isFaceplateEditMode;
+
+    /// <summary>当前选中正在编辑的 Faceplate。</summary>
+    [ObservableProperty]
+    private Faceplate? _selectedFaceplate;
+
+    /// <summary>页面编辑模式 → Faceplate 编辑模式切换时，缓存原 SelectedPage 以便切回。</summary>
+    private PageDefinition? _pageBeforeFaceplateEdit;
+
+    /// <summary>Document.Faceplates.Faceplates 的便捷绑定（左栏列表用）。</summary>
+    public ObservableCollection<Faceplate> AvailableFaceplates
+    {
+        get
+        {
+            if (Document is null) return _emptyFaceplateList;
+            Document.Faceplates ??= new FaceplateLibrary();
+            return Document.Faceplates.Faceplates;
+        }
+    }
+
+    partial void OnIsFaceplateEditModeChanged(bool value)
+    {
+        if (value)
+        {
+            _pageBeforeFaceplateEdit = SelectedPage;
+            if (SelectedFaceplate is null)
+                SelectedFaceplate = AvailableFaceplates.FirstOrDefault();
+            if (SelectedFaceplate is not null)
+                SelectedPage = SelectedFaceplate.InnerScreen;
+        }
+        else
+        {
+            // 切回页面编辑：恢复原页面
+            SelectedPage = _pageBeforeFaceplateEdit ?? Document?.Pages.FirstOrDefault();
+            _pageBeforeFaceplateEdit = null;
+        }
+        OnPropertyChanged(nameof(FaceplateEditBannerText));
+    }
+
+    partial void OnSelectedFaceplateChanged(Faceplate? value)
+    {
+        if (IsFaceplateEditMode && value is not null)
+        {
+            SelectedPage = value.InnerScreen;
+        }
+        RefreshFaceplateMetaProperties();
+        OnPropertyChanged(nameof(FaceplateEditBannerText));
+    }
+
+    /// <summary>编辑模式画布顶部 banner 文本。</summary>
+    public string FaceplateEditBannerText
+    {
+        get
+        {
+            if (!IsFaceplateEditMode || SelectedFaceplate is null) return string.Empty;
+            return $"正在编辑 Faceplate: {SelectedFaceplate.Name} (v{SelectedFaceplate.Version})"
+                + (SelectedFaceplate.IsBuiltIn ? "  [内置]" : "");
+        }
+    }
+
+    /// <summary>当前 Faceplate 的接口属性元数据（编辑用 ObservableCollection）。</summary>
+    public ObservableCollection<FaceplateProperty> SelectedFaceplateProperties
+    {
+        get
+        {
+            if (SelectedFaceplate is null) return _emptyFaceplateProps;
+            return SelectedFaceplate.InterfaceProperties;
+        }
+    }
+    private static readonly ObservableCollection<FaceplateProperty> _emptyFaceplateProps = new();
+    private static readonly ObservableCollection<Faceplate> _emptyFaceplateList = new();
+
+    private void RefreshFaceplateMetaProperties()
+    {
+        OnPropertyChanged(nameof(SelectedFaceplateProperties));
+    }
+
+    [RelayCommand]
+    private void AddNewFaceplate()
+    {
+        Document!.Faceplates ??= new FaceplateLibrary();
+        var fp = new Faceplate
+        {
+            Name = $"未命名 Faceplate {Document.Faceplates.Faceplates.Count + 1}",
+            Category = "通用",
+            DefaultWidth = 200,
+            DefaultHeight = 120,
+        };
+        Document.Faceplates.Faceplates.Add(fp);
+        SelectedFaceplate = fp;
+        IsFaceplateEditMode = true;
+        RefreshFaceplateToolbox();
+        MarkPageEdited();
+        Log.Information("DesignerEditor: 新建 Faceplate id={Id} name={Name}", fp.Id, fp.Name);
+    }
+
+    [RelayCommand]
+    private void DeleteFaceplate()
+    {
+        if (SelectedFaceplate is null || Document?.Faceplates is null) return;
+        if (SelectedFaceplate.IsBuiltIn)
+        {
+            Shell.ShowPopup("删除 Faceplate", "内置 Faceplate 不可删除", "Warning");
+            return;
+        }
+        if (!Shell.RequestConfirmation("删除 Faceplate", $"确定删除 Faceplate【{SelectedFaceplate.Name}】？\n已实例化的引用将变为占位提示。"))
+            return;
+        var deleted = SelectedFaceplate;
+        Document.Faceplates.Faceplates.Remove(deleted);
+        SelectedFaceplate = Document.Faceplates.Faceplates.FirstOrDefault();
+        RefreshFaceplateToolbox();
+        MarkPageEdited();
+        Log.Information("DesignerEditor: 删除 Faceplate id={Id} name={Name}", deleted.Id, deleted.Name);
+    }
+
+    [RelayCommand]
+    private void AddInterfaceProperty()
+    {
+        if (SelectedFaceplate is null) return;
+        var prop = new FaceplateProperty
+        {
+            Key = $"prop{SelectedFaceplate.InterfaceProperties.Count + 1}",
+            DisplayName = "新属性",
+            Type = FaceplatePropertyType.String,
+        };
+        SelectedFaceplate.InterfaceProperties.Add(prop);
+        MarkPageEdited();
+    }
+
+    [RelayCommand]
+    private void RemoveInterfaceProperty(FaceplateProperty? prop)
+    {
+        if (SelectedFaceplate is null || prop is null) return;
+        SelectedFaceplate.InterfaceProperties.Remove(prop);
+        MarkPageEdited();
+    }
+
     // ========== P7D: 选中 widget 是否为 Faceplate 实例 ==========
 
     /// <summary>选中控件是 Faceplate 实例（TypeId 以 faceplate: 开头）。</summary>

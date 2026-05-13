@@ -336,7 +336,15 @@ class WidgetInstance {
 
 ---
 
-## P7 — Faceplate 系统（7-10 天）
+## P7 — Faceplate 系统（7-10 天）  ✅ 2026-05-13（精简方案完成）
+
+> **精简实施说明**：5 个子阶段（A/B/C/D/E/F）全部入库，构建 0 错误：
+> - P7A：数据模型 `Models/RuntimeUi/Faceplate.cs` + Document.Faceplates + WidgetInstance.FaceplateVersion + Migration 初始化
+> - P7B：渲染引擎 — FaceplateResolver、FaceplateChildDataContext、WidgetRegistry 适配 `faceplate:<id>` 前缀、嵌套深度/循环保护（>5 / 重复 Id → 占位）
+> - P7D：实例化 + 属性面板 — 工具箱"我的 Faceplate"分组、Apply 默认值 + 尺寸 + 版本、接口属性 Expander（TextBox 通用 + TagAddress 自动补全；颜色/布尔/PageRoute 类型化编辑器 TODO v2.0）
+> - P7E：版本管理（简化版）— 版本不一致 → 橙色 banner + 升级按钮；新增 key 用 DefaultValue 填充，删除 key 保留；SemVer Major 弹窗 / 类型变更检查 / 批量升级 TODO v2.0
+> - P7F：4 个内置 Faceplate（气缸 / 轴 / 机械手 / 挡停）极简骨架（3-7 widget），加载时自动注入；不复刻 P0 删除前的复杂气缸卡片
+> - P7C：Faceplate 编辑器 —— 不新建独立 Section，复用 DesignerEditorView 加 ToggleButton 切换模式：左栏页面树↔Faceplate 列表 切换，画布 SelectedPage = SelectedFaceplate.InnerScreen，元数据 Expander 编辑 Name/Version/Category/IconKind + 接口属性增删改
 
 ### 目标
 WinCC 最强生产力工具。把"气缸/轴/机械手"这类复合控件抽象成**可复用 / 有接口属性 / 有版本号**的封装单元。
