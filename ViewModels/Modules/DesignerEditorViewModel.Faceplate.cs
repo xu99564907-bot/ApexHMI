@@ -176,6 +176,10 @@ public partial class DesignerEditorViewModel
     /// <summary>接口属性编辑行集合（动态填充：Faceplate.InterfaceProperties × SelectedWidget.Properties）。</summary>
     public ObservableCollection<FaceplateInterfaceArg> FaceplateInterfaceArgs { get; } = new();
 
+    /// <summary>P7.5D: Faceplate 接口属性接入 Schema 编辑器（与 FaceplateInterfaceArgs 并列存在）。
+    /// <para>映射：TagAddress/PageRoute/Color/Boolean/Number/String → PropertyEditorType 同名项。</para></summary>
+    public ObservableCollection<PropertyEditorVM> FaceplateInterfacePropertyEditors { get; } = new();
+
     /// <summary>P7E: 选中实例的版本号是否落后于 Faceplate 当前版本。</summary>
     public bool IsFaceplateVersionOutdated
     {
@@ -205,6 +209,7 @@ public partial class DesignerEditorViewModel
         // 解订旧
         foreach (var arg in FaceplateInterfaceArgs) arg.PropertyChanged -= OnFaceplateArgValueChanged;
         FaceplateInterfaceArgs.Clear();
+        FaceplateInterfacePropertyEditors.Clear();
 
         var fp = SelectedWidgetFaceplate;
         if (fp is not null && SelectedWidget is not null)
@@ -215,12 +220,54 @@ public partial class DesignerEditorViewModel
                 var arg = new FaceplateInterfaceArg(def.Key, def.DisplayName, def.Type, value ?? string.Empty);
                 arg.PropertyChanged += OnFaceplateArgValueChanged;
                 FaceplateInterfaceArgs.Add(arg);
+
+                // P7.5D: 同时构造 schema 编辑器
+                var desc = new ApexHMI.Models.RuntimeUi.PropertyDescriptor
+                {
+                    Key = def.Key,
+                    DisplayName = string.IsNullOrEmpty(def.DisplayName) ? def.Key : def.DisplayName,
+                    EditorType = MapFaceplateType(def.Type),
+                    DefaultValue = def.DefaultValue ?? string.Empty,
+                    Description = def.Description,
+                    Category = "接口属性",
+                };
+                FaceplateInterfacePropertyEditors.Add(new PropertyEditorVM(desc, value ?? string.Empty, OnFaceplateSchemaEditorChanged));
             }
         }
 
         OnPropertyChanged(nameof(IsSelectedWidgetFaceplateInstance));
         OnPropertyChanged(nameof(IsFaceplateVersionOutdated));
         OnPropertyChanged(nameof(FaceplateVersionUpgradeText));
+    }
+
+    /// <summary>P7.5D: FaceplatePropertyType → PropertyEditorType 映射。</summary>
+    private static PropertyEditorType MapFaceplateType(FaceplatePropertyType type) => type switch
+    {
+        FaceplatePropertyType.TagAddress => PropertyEditorType.TagAddress,
+        FaceplatePropertyType.PageRoute  => PropertyEditorType.PageRoute,
+        FaceplatePropertyType.Color      => PropertyEditorType.Color,
+        FaceplatePropertyType.Boolean    => PropertyEditorType.Boolean,
+        FaceplatePropertyType.Number     => PropertyEditorType.Number,
+        FaceplatePropertyType.String     => PropertyEditorType.String,
+        _ => PropertyEditorType.String,
+    };
+
+    /// <summary>P7.5D: schema 编辑器修改 → 同步写回 widget.Properties 并刷新 FaceplateInterfaceArg。</summary>
+    private void OnFaceplateSchemaEditorChanged(string key, string? value)
+    {
+        if (SelectedWidget is null) return;
+        SelectedWidget.Properties[key] = value ?? string.Empty;
+        SelectedWidget.NotifyPropertiesChanged();
+        MarkPageEdited();
+
+        // 同步旧 FaceplateInterfaceArg.Value（保持两套 UI 一致）
+        var arg = FaceplateInterfaceArgs.FirstOrDefault(a => string.Equals(a.Key, key, StringComparison.Ordinal));
+        if (arg is not null && !string.Equals(arg.Value, value, StringComparison.Ordinal))
+        {
+            arg.PropertyChanged -= OnFaceplateArgValueChanged;
+            arg.Value = value ?? string.Empty;
+            arg.PropertyChanged += OnFaceplateArgValueChanged;
+        }
     }
 
     private void OnFaceplateArgValueChanged(object? sender, PropertyChangedEventArgs e)

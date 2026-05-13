@@ -821,7 +821,8 @@
                                       Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4"
                                       Visibility="{Binding IsSelectedWidgetFaceplateInstance, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <ItemsControl ItemsSource="{Binding FaceplateInterfaceArgs}">
+                                    <!-- P7.5D: Schema-driven 接口属性编辑器（每行 DisplayName + 类型化编辑器） -->
+                                    <ItemsControl ItemsSource="{Binding FaceplateInterfacePropertyEditors}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid Margin="0,0,0,6">
@@ -834,27 +835,14 @@
                                                                Foreground="{DynamicResource Brush.TextSecondary}"
                                                                VerticalAlignment="Center"
                                                                Margin="0,0,8,0"
-                                                               ToolTip="{Binding Key}"/>
-                                                    <TextBox Grid.Column="1"
-                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                                             VerticalAlignment="Center">
-                                                        <TextBox.Style>
-                                                            <Style TargetType="TextBox">
-                                                                <Setter Property="b:TagAutoComplete.IsEnabled" Value="False"/>
-                                                                <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding IsTagAddress}" Value="True">
-                                                                        <Setter Property="b:TagAutoComplete.IsEnabled" Value="True"/>
-                                                                    </DataTrigger>
-                                                                </Style.Triggers>
-                                                            </Style>
-                                                        </TextBox.Style>
-                                                    </TextBox>
+                                                               ToolTip="{Binding Description}"/>
+                                                    <ContentControl Grid.Column="1"
+                                                                    Content="{Binding}"
+                                                                    ContentTemplateSelector="{StaticResource PropEditorSelector}"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                    <TextBlock Text="TODO: 颜色/布尔/页面路由 类型化编辑器待 v2.0"
-                                               Foreground="{DynamicResource Brush.TextMuted}" FontSize="10" Margin="0,4,0,0" FontStyle="Italic"/>
                                 </StackPanel>
                             </Expander>
 
