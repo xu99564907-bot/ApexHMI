@@ -32,8 +32,8 @@
         <!-- Row 0: 横向工具箱 + 右侧紧凑动作组 -->
         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="10,8" Margin="0,0,0,10">
             <DockPanel>
-                <!-- 顶部动作 / 状态（独占一行，避免被工具箱拉高） -->
-                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
+                <!-- 右侧动作 / 状态：固定宽度 WrapPanel，自动多行 + ItemHeight 制造行间距 -->
+                <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" Width="420" ItemHeight="36" Margin="10,0,0,0">
                     <!-- PLC 变量表导入状态 -->
                     <Border Background="#0369A1" CornerRadius="12" Padding="8,3"
                             VerticalAlignment="Center" Margin="0,0,8,0">
@@ -175,7 +175,7 @@
                             <TextBlock Text="发布" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
-                </StackPanel>
+                </WrapPanel>
 
                 <!-- 工具箱：每分组一行，组内 WrapPanel 自适应换行 -->
                 <Border x:Name="ToolboxPanel" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0">
