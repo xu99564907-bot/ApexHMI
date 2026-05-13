@@ -18,7 +18,9 @@ public static class WidgetSchemaCatalog
 
     static WidgetSchemaCatalog()
     {
-        // P7.5A: 此处先留空，P7.5C 阶段由 WidgetSchemaCatalogSeed.Seed 注入高频 widget。
+        // P7.5C: 注入 10 个高频 widget schema 种子（text/rectangle/ellipse/button/io-numeric/
+        // io-symbolic/switch/bar/gauge/trend-view）。其余 17 个中频 widget 走 fallback，待 v2.0 补齐。
+        WidgetSchemaCatalogSeed.Seed(All);
     }
 
     /// <summary>查找 typeId 对应的 Schema。找不到时返回 null（调用方走 fallback）。</summary>

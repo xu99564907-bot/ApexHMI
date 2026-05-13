@@ -1,0 +1,236 @@
+#nullable enable
+using System.Collections.Generic;
+using ApexHMI.Models.RuntimeUi;
+
+namespace ApexHMI.Services.RuntimeUi;
+
+/// <summary>
+/// P7.5C: 10 个高频 widget 的 Schema 种子数据。
+/// <para>剩余 17 个中频 widget 待补：line, polyline, polygon, graphic-view, io-graphic, datetime,
+/// slider, scrollbar, clock, combobox, listbox, checkbox, optiongroup, round-button,
+/// alarm-view, table-view, screen-window。</para>
+/// </summary>
+internal static class WidgetSchemaCatalogSeed
+{
+    public static void Seed(Dictionary<string, WidgetSchema> map)
+    {
+        Add(map, BuildText());
+        Add(map, BuildRectangle());
+        Add(map, BuildEllipse());
+        Add(map, BuildButton());
+        Add(map, BuildIoNumeric());
+        Add(map, BuildIoSymbolic());
+        Add(map, BuildSwitch());
+        Add(map, BuildBar());
+        Add(map, BuildGauge());
+        Add(map, BuildTrendView());
+    }
+
+    private static void Add(Dictionary<string, WidgetSchema> map, WidgetSchema schema)
+        => map[schema.TypeId] = schema;
+
+    // ---------------- text ----------------
+    private static WidgetSchema BuildText() => new()
+    {
+        TypeId = "text",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "text", DisplayName = "文本", EditorType = PropertyEditorType.String, DefaultValue = "文本", Category = "文本" },
+            new PropertyDescriptor { Key = "fontSize", DisplayName = "字号", EditorType = PropertyEditorType.Number, DefaultValue = "14", Category = "文本" },
+            new PropertyDescriptor
+            {
+                Key = "fontWeight", DisplayName = "字重", EditorType = PropertyEditorType.Enum, DefaultValue = "Normal", Category = "文本",
+                EnumOptions = new[] { "Normal|常规", "Bold|加粗", "SemiBold|半粗", "Light|细体" }
+            },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "Transparent", Category = "外观" },
+            new PropertyDescriptor
+            {
+                Key = "textAlign", DisplayName = "水平对齐", EditorType = PropertyEditorType.Enum, DefaultValue = "Left", Category = "文本",
+                EnumOptions = new[] { "Left|左对齐", "Center|居中", "Right|右对齐" }
+            },
+            new PropertyDescriptor { Key = "padding", DisplayName = "内边距", EditorType = PropertyEditorType.Number, DefaultValue = "4", Category = "布局" },
+        }
+    };
+
+    // ---------------- rectangle ----------------
+    private static WidgetSchema BuildRectangle() => new()
+    {
+        TypeId = "rectangle",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "fill", DisplayName = "填充色", EditorType = PropertyEditorType.Color, DefaultValue = "#3B82F6", Category = "外观" },
+            new PropertyDescriptor { Key = "stroke", DisplayName = "描边色", EditorType = PropertyEditorType.Color, DefaultValue = "#1E40AF", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeThickness", DisplayName = "描边宽度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+            new PropertyDescriptor { Key = "cornerRadius", DisplayName = "圆角半径", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "外观" },
+            new PropertyDescriptor { Key = "opacity", DisplayName = "不透明度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观", Description = "0~1" },
+        }
+    };
+
+    // ---------------- ellipse ----------------
+    private static WidgetSchema BuildEllipse() => new()
+    {
+        TypeId = "ellipse",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "fill", DisplayName = "填充色", EditorType = PropertyEditorType.Color, DefaultValue = "#10B981", Category = "外观" },
+            new PropertyDescriptor { Key = "stroke", DisplayName = "描边色", EditorType = PropertyEditorType.Color, DefaultValue = "#065F46", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeThickness", DisplayName = "描边宽度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+            new PropertyDescriptor { Key = "opacity", DisplayName = "不透明度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+        }
+    };
+
+    // ---------------- button ----------------
+    private static WidgetSchema BuildButton() => new()
+    {
+        TypeId = "button",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "text", DisplayName = "按钮文本", EditorType = PropertyEditorType.String, DefaultValue = "按钮", Category = "文本" },
+            new PropertyDescriptor { Key = "fontSize", DisplayName = "字号", EditorType = PropertyEditorType.Number, DefaultValue = "14", Category = "文本" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "文字颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#2563EB", Category = "外观" },
+            new PropertyDescriptor { Key = "borderColor", DisplayName = "边框色", EditorType = PropertyEditorType.Color, DefaultValue = "#1D4ED8", Category = "外观" },
+            new PropertyDescriptor { Key = "borderWidth", DisplayName = "边框宽度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+            new PropertyDescriptor { Key = "cornerRadius", DisplayName = "圆角", EditorType = PropertyEditorType.Number, DefaultValue = "4", Category = "外观" },
+            new PropertyDescriptor { Key = "pressedBackground", DisplayName = "按下背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#1E40AF", Category = "外观" },
+        }
+    };
+
+    // ---------------- io-numeric ----------------
+    private static WidgetSchema BuildIoNumeric() => new()
+    {
+        TypeId = "io-numeric",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Output", Category = "数据",
+                EnumOptions = new[] { "Input|输入", "Output|输出", "InputOutput|输入输出" }
+            },
+            new PropertyDescriptor { Key = "format", DisplayName = "数值格式", EditorType = PropertyEditorType.String, DefaultValue = "0.##", Category = "格式", Description = ".NET 数值格式串" },
+            new PropertyDescriptor { Key = "decimals", DisplayName = "小数位", EditorType = PropertyEditorType.Integer, DefaultValue = "2", Category = "格式" },
+            new PropertyDescriptor { Key = "unit", DisplayName = "单位", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "格式" },
+            new PropertyDescriptor { Key = "minValue", DisplayName = "最小值", EditorType = PropertyEditorType.Number, DefaultValue = "", Category = "限值" },
+            new PropertyDescriptor { Key = "maxValue", DisplayName = "最大值", EditorType = PropertyEditorType.Number, DefaultValue = "", Category = "限值" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+            new PropertyDescriptor { Key = "fontSize", DisplayName = "字号", EditorType = PropertyEditorType.Number, DefaultValue = "14", Category = "文本" },
+            new PropertyDescriptor
+            {
+                Key = "textAlign", DisplayName = "水平对齐", EditorType = PropertyEditorType.Enum, DefaultValue = "Right", Category = "文本",
+                EnumOptions = new[] { "Left|左对齐", "Center|居中", "Right|右对齐" }
+            },
+        }
+    };
+
+    // ---------------- io-symbolic ----------------
+    private static WidgetSchema BuildIoSymbolic() => new()
+    {
+        TypeId = "io-symbolic",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Output", Category = "数据",
+                EnumOptions = new[] { "Input|输入", "Output|输出", "InputOutput|输入输出" }
+            },
+            new PropertyDescriptor { Key = "entries", DisplayName = "条目映射", EditorType = PropertyEditorType.String, DefaultValue = "0=停止;1=运行", Category = "数据", Description = "格式：value=text;value=text，或引用文本列表" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+        }
+    };
+
+    // ---------------- switch ----------------
+    private static WidgetSchema BuildSwitch() => new()
+    {
+        TypeId = "switch",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "bistable", Category = "行为",
+                EnumOptions = new[] { "bistable|双稳态", "momentary|点动" }
+            },
+            new PropertyDescriptor { Key = "onText", DisplayName = "ON 文本", EditorType = PropertyEditorType.String, DefaultValue = "ON", Category = "文本" },
+            new PropertyDescriptor { Key = "offText", DisplayName = "OFF 文本", EditorType = PropertyEditorType.String, DefaultValue = "OFF", Category = "文本" },
+            new PropertyDescriptor { Key = "onColor", DisplayName = "ON 颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#10B981", Category = "外观" },
+            new PropertyDescriptor { Key = "offColor", DisplayName = "OFF 颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#94A3B8", Category = "外观" },
+            new PropertyDescriptor
+            {
+                Key = "orientation", DisplayName = "方向", EditorType = PropertyEditorType.Enum, DefaultValue = "horizontal", Category = "布局",
+                EnumOptions = new[] { "horizontal|水平", "vertical|垂直" }
+            },
+        }
+    };
+
+    // ---------------- bar ----------------
+    private static WidgetSchema BuildBar() => new()
+    {
+        TypeId = "bar",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "minValue", DisplayName = "最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值" },
+            new PropertyDescriptor { Key = "maxValue", DisplayName = "最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "限值" },
+            new PropertyDescriptor
+            {
+                Key = "orientation", DisplayName = "方向", EditorType = PropertyEditorType.Enum, DefaultValue = "vertical", Category = "布局",
+                EnumOptions = new[] { "horizontal|水平", "vertical|垂直" }
+            },
+            new PropertyDescriptor { Key = "fillColor", DisplayName = "填充色", EditorType = PropertyEditorType.Color, DefaultValue = "#3B82F6", Category = "外观" },
+            new PropertyDescriptor { Key = "backgroundColor", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#E5E7EB", Category = "外观" },
+            new PropertyDescriptor { Key = "warnThreshold", DisplayName = "警告阈值", EditorType = PropertyEditorType.Number, DefaultValue = "", Category = "限值" },
+            new PropertyDescriptor { Key = "warnColor", DisplayName = "警告色", EditorType = PropertyEditorType.Color, DefaultValue = "#F59E0B", Category = "外观" },
+            new PropertyDescriptor { Key = "alarmThreshold", DisplayName = "报警阈值", EditorType = PropertyEditorType.Number, DefaultValue = "", Category = "限值" },
+            new PropertyDescriptor { Key = "alarmColor", DisplayName = "报警色", EditorType = PropertyEditorType.Color, DefaultValue = "#EF4444", Category = "外观" },
+            new PropertyDescriptor { Key = "showLabel", DisplayName = "显示标签", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showScale", DisplayName = "显示刻度", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+        }
+    };
+
+    // ---------------- gauge ----------------
+    private static WidgetSchema BuildGauge() => new()
+    {
+        TypeId = "gauge",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "minValue", DisplayName = "最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值" },
+            new PropertyDescriptor { Key = "maxValue", DisplayName = "最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "限值" },
+            new PropertyDescriptor { Key = "unit", DisplayName = "单位", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "格式" },
+            new PropertyDescriptor { Key = "warnThreshold", DisplayName = "警告阈值", EditorType = PropertyEditorType.Number, DefaultValue = "", Category = "限值" },
+            new PropertyDescriptor { Key = "warnColor", DisplayName = "警告色", EditorType = PropertyEditorType.Color, DefaultValue = "#F59E0B", Category = "外观" },
+            new PropertyDescriptor { Key = "alarmThreshold", DisplayName = "报警阈值", EditorType = PropertyEditorType.Number, DefaultValue = "", Category = "限值" },
+            new PropertyDescriptor { Key = "alarmColor", DisplayName = "报警色", EditorType = PropertyEditorType.Color, DefaultValue = "#EF4444", Category = "外观" },
+            new PropertyDescriptor { Key = "majorTicks", DisplayName = "主刻度数", EditorType = PropertyEditorType.Integer, DefaultValue = "10", Category = "外观" },
+            new PropertyDescriptor { Key = "minorTicks", DisplayName = "次刻度数", EditorType = PropertyEditorType.Integer, DefaultValue = "5", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "指针色", EditorType = PropertyEditorType.Color, DefaultValue = "#2563EB", Category = "外观" },
+        }
+    };
+
+    // ---------------- trend-view ----------------
+    private static WidgetSchema BuildTrendView() => new()
+    {
+        TypeId = "trend-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "traces", DisplayName = "曲线配置", EditorType = PropertyEditorType.Json, DefaultValue = "[]", Category = "数据", Description = "JSON 数组，每项 {tag, color, label}" },
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "realtime", Category = "数据",
+                EnumOptions = new[] { "realtime|实时", "history|历史" }
+            },
+            new PropertyDescriptor { Key = "timeWindow", DisplayName = "时间窗口(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "60", Category = "数据" },
+            new PropertyDescriptor { Key = "yMin", DisplayName = "Y 最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值" },
+            new PropertyDescriptor { Key = "yMax", DisplayName = "Y 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "限值" },
+            new PropertyDescriptor { Key = "showLegend", DisplayName = "显示图例", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showGrid", DisplayName = "显示网格", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "backgroundColor", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+        }
+    };
+}
