@@ -1636,5 +1636,38 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         OnPropertyChanged(nameof(GlobalLibraryAssets));
     }
 
+    // ========== P6D 符号库 ==========
+
+    /// <summary>P6D: 内置工业符号按 Category 分组，绑定到左栏 ItemsControl。</summary>
+    public System.Collections.Generic.IReadOnlyList<SymbolGroup> SymbolGroups { get; } =
+        SymbolLibrary.Groups().Select(g => new SymbolGroup(g.Key, g.ToList())).ToList();
+
+    /// <summary>P6D: 把符号库一项插入当前页面（生成 graphic-view widget + iconKind 属性）。</summary>
+    public void InsertSymbol(IndustrialSymbol symbol, double x, double y)
+    {
+        if (SelectedPage is null) return;
+        var w = new WidgetInstance
+        {
+            TypeId = "graphic-view",
+            X = SnapValue(x),
+            Y = SnapValue(y),
+            Width = 64,
+            Height = 64,
+        };
+        w.Properties["iconKind"] = symbol.IconKind;
+        w.Properties["iconColor"] = "#1E40AF";
+        SelectedPage.Widgets.Add(w);
+        AddWidgetItem(w);
+        SelectSingleWidget(w);
+    }
+
+    public sealed class SymbolGroup
+    {
+        public SymbolGroup(string title, System.Collections.Generic.IReadOnlyList<IndustrialSymbol> items)
+        { Title = title; Items = items; }
+        public string Title { get; }
+        public System.Collections.Generic.IReadOnlyList<IndustrialSymbol> Items { get; }
+    }
+
     // 其他 P6 资源编辑入口（OpenListEditor）在 E commit 中加入。
 }

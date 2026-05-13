@@ -327,6 +327,55 @@
                             </Border>
                         </Expander>
 
+                        <!-- ===== P6D 符号库 ===== -->
+                        <Expander Header="符号库（工业图标）" IsExpanded="False" Margin="0,0,0,4"
+                                  FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"
+                                  ToolTip="拖到画布即生成 graphic-view + iconKind">
+                            <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                    CornerRadius="4" MaxHeight="240">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding SymbolGroups}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="2,2,2,6">
+                                                    <TextBlock Text="{Binding Title}" FontSize="10"
+                                                               Foreground="{DynamicResource Brush.TextMuted}" Margin="0,2,0,2"/>
+                                                    <ItemsControl ItemsSource="{Binding Items}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Margin="2" Padding="4"
+                                                                        Background="#F8FAFC" BorderBrush="#CBD5E1"
+                                                                        BorderThickness="1" CornerRadius="4"
+                                                                        ToolTip="{Binding Name}"
+                                                                        Tag="{Binding}"
+                                                                        PreviewMouseLeftButtonDown="SymbolItem_PreviewMouseLeftButtonDown"
+                                                                        PreviewMouseMove="SymbolItem_PreviewMouseMove">
+                                                                    <StackPanel Width="56">
+                                                                        <materialDesign:PackIcon Kind="{Binding IconKind, FallbackValue=Cog}"
+                                                                                                 Width="22" Height="22"
+                                                                                                 HorizontalAlignment="Center"
+                                                                                                 Foreground="#1E40AF"/>
+                                                                        <TextBlock Text="{Binding Name}" FontSize="10"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   Foreground="#0F172A" Margin="0,2,0,0"/>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </Expander>
+
                         <!-- ===== PLC 变量（可拖到画布生成控件） ===== -->
                         <Expander Header="PLC 变量 (拖到画布)" IsExpanded="True" Margin="0,4,0,0"
                                   FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}">

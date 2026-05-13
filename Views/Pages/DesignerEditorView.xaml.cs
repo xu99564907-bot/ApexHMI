@@ -315,11 +315,12 @@ public partial class DesignerEditorView : UserControl
 
     private void DesignerCanvas_DragOver(object sender, DragEventArgs e)
     {
-        // 接受三种拖源：工具箱 TypeId 字符串 + PLC 变量 TagItem + P6C 库资产 LibraryAsset
+        // 接受四种拖源：工具箱 TypeId 字符串 + PLC 变量 TagItem + P6C 库资产 LibraryAsset + P6D 符号 IndustrialSymbol
         var hasTag = e.Data.GetDataPresent(typeof(TagItem));
         var hasType = e.Data.GetDataPresent(DataFormats.StringFormat);
         var hasAsset = e.Data.GetDataPresent(typeof(LibraryAsset));
-        e.Effects = (hasTag || hasType || hasAsset) ? DragDropEffects.Copy : DragDropEffects.None;
+        var hasSymbol = e.Data.GetDataPresent(typeof(ApexHMI.Services.RuntimeUi.IndustrialSymbol));
+        e.Effects = (hasTag || hasType || hasAsset || hasSymbol) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
@@ -335,6 +336,18 @@ public partial class DesignerEditorView : UserControl
             {
                 var pos = e.GetPosition(canvas);
                 vm.InsertLibraryAsset(asset, pos.X, pos.Y);
+            }
+            return;
+        }
+
+        // 0b) P6D 符号库拖入：生成 graphic-view + iconKind 属性
+        if (e.Data.GetDataPresent(typeof(ApexHMI.Services.RuntimeUi.IndustrialSymbol)))
+        {
+            if (e.Data.GetData(typeof(ApexHMI.Services.RuntimeUi.IndustrialSymbol))
+                is ApexHMI.Services.RuntimeUi.IndustrialSymbol sym)
+            {
+                var pos = e.GetPosition(canvas);
+                vm.InsertSymbol(sym, pos.X, pos.Y);
             }
             return;
         }
@@ -357,6 +370,33 @@ public partial class DesignerEditorView : UserControl
             var position = e.GetPosition(canvas);
             vm.AddWidgetAtDropCommand.Execute($"{typeId}|{position.X}|{position.Y}");
         }
+    }
+
+    // ===== P6D 符号库拖源 =====
+    private bool _symDragging;
+    private Point _symPressPoint;
+    private ApexHMI.Services.RuntimeUi.IndustrialSymbol? _symPressItem;
+
+    private void SymbolItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _symDragging = false;
+        _symPressPoint = e.GetPosition(null);
+        _symPressItem = (sender as FrameworkElement)?.Tag as ApexHMI.Services.RuntimeUi.IndustrialSymbol;
+    }
+
+    private void SymbolItem_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_symDragging || _symPressItem is null) return;
+        if (e.LeftButton != MouseButtonState.Pressed) return;
+        var pos = e.GetPosition(null);
+        if (Math.Abs(pos.X - _symPressPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(pos.Y - _symPressPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+        _symDragging = true;
+        var data = new DataObject(typeof(ApexHMI.Services.RuntimeUi.IndustrialSymbol), _symPressItem);
+        DragDrop.DoDragDrop(sender as DependencyObject ?? this, data, DragDropEffects.Copy);
+        _symDragging = false;
+        _symPressItem = null;
     }
 
     // ===== P6C 库资产拖源 =====
