@@ -95,7 +95,7 @@ public class WidgetEditorServiceTests
     public void UpdateBinding_SetsAndClears()
     {
         var page = CreatePage();
-        var widget = _sut.AddWidget(page, "bool-lamp", 0, 0);
+        var widget = _sut.AddWidget(page, "text", 0, 0);
 
         _sut.UpdateBinding(widget, new BindingSpec { TagId = "TestTag", DataType = "Bool" });
         widget.Binding!.TagId.Should().Be("TestTag");
@@ -145,10 +145,10 @@ public class WidgetEditorServiceTests
     {
         var page = CreatePage();
 
-        var lamp = _sut.AddWidget(page, "bool-lamp", 0, 0);
-        lamp.Properties.Should().ContainKey("trueColor");
-        lamp.Properties.Should().ContainKey("falseColor");
-        lamp.Properties["trueColor"].Should().Be("#22C55E");
+        var text = _sut.AddWidget(page, "text", 0, 0);
+        text.Properties.Should().ContainKey("text");
+        text.Properties.Should().ContainKey("fontSize");
+        text.Properties["foreground"].Should().Be("#0F172A");
     }
 
     [Fact]
