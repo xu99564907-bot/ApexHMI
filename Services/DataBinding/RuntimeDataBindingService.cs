@@ -68,4 +68,10 @@ public class RuntimeDataBindingService
     {
         _activeHost?.PushTagValue(tagName, rawValue);
     }
+
+    /// <summary>P10F: 离线模拟服务推送假值（绕过 OPC UA）。</summary>
+    public void PushSimulatedValue(string tagName, string rawValue)
+    {
+        _activeHost?.PushTagValue(tagName, rawValue);
+    }
 }

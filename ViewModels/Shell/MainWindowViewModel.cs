@@ -21,6 +21,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly IWidgetViewFactory _widgetFactory;
     private readonly IProjectEditorService _projectEditorService;
     private readonly IWidgetEditorService _widgetEditorService;
+    private readonly SimulationService _simulationService;
 
     public MainWindowViewModel(
         IOpcUaService opcUaService,
@@ -45,7 +46,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         IWidgetEditorService widgetEditorService,
         IUserService userService,
         PlcVariableImportService plcVariableImportService,
-        IProductionCountService productionCountService)
+        IProductionCountService productionCountService,
+        SimulationService simulationService)
         : base(
             opcUaService,
             csvImportService,
@@ -68,6 +70,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _widgetFactory = widgetFactory;
         _projectEditorService = projectEditorService;
         _widgetEditorService = widgetEditorService;
+        _simulationService = simulationService;
 
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -161,6 +164,16 @@ public sealed partial class MainWindowViewModel : MainViewModel
     /// <summary>P3.4 运行时全屏：true 时主窗口隐藏导航/状态栏，仅显示 DynamicPageHost。</summary>
     [ObservableProperty]
     private bool _isRuntimeFullScreen;
+
+    /// <summary>P10F 离线模拟模式开关。开启时 SimulationService 注入假数据。</summary>
+    [ObservableProperty]
+    private bool _isSimulationMode;
+
+    partial void OnIsSimulationModeChanged(bool value)
+    {
+        if (value) _simulationService.Start();
+        else _simulationService.Stop();
+    }
 
     [RelayCommand]
     private void ToggleRuntimeFullScreen() => IsRuntimeFullScreen = !IsRuntimeFullScreen;

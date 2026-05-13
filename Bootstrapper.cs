@@ -74,6 +74,7 @@ public static class Bootstrapper
         services.AddSingleton<RuntimeProjectService>();
         services.AddSingleton<ProjectPackageService>();
         services.AddSingleton<RuntimeDataBindingService>();
+        services.AddSingleton<SimulationService>();
 
         // 开放平台 — 编辑器服务 (Phase B)
         services.AddSingleton<IProjectEditorService, ProjectEditorService>();

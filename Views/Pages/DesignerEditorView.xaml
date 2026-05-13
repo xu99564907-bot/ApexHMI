@@ -157,6 +157,15 @@
                             <TextBlock Text="导入" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
+                    <!-- P10F: 离线模拟模式 -->
+                    <ToggleButton IsChecked="{Binding DataContext.IsSimulationMode, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Padding="6,4" Margin="0,0,4,0"
+                                  ToolTip="离线模拟模式：SimTag1..5/SimBool1..3/SimText1 注入假数据（P10F）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Sine" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="模拟" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </ToggleButton>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                             Padding="8,5"
