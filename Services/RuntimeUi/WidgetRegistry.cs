@@ -18,8 +18,17 @@ public class WidgetRegistry : IWidgetViewFactory
 
     public WidgetRegistry()
     {
-        Register("text",   (m, ctx) => CreateView(new TextWidgetViewModel(m, ctx),   new TextWidget()));
-        Register("button", (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx), new ButtonWidget()));
+        // 基本对象（P3）
+        Register("text",         (m, ctx) => CreateView(new TextWidgetViewModel(m, ctx),         new TextWidget()));
+        Register("rectangle",    (m, ctx) => CreateView(new RectangleWidgetViewModel(m, ctx),    new RectangleWidget()));
+        Register("ellipse",      (m, ctx) => CreateView(new EllipseWidgetViewModel(m, ctx),      new EllipseWidget()));
+        Register("line",         (m, ctx) => CreateView(new LineWidgetViewModel(m, ctx),         new LineWidget()));
+        Register("polyline",     (m, ctx) => CreateView(new PolylineWidgetViewModel(m, ctx),     new PolylineWidget()));
+        Register("polygon",      (m, ctx) => CreateView(new PolygonWidgetViewModel(m, ctx),      new PolygonWidget()));
+        Register("graphic-view", (m, ctx) => CreateView(new GraphicViewWidgetViewModel(m, ctx),  new GraphicViewWidget()));
+
+        // 元素
+        Register("button",       (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),       new ButtonWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

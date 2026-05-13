@@ -10,7 +10,67 @@ public sealed class WidgetEditorService : IWidgetEditorService
 {
     private static readonly Dictionary<string, Dictionary<string, string>> DefaultProperties = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["text"]   = new() { ["text"] = "文本", ["fontSize"] = "14", ["foreground"] = "#0F172A" },
+        // 基本对象
+        ["text"]   = new()
+        {
+            ["text"] = "文本",
+            ["fontSize"] = "14",
+            ["fontWeight"] = "Normal",
+            ["foreground"] = "#0F172A",
+            ["background"] = "Transparent",
+            ["textAlign"] = "Left",
+            ["verticalAlign"] = "Center",
+            ["padding"] = "4",
+        },
+        ["rectangle"] = new()
+        {
+            ["fill"] = "#3B82F6",
+            ["stroke"] = "#1E40AF",
+            ["strokeThickness"] = "1",
+            ["cornerRadius"] = "0",
+            ["opacity"] = "1",
+        },
+        ["ellipse"] = new()
+        {
+            ["fill"] = "#10B981",
+            ["stroke"] = "#065F46",
+            ["strokeThickness"] = "1",
+            ["opacity"] = "1",
+        },
+        ["line"] = new()
+        {
+            ["stroke"] = "#1F2937",
+            ["strokeThickness"] = "2",
+            ["strokeDashArray"] = "",
+            ["x1"] = "0",
+            ["y1"] = "0",
+            ["x2"] = "1",
+            ["y2"] = "1",
+        },
+        ["polyline"] = new()
+        {
+            ["points"] = "0,0 60,40 120,0",
+            ["stroke"] = "#1F2937",
+            ["strokeThickness"] = "2",
+            ["strokeDashArray"] = "",
+            ["opacity"] = "1",
+        },
+        ["polygon"] = new()
+        {
+            ["points"] = "60,0 120,60 60,120 0,60",
+            ["fill"] = "#F59E0B",
+            ["stroke"] = "#92400E",
+            ["strokeThickness"] = "1",
+            ["strokeDashArray"] = "",
+            ["opacity"] = "1",
+        },
+        ["graphic-view"] = new()
+        {
+            ["source"] = "",
+            ["stretch"] = "Uniform",
+            ["opacity"] = "1",
+        },
+        // 元素
         ["button"] = new() { ["text"] = "按钮", ["background"] = "#2563EB", ["foreground"] = "#FFFFFF" },
     };
 
@@ -85,13 +145,23 @@ public sealed class WidgetEditorService : IWidgetEditorService
 
     private static double GetDefaultWidth(string typeId) => typeId.ToLowerInvariant() switch
     {
-        "text"   => 160,
-        "button" => 120,
+        "text"         => 160,
+        "button"       => 120,
+        "rectangle"    => 120,
+        "ellipse"      => 80,
+        "line"         => 120,
+        "polyline"     => 120,
+        "polygon"      => 120,
+        "graphic-view" => 120,
         _ => 120,
     };
 
     private static double GetDefaultHeight(string typeId) => typeId.ToLowerInvariant() switch
     {
+        "ellipse"      => 80,
+        "polyline"     => 80,
+        "polygon"      => 120,
+        "graphic-view" => 80,
         _ => 40,
     };
 }

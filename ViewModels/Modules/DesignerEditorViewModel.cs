@@ -360,10 +360,19 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>工具箱分组定义（绑到 DesignerEditorView 的折叠分组列表）。</summary>
     public static readonly IReadOnlyList<ToolboxGroup> ToolboxGroups = new[]
     {
-        new ToolboxGroup("基础控件", new[]
+        new ToolboxGroup("基本对象", new[]
         {
-            new ToolboxItem("text",   "文本", "FormatText"),
-            new ToolboxItem("button", "按钮", "GestureTap"),
+            new ToolboxItem("text",         "文本",       "FormatText"),
+            new ToolboxItem("rectangle",    "矩形",       "RectangleOutline"),
+            new ToolboxItem("ellipse",      "椭圆",       "EllipseOutline"),
+            new ToolboxItem("line",         "直线",       "VectorLine"),
+            new ToolboxItem("polyline",     "折线",       "VectorPolyline"),
+            new ToolboxItem("polygon",      "多边形",     "VectorPolygon"),
+            new ToolboxItem("graphic-view", "图形视图",   "ImageOutline"),
+        }),
+        new ToolboxGroup("元素", new[]
+        {
+            new ToolboxItem("button",       "按钮",       "GestureTap"),
         }),
     };
 
