@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using ApexHMI.Services;
 using ApexHMI.ViewModels.Runtime;
 using Serilog;
 
@@ -17,13 +18,15 @@ public class RuntimeDataBindingService
 {
     private readonly IDataPointCatalog _catalog;
     private readonly IOpcUaService _opcUa;
+    private readonly TrendHistoryService? _trendHistory;
     private readonly HashSet<string> _subscribedTagIds = new(StringComparer.OrdinalIgnoreCase);
     private DynamicPageHostViewModel? _activeHost;
 
-    public RuntimeDataBindingService(IDataPointCatalog catalog, IOpcUaService opcUa)
+    public RuntimeDataBindingService(IDataPointCatalog catalog, IOpcUaService opcUa, TrendHistoryService? trendHistory = null)
     {
         _catalog = catalog;
         _opcUa = opcUa;
+        _trendHistory = trendHistory;
         _opcUa.TagValueChanged += OnTagValueChanged;
     }
 
@@ -67,6 +70,13 @@ public class RuntimeDataBindingService
     private void OnTagValueChanged(string tagName, string rawValue)
     {
         _activeHost?.PushTagValue(tagName, rawValue);
+        // P10H: 顺手归档（仅当该 tag 已 EnableLogging 才真正写）
+        if (_trendHistory is not null
+            && double.TryParse(rawValue, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var dv))
+        {
+            _trendHistory.LogValue(tagName, dv);
+        }
     }
 
     /// <summary>P10F: 离线模拟服务推送假值（绕过 OPC UA）。</summary>

@@ -59,9 +59,8 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
         }
         else
         {
-            // 历史模式：第一版加占位说明
-            var ann = new LineSeries { Title = "[历史模式 P5 第一版占位]", Color = OxyColors.Gray };
-            PlotModel.Series.Add(ann);
+            // P10H 历史模式：从 SQLite 读取过去 TimeWindow 秒的数据
+            LoadHistoryFromSqlite();
         }
     }
 
@@ -173,6 +172,37 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
             d.BeginInvoke(new Action(() => PlotModel.InvalidatePlot(true)));
         else
             PlotModel.InvalidatePlot(true);
+    }
+
+    /// <summary>P10H：从 SQLite tag_history 加载过去 TimeWindow 秒的样本。</summary>
+    private void LoadHistoryFromSqlite()
+    {
+        try
+        {
+            var svc = new ApexHMI.Services.TrendHistoryService();
+            var to = DateTime.Now;
+            var from = to.AddSeconds(-TimeWindow);
+            foreach (var (cfg, series) in _seriesByTag.Select(kv => (cfg: _traceConfigs.FirstOrDefault(c => c.TagId == kv.Key), s: kv.Value)))
+            {
+                if (cfg is null) continue;
+                var pts = svc.Query(cfg.TagId, from, to);
+                foreach (var p in pts)
+                {
+                    series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(p.Time), p.Value));
+                }
+            }
+            PlotModel.InvalidatePlot(true);
+            if (_seriesByTag.Count == 0)
+            {
+                var ann = new LineSeries { Title = "[历史模式：未配置 traces]", Color = OxyColors.Gray };
+                PlotModel.Series.Add(ann);
+            }
+        }
+        catch
+        {
+            var ann = new LineSeries { Title = "[历史模式：查询失败]", Color = OxyColors.Gray };
+            PlotModel.Series.Add(ann);
+        }
     }
 
     private void SeedDemoData()
