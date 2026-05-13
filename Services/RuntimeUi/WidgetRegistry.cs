@@ -61,6 +61,9 @@ public class WidgetRegistry : IWidgetViewFactory
 
         // P8C 系统诊断视图
         Register("diagnostic-view", (m, ctx) => CreateView(new DiagnosticViewWidgetViewModel(m, ctx), new DiagnosticViewWidget()));
+
+        // P8D 报警指示器
+        Register("alarm-indicator", (m, ctx) => CreateView(new AlarmIndicatorWidgetViewModel(m, ctx), new AlarmIndicatorWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

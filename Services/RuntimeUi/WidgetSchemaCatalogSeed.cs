@@ -56,7 +56,28 @@ internal static class WidgetSchemaCatalogSeed
 
         // P8C 系统诊断视图
         Add(map, BuildDiagnosticView());
+
+        // P8D 报警指示器
+        Add(map, BuildAlarmIndicator());
     }
+
+    // ---------------- alarm-indicator (P8D) ----------------
+    private static WidgetSchema BuildAlarmIndicator() => new()
+    {
+        TypeId = "alarm-indicator",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "targetPage", DisplayName = "跳转页面", EditorType = PropertyEditorType.PageRoute, DefaultValue = "", Category = "行为" },
+            new PropertyDescriptor
+            {
+                Key = "filterLevel", DisplayName = "过滤级别", EditorType = PropertyEditorType.Enum, DefaultValue = "All", Category = "数据",
+                EnumOptions = new[] { "All|全部", "Info|信息", "Warning|警告", "Error|错误", "Alarm|报警" }
+            },
+            new PropertyDescriptor { Key = "blinkOnNew", DisplayName = "新报警闪烁", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "indicatorColor", DisplayName = "指示器颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#DC2626", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "数字颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+        }
+    };
 
     // ---------------- diagnostic-view (P8C) ----------------
     private static WidgetSchema BuildDiagnosticView() => new()

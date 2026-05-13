@@ -402,6 +402,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("user-view",      "用户视图",   "AccountMultipleOutline"),
             // P8C 系统诊断
             new ToolboxItem("diagnostic-view","系统诊断",   "Stethoscope"),
+            // P8D 报警指示器
+            new ToolboxItem("alarm-indicator","报警指示器", "AlertCircle"),
         }),
     };
 
