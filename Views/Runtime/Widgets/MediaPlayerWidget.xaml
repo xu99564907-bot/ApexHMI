@@ -1,0 +1,35 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.MediaPlayerWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ApexHMI.Converters"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <UserControl.Resources>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+    </UserControl.Resources>
+    <Border BorderBrush="#94A3B8" BorderThickness="1" Background="Black">
+        <Grid>
+            <!-- 设计时占位 -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Visibility="{Binding DesignPlaceholderVisibility}">
+                <TextBlock Text="[媒体播放器]" Foreground="#94A3B8" FontSize="14" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding Source}" Foreground="#64748B" FontSize="11"
+                           HorizontalAlignment="Center" Margin="0,4,0,0"/>
+            </StackPanel>
+            <!-- 运行时播放器 -->
+            <MediaElement x:Name="Player"
+                          LoadedBehavior="Manual" UnloadedBehavior="Stop"
+                          Volume="{Binding Volume}"
+                          Visibility="{Binding RuntimeViewVisibility}"
+                          MediaEnded="OnMediaEnded"/>
+            <!-- 工具栏 -->
+            <Border VerticalAlignment="Bottom" Background="#80000000" Padding="4"
+                    Visibility="{Binding ToolbarVisibility}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="播放" Click="OnPlay" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="暂停" Click="OnPause" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="停止" Click="OnStop" Margin="2" Padding="6,2" FontSize="12"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

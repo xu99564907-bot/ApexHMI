@@ -407,6 +407,16 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             // P8E 状态强制（调试）
             new ToolboxItem("status-force",   "状态强制",   "Pencil"),
         }),
+        // P9 媒体/分析
+        new ToolboxGroup("媒体/分析", new[]
+        {
+            new ToolboxItem("html-browser",  "HTML 浏览器", "Web"),
+            new ToolboxItem("pdf-view",      "PDF 视图",    "FilePdfBox"),
+            new ToolboxItem("media-player",  "媒体播放器",  "Movie"),
+            new ToolboxItem("camera-view",   "摄像头",      "Cctv"),
+            new ToolboxItem("xy-trend",      "XY 趋势",     "ChartScatterPlot"),
+            new ToolboxItem("report-view",   "报表视图",    "FileChartOutline"),
+        }),
     };
 
     /// <summary>P7D: 工具箱分组定义，动态拼接基础分组 + "我的 Faceplate"。</summary>

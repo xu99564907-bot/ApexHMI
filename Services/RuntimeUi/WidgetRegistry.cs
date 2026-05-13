@@ -67,6 +67,14 @@ public class WidgetRegistry : IWidgetViewFactory
 
         // P8E 状态强制（调试）
         Register("status-force",  (m, ctx) => CreateView(new StatusForceWidgetViewModel(m, ctx),  new StatusForceWidget()));
+
+        // P9 媒体/分析类高级控件
+        Register("html-browser",  (m, ctx) => CreateView(new HtmlBrowserWidgetViewModel(m, ctx),  new HtmlBrowserWidget()));
+        Register("pdf-view",      (m, ctx) => CreateView(new PdfViewWidgetViewModel(m, ctx),      new PdfViewWidget()));
+        Register("media-player",  (m, ctx) => CreateView(new MediaPlayerWidgetViewModel(m, ctx),  new MediaPlayerWidget()));
+        Register("camera-view",   (m, ctx) => CreateView(new CameraViewWidgetViewModel(m, ctx),   new CameraViewWidget()));
+        Register("xy-trend",      (m, ctx) => CreateView(new XyTrendWidgetViewModel(m, ctx),      new XyTrendWidget()));
+        Register("report-view",   (m, ctx) => CreateView(new ReportViewWidgetViewModel(m, ctx),   new ReportViewWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

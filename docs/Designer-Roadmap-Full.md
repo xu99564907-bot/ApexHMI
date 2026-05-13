@@ -458,7 +458,7 @@ class FaceplateInstance : WidgetInstance {
 
 ---
 
-## P9 — 高级控件 媒体/分析（5-7 天）
+## P9 — 高级控件 媒体/分析（5-7 天）✅ 已完成 2026-05-13
 
 ### 控件清单
 

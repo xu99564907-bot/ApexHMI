@@ -46,4 +46,7 @@ public class ProjectDocument
 
     /// <summary>P8A: 工程级配方库。recipe-view 通过 recipeId 引用其中的 Recipe。</summary>
     public RecipeLibrary? Recipes { get; set; } = new();
+
+    /// <summary>P9F: 工程级报表模板库。report-view 通过 templateId 引用其中的 ReportTemplate。</summary>
+    public ReportLibrary? Reports { get; set; } = new();
 }

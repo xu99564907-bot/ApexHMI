@@ -62,7 +62,104 @@ internal static class WidgetSchemaCatalogSeed
 
         // P8E 状态强制
         Add(map, BuildStatusForce());
+
+        // P9 媒体/分析类高级控件
+        Add(map, BuildHtmlBrowser());
+        Add(map, BuildPdfView());
+        Add(map, BuildMediaPlayer());
+        Add(map, BuildCameraView());
+        Add(map, BuildXyTrend());
+        Add(map, BuildReportView());
     }
+
+    // ---------------- html-browser (P9A) ----------------
+    private static WidgetSchema BuildHtmlBrowser() => new()
+    {
+        TypeId = "html-browser",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "url", DisplayName = "URL", EditorType = PropertyEditorType.String, DefaultValue = "https://www.bing.com", Category = "数据" },
+            new PropertyDescriptor { Key = "navigateOnLoad", DisplayName = "加载时跳转", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+        }
+    };
+
+    // ---------------- pdf-view (P9B) ----------------
+    private static WidgetSchema BuildPdfView() => new()
+    {
+        TypeId = "pdf-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "filePath", DisplayName = "文件路径", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "本地 PDF 路径或 http(s):// URL" },
+            new PropertyDescriptor { Key = "fitToWidth", DisplayName = "适应宽度", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#F8FAFC", Category = "外观" },
+        }
+    };
+
+    // ---------------- media-player (P9C) ----------------
+    private static WidgetSchema BuildMediaPlayer() => new()
+    {
+        TypeId = "media-player",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "source", DisplayName = "媒体源", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "本地 mp4/mp3 路径或 http(s):// URL" },
+            new PropertyDescriptor { Key = "autoPlay", DisplayName = "自动播放", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "loop", DisplayName = "循环", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "volume", DisplayName = "音量", EditorType = PropertyEditorType.Number, DefaultValue = "0.5", Category = "行为", Description = "0~1" },
+        }
+    };
+
+    // ---------------- camera-view (P9D) ----------------
+    private static WidgetSchema BuildCameraView() => new()
+    {
+        TypeId = "camera-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "url", DisplayName = "URL", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "rtsp:// / http:// MJPEG / 本地视频文件" },
+            new PropertyDescriptor { Key = "username", DisplayName = "用户名", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "认证" },
+            new PropertyDescriptor { Key = "password", DisplayName = "密码", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "认证" },
+            new PropertyDescriptor { Key = "autoReconnect", DisplayName = "自动重连", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#000000", Category = "外观" },
+        }
+    };
+
+    // ---------------- xy-trend (P9E) ----------------
+    private static WidgetSchema BuildXyTrend() => new()
+    {
+        TypeId = "xy-trend",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "xVariable", DisplayName = "X 变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "yVariable", DisplayName = "Y 变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "显示模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Scatter", Category = "外观",
+                EnumOptions = new[] { "Scatter|散点", "Line|连线", "Both|散点+连线" }
+            },
+            new PropertyDescriptor { Key = "xLabel", DisplayName = "X 轴标题", EditorType = PropertyEditorType.String, DefaultValue = "X", Category = "外观" },
+            new PropertyDescriptor { Key = "yLabel", DisplayName = "Y 轴标题", EditorType = PropertyEditorType.String, DefaultValue = "Y", Category = "外观" },
+            new PropertyDescriptor { Key = "xMin", DisplayName = "X 最小值", EditorType = PropertyEditorType.Number, DefaultValue = "auto", Category = "限值" },
+            new PropertyDescriptor { Key = "xMax", DisplayName = "X 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "auto", Category = "限值" },
+            new PropertyDescriptor { Key = "yMin", DisplayName = "Y 最小值", EditorType = PropertyEditorType.Number, DefaultValue = "auto", Category = "限值" },
+            new PropertyDescriptor { Key = "yMax", DisplayName = "Y 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "auto", Category = "限值" },
+            new PropertyDescriptor { Key = "color", DisplayName = "颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#2563EB", Category = "外观" },
+            new PropertyDescriptor { Key = "maxPoints", DisplayName = "最大点数", EditorType = PropertyEditorType.Integer, DefaultValue = "200", Category = "数据" },
+        }
+    };
+
+    // ---------------- report-view (P9F) ----------------
+    private static WidgetSchema BuildReportView() => new()
+    {
+        TypeId = "report-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "templateId", DisplayName = "报表模板", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "ProjectDocument.Reports 中的 ReportTemplate.Id" },
+            new PropertyDescriptor { Key = "autoRefresh", DisplayName = "自动刷新", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "refreshInterval", DisplayName = "刷新间隔(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "10", Category = "行为" },
+        }
+    };
 
     // ---------------- status-force (P8E) ----------------
     private static WidgetSchema BuildStatusForce() => new()

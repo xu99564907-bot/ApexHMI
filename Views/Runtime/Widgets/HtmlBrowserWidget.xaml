@@ -1,0 +1,35 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.HtmlBrowserWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+             xmlns:conv="clr-namespace:ApexHMI.Converters"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <UserControl.Resources>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+    </UserControl.Resources>
+    <Border BorderBrush="#94A3B8" BorderThickness="1"
+            Background="{Binding Background, Converter={StaticResource StringToBrushConverter}}">
+        <DockPanel>
+            <!-- 工具栏 -->
+            <Border DockPanel.Dock="Top" Background="#F1F5F9" Padding="4"
+                    Visibility="{Binding ToolbarVisibility}">
+                <DockPanel>
+                    <Button Content="←" Click="OnBack"   Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="→" Click="OnForward" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="⟳" Click="OnReload" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="转到" Click="OnNavigate" DockPanel.Dock="Right" Margin="2" Padding="6,2" FontSize="12"/>
+                    <TextBox x:Name="AddressBox" Text="{Binding Url, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             VerticalContentAlignment="Center" Margin="4,2" FontSize="12"
+                             KeyDown="OnAddressKeyDown"/>
+                </DockPanel>
+            </Border>
+            <!-- 设计时占位 / 运行时 WebView2 -->
+            <Grid>
+                <TextBlock Text="[HTML 浏览器]" Foreground="#64748B" FontSize="14"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding DesignPlaceholderVisibility}"/>
+                <wv2:WebView2 x:Name="Web" Visibility="{Binding RuntimeViewVisibility}"/>
+            </Grid>
+        </DockPanel>
+    </Border>
+</UserControl>
