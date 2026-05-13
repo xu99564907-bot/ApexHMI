@@ -50,7 +50,23 @@ internal static class WidgetSchemaCatalogSeed
 
         // P8A 配方视图
         Add(map, BuildRecipeView());
+
+        // P8B 用户视图
+        Add(map, BuildUserView());
     }
+
+    // ---------------- user-view (P8B) ----------------
+    private static WidgetSchema BuildUserView() => new()
+    {
+        TypeId = "user-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "allowEdit", DisplayName = "允许修改", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "showLastLogin", DisplayName = "显示上次登录", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+        }
+    };
 
     // ---------------- recipe-view (P8A) ----------------
     private static WidgetSchema BuildRecipeView() => new()

@@ -398,6 +398,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("screen-window",  "画面窗口",   "WindowMaximize"),
             // P8A 配方视图
             new ToolboxItem("recipe-view",    "配方视图",   "BookCogOutline"),
+            // P8B 用户视图
+            new ToolboxItem("user-view",      "用户视图",   "AccountMultipleOutline"),
         }),
     };
 
