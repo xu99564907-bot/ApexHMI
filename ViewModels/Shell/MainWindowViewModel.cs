@@ -238,6 +238,9 @@ public sealed partial class MainWindowViewModel : MainViewModel
             case "write-float":
                 _ = HandleWriteFloatAsync(actionParam);
                 break;
+            case "write-string":
+                _ = HandleWriteStringAsync(actionParam);
+                break;
             case "show-dialog":
                 System.Windows.MessageBox.Show(actionParam, "提示");
                 break;
@@ -268,6 +271,17 @@ public sealed partial class MainWindowViewModel : MainViewModel
                 System.Globalization.CultureInfo.InvariantCulture,
                 out var v))
             await _dataBindingService.WriteAsync(parts[0], v);
+    }
+
+    /// <summary>P10C: 字符串写入。actionParam 格式：tag|value（value 内允许含 | 时取首段后剩余全部）。</summary>
+    private async Task HandleWriteStringAsync(string actionParam)
+    {
+        if (string.IsNullOrEmpty(actionParam)) return;
+        var idx = actionParam.IndexOf('|');
+        if (idx <= 0 || idx >= actionParam.Length - 1) return;
+        var tag = actionParam.Substring(0, idx);
+        var value = actionParam.Substring(idx + 1);
+        await _dataBindingService.WriteAsync(tag, value);
     }
 
     internal async Task NavigateToRuntimePageAsync(string routeKey)

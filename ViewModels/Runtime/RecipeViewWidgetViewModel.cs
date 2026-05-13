@@ -174,7 +174,7 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
                 RecipeFieldType.Boolean => "write-bool",
                 RecipeFieldType.Integer => "write-int",
                 RecipeFieldType.Number  => "write-float",
-                _ => "write-int" // 字符串暂按整数走（OPC UA 字符串写入需后续扩展）
+                _ => "write-string" // P10C: 字符串字段走 write-string
             };
             _dataContext.ExecuteAction(action, $"{f.TagAddress}|{val}");
             n++;

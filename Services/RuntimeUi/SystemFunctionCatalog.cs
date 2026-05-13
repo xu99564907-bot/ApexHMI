@@ -49,6 +49,7 @@ public static class SystemFunctionCatalog
         new("write-bool",  "写入布尔",   "写入变量", "写一个 True/False",          new[] { new FunctionArg("address", "Tag 地址", FunctionArgType.TagAddress), new FunctionArg("value", "值 (True/False)", FunctionArgType.Boolean) }),
         new("write-int",   "写入整数",   "写入变量", "写一个整数值",                new[] { new FunctionArg("address", "Tag 地址", FunctionArgType.TagAddress), new FunctionArg("value", "整数值", FunctionArgType.Number) }),
         new("write-float", "写入浮点",   "写入变量", "写一个浮点值",                new[] { new FunctionArg("address", "Tag 地址", FunctionArgType.TagAddress), new FunctionArg("value", "浮点值", FunctionArgType.Number) }),
+        new("write-string","写入字符串", "写入变量", "写一段字符串",                new[] { new FunctionArg("address", "Tag 地址", FunctionArgType.TagAddress), new FunctionArg("value", "字符串", FunctionArgType.Text) }),
         new("increment",   "加 1",       "写入变量", "Tag += 1（占位）",            new[] { new FunctionArg("address", "Tag 地址", FunctionArgType.TagAddress) }),
         new("decrement",   "减 1",       "写入变量", "Tag -= 1（占位）",            new[] { new FunctionArg("address", "Tag 地址", FunctionArgType.TagAddress) }),
 
