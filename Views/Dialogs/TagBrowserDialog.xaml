@@ -1,32 +1,46 @@
 <Window x:Class="ApexHMI.Views.Dialogs.TagBrowserDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Tag 浏览器" Width="720" Height="560"
+        Title="Tag 浏览器" Width="780" Height="600"
         WindowStartupLocation="CenterOwner" Background="{DynamicResource Brush.SurfaceAlt}">
     <DockPanel Margin="12">
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <TextBlock Text="搜索/分类：" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-            <ComboBox x:Name="CategoryCombo" Width="120" SelectionChanged="Filter_Changed" Margin="0,0,8,0"/>
+            <ComboBox x:Name="CategoryCombo" Width="160" SelectionChanged="Filter_Changed" Margin="0,0,8,0"/>
+            <Button DockPanel.Dock="Right" Content="全部折叠" Click="CollapseAll_Click" Padding="8,3" Margin="6,0,0,0"/>
+            <Button DockPanel.Dock="Right" Content="全部展开" Click="ExpandAll_Click" Padding="8,3" Margin="6,0,0,0"/>
             <TextBox x:Name="SearchBox" TextChanged="Filter_Changed"
-                     ToolTip="按名称/NodeId 模糊搜索"/>
+                     ToolTip="按名称/NodeId 模糊搜索（命中时自动展开）"/>
         </DockPanel>
         <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+            <TextBlock x:Name="SelectedPathText" VerticalAlignment="Center" Foreground="{DynamicResource Brush.TextMuted}" Margin="0,0,12,0" FontFamily="Consolas" FontSize="11"/>
             <Button Content="取消" Click="Cancel_Click" Padding="14,6" Margin="0,0,8,0"
                     Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"/>
             <Button Content="选择" Click="Confirm_Click" Padding="14,6"
                     Background="#2563EB" Foreground="White" BorderBrush="#2563EB" IsDefault="True"/>
         </StackPanel>
-        <ListView x:Name="TagListView" MouseDoubleClick="Confirm_Click"
-                  Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="名称"     Width="180" DisplayMemberBinding="{Binding Name}"/>
-                    <GridViewColumn Header="数据类型" Width="100" DisplayMemberBinding="{Binding DataType}"/>
-                    <GridViewColumn Header="分类"     Width="100" DisplayMemberBinding="{Binding Category}"/>
-                    <GridViewColumn Header="当前值"   Width="100" DisplayMemberBinding="{Binding CurrentValue}"/>
-                    <GridViewColumn Header="NodeId"   Width="200" DisplayMemberBinding="{Binding NodeId}"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+        <Border Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1">
+            <TreeView x:Name="TagTreeView" MouseDoubleClick="TreeView_DoubleClick"
+                      SelectedItemChanged="TreeView_SelectionChanged"
+                      VirtualizingStackPanel.IsVirtualizing="True"
+                      VirtualizingStackPanel.VirtualizationMode="Recycling"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Name}" FontFamily="Consolas"/>
+                            <TextBlock Text="{Binding TypeBadge}" Foreground="#2563EB" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding ValueBadge}" Foreground="#64748B" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Border>
     </DockPanel>
 </Window>

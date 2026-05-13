@@ -300,7 +300,14 @@ public sealed partial class MainWindowViewModel : MainViewModel
         switch (actionType)
         {
             case "navigate":
-                _ = NavigateToRuntimePageAsync(actionParam);
+                {
+                    // 优先匹配工程内用户页（按 RouteKey）；否则当作固定段名（主界面/手动操作/参数设定...）
+                    var project = _runtimeProjectService.Current;
+                    var isUserPage = project?.Pages.Any(p =>
+                        string.Equals(p.RouteKey, actionParam, StringComparison.OrdinalIgnoreCase)) == true;
+                    if (isUserPage) _ = NavigateToRuntimePageAsync(actionParam);
+                    else NavigateCommand.Execute(actionParam);
+                }
                 break;
             case "write-bool":
                 _ = HandleWriteBoolAsync(actionParam);

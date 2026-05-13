@@ -643,8 +643,8 @@
                         </Button>
                         <Border Grid.Column="4" Margin="12,8" CornerRadius="14" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="{l:Loc Nav_CurrentSection}" Foreground="{DynamicResource Brush.TextMuted}" FontSize="12" HorizontalAlignment="Center"/>
-                                <TextBlock Text="{Binding CurrentSection}" Foreground="{DynamicResource Brush.Text}" FontSize="22" FontWeight="Bold" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                <TextBlock Text="工程名称" Foreground="{DynamicResource Brush.TextMuted}" FontSize="12" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding DesignerEditor.Document.ProjectName}" Foreground="{DynamicResource Brush.Text}" FontSize="18" FontWeight="Bold" Margin="0,4,0,0" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="320" ToolTip="{Binding DesignerEditor.Document.ProjectName}"/>
                             </StackPanel>
                         </Border>
                         <Button Grid.Column="5" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="配方管理" ToolTip="配方管理">

@@ -8,20 +8,8 @@
                     <Grid Margin="12" DataContext="{Binding ShellViewModel}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <!-- Row 0: 程序生成标题与导航栏 -->
-                        <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="16" Margin="0,0,0,12">
-                            <DockPanel>
-                                <TextBlock Text="{Binding CurrentDesignerTitle}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}" VerticalAlignment="Center"/>
-                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                                    <Button Content="手动程序生成" Command="{Binding NavigateCommand}" CommandParameter="手动程序生成" Background="#2563EB" Foreground="White" BorderBrush="#2563EB" Padding="10,6" Margin="0,0,8,0"/>
-                                    <Button Content="自动程序生成" Command="{Binding NavigateCommand}" CommandParameter="自动程序生成" Background="#374151" Foreground="White" BorderBrush="#374151" Padding="10,6" Margin="0,0,8,0"/>
-                                    <Button Content="初始化程序生成" Command="{Binding NavigateCommand}" CommandParameter="初始化程序生成" Background="#9333EA" Foreground="White" BorderBrush="#9333EA" Padding="10,6"/>
-                                </StackPanel>
-                            </DockPanel>
-                        </Border>
-                        <Grid Grid.Row="1" Visibility="{Binding IsDesignerIoProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid Grid.Row="0" Visibility="{Binding IsDesignerIoProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="420"/>
                                 <ColumnDefinition Width="*"/>
@@ -227,7 +215,7 @@
                         </Grid>
 
                         <!-- SFC 步骤式自动程序生成 -->
-                        <Grid Grid.Row="1"
+                        <Grid Grid.Row="0"
                               Height="{Binding ViewportHeight, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                               Visibility="{Binding IsDesignerAutoProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
@@ -564,7 +552,7 @@
                         </Grid>
 
                         <!-- 初始化程序生成页 (独立步骤集合，与自动程序页等级相同) -->
-                        <Grid Grid.Row="1"
+                        <Grid Grid.Row="0"
                               Height="{Binding ViewportHeight, RelativeSource={RelativeSource AncestorType=ScrollViewer}}"
                               Visibility="{Binding IsDesignerInitProgramPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>

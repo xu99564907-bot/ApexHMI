@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ApexHMI.Models;
@@ -33,7 +34,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private bool _suppressEditRecording;
 
     /// <summary>从 PLC Device.Application.xml 加载的变量表（与 Shell.Tags 并列；非空时作为绑定首选）。</summary>
-    public ObservableCollection<TagItem> PlcTags { get; } = new();
+    public ApexHMI.Common.BulkObservableCollection<TagItem> PlcTags { get; } = new();
 
     /// <summary>当前 PLC 变量文件路径（成功导入后回显）。</summary>
     [ObservableProperty]
@@ -55,6 +56,57 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
     [ObservableProperty]
     private int _gridSize = 8;
+
+    // ========== 画布缩放 ==========
+    public double[] ZoomOptions { get; } = new[] { 0.5, 0.75, 1.0, 1.25, 1.5, 2.0 };
+
+    [ObservableProperty]
+    private double _canvasZoom = 1.0;
+
+    [ObservableProperty]
+    private string _fitButtonText = "适应窗口";
+
+    [ObservableProperty]
+    private bool _isFitToWindow;
+
+    private double? _zoomBeforeFit;
+    private bool _isApplyingFit;
+
+    partial void OnCanvasZoomChanged(double value)
+    {
+        if (value < 0.1) { CanvasZoom = 0.1; return; }
+        if (value > 4.0) { CanvasZoom = 4.0; return; }
+        if (IsFitToWindow && !_isApplyingFit)
+        {
+            IsFitToWindow = false;
+            _zoomBeforeFit = null;
+            FitButtonText = "适应窗口";
+        }
+    }
+
+    public void ApplyFitToWindow(double fitZoom)
+    {
+        _isApplyingFit = true;
+        try
+        {
+            _zoomBeforeFit = CanvasZoom;
+            CanvasZoom = fitZoom;
+        }
+        finally { _isApplyingFit = false; }
+        IsFitToWindow = true;
+        FitButtonText = $"恢复 {(_zoomBeforeFit ?? 1.0) * 100:0}%";
+    }
+
+    public void RestoreFromFit()
+    {
+        if (_zoomBeforeFit is null) return;
+        _isApplyingFit = true;
+        try { CanvasZoom = _zoomBeforeFit.Value; }
+        finally { _isApplyingFit = false; }
+        IsFitToWindow = false;
+        _zoomBeforeFit = null;
+        FitButtonText = "适应窗口";
+    }
 
     /// <summary>对齐到网格（仅当 SnapToGrid=true 时生效）。</summary>
     public double SnapValue(double v)
@@ -395,9 +447,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         };
         shell.RegisterDirtySource(() => IsDirty);
 
+        _autoSaveTimer.Tick += (_, _) =>
+        {
+            _autoSaveTimer.Stop();
+            if (IsDirty) SaveCommand.Execute(null);
+        };
+
         InitDocument();
         // 启动时自动尝试从当前 PLC 工程目录加载一次变量表（失败静默）
-        TryAutoLoadPlcVariables();
+        // 用 Dispatcher.BeginInvoke + Background 优先级，让窗口先显示出来再加载
+        System.Windows.Application.Current?.Dispatcher.BeginInvoke(
+            new Action(TryAutoLoadPlcVariables),
+            System.Windows.Threading.DispatcherPriority.Background);
         // PLC 程序保存目录变更时（Shell.GitPullVm.GitTargetFolder）自动重新加载
         Shell.PropertyChanged += (_, e) =>
         {
@@ -408,22 +469,89 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>启动 / GitTargetFolder 变更时静默加载；找不到文件不弹错。</summary>
     public void TryAutoLoadPlcVariables()
     {
+        // 优先用上次手动导入保存的设置（路径 + OP 选择）
+        var saved = _plcVariableImport.LoadSettings();
+        if (saved != null && !string.IsNullOrWhiteSpace(saved.FilePath) && System.IO.File.Exists(saved.FilePath))
+        {
+            ISet<string>? ops = saved.SelectedOps is { Count: > 0 }
+                ? new HashSet<string>(saved.SelectedOps, StringComparer.Ordinal)
+                : null;
+            LoadPlcVariablesSilent(saved.FilePath, ops);
+            return;
+        }
+        // 回退：从 PLC 程序保存目录自动查找
         var path = _plcVariableImport.ResolveDefaultPath(Shell.GitTargetFolder);
         if (string.IsNullOrEmpty(path)) return;
-        LoadPlcVariablesFrom(path);
+        LoadPlcVariablesSilent(path!, null);
     }
 
-    private void LoadPlcVariablesFrom(string path)
+    private void LoadPlcVariablesSilent(string path, ISet<string>? selectedOps)
     {
-        var tags = _plcVariableImport.LoadFromFile(path);
-        PlcTags.Clear();
-        foreach (var t in tags) PlcTags.Add(t);
+        PlcVariableStatus = "正在加载…";
+        var ui = System.Threading.SynchronizationContext.Current;
+        Task.Run(() =>
+        {
+            try
+            {
+                return _plcVariableImport.LoadFromFile(path, selectedOps);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "DesignerEditor: 静默加载 PLC 变量失败 path={Path}", path);
+                return (IReadOnlyList<TagItem>)Array.Empty<TagItem>();
+            }
+        }).ContinueWith(t =>
+        {
+            var tags = t.Result;
+            ApplyLoadedTags(path, tags, selectedOps, "静默");
+        }, ui is null ? TaskScheduler.Default : TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private void ApplyLoadedTags(string path, IReadOnlyList<TagItem> tags, ISet<string>? selectedOps, string mode)
+    {
+        // 批量替换：一次 Reset 事件，避免 N 次 Add 的级联通知
+        PlcTags.ReplaceAll(tags);
         PlcVariableFilePath = path;
         PlcVariableStatus = tags.Count > 0
             ? $"已加载 {tags.Count} 个变量"
             : "未解析到变量";
         OnPropertyChanged(nameof(AvailableTags));
-        Log.Information("DesignerEditor: 加载 PLC 变量 path={Path} count={Count}", path, tags.Count);
+        Log.Information("DesignerEditor: {Mode}加载 PLC 变量 path={Path} count={Count} ops={Ops}",
+            mode, path, tags.Count, selectedOps is null ? "ALL" : string.Join(",", selectedOps));
+    }
+
+    private void LoadPlcVariablesFrom(string path, bool silent = false)
+    {
+        ISet<string>? selectedOps = null;
+        if (!silent)
+        {
+            var topGroups = _plcVariableImport.ScanTopGroups(path);
+            if (topGroups.Count > 0)
+            {
+                var dlg = new ApexHMI.Views.Dialogs.PlcVariableOpFilterDialog(topGroups)
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow
+                };
+                if (dlg.ShowDialog() != true) return;
+                selectedOps = dlg.SelectedOps;
+                if (selectedOps is null || selectedOps.Count == 0)
+                {
+                    PlcVariableStatus = "未选择任何工位，已取消导入";
+                    return;
+                }
+            }
+        }
+
+        PlcVariableStatus = "正在加载…";
+        var capturedOps = selectedOps;
+        var ui = System.Threading.SynchronizationContext.Current;
+        Task.Run(() => _plcVariableImport.LoadFromFile(path, capturedOps))
+            .ContinueWith(t =>
+            {
+                var tags = t.Result;
+                ApplyLoadedTags(path, tags, capturedOps, "手动");
+                if (tags.Count > 0) _plcVariableImport.SaveSettings(path, capturedOps);
+            }, ui is null ? TaskScheduler.Default : TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     /// <summary>"重新导入 PLC 变量"按钮：从 GitTargetFolder 找 Device.Application.xml 并解析。</summary>
@@ -436,7 +564,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             PlcVariableStatus = "未找到 Device.Application.xml（请在「PLC 程序保存目录」中设置）";
             return;
         }
-        LoadPlcVariablesFrom(path!);
+        LoadPlcVariablesFrom(path!, silent: false);
     }
 
     /// <summary>"浏览 XML 文件"命令：手动选择一个 Device.Application.xml。</summary>
@@ -445,20 +573,30 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     {
         var dlg = new Microsoft.Win32.OpenFileDialog
         {
-            Filter = "PLC 变量表 (Device.Application.xml)|Device.Application.xml|XML 文件 (*.xml)|*.xml",
+            Filter = "PLC 变量表 (*.Device.Application.xml)|*Device.Application.xml|XML 文件 (*.xml)|*.xml",
             Title = "选择 PLC 变量表 XML",
         };
         var initial = Shell.GitTargetFolder;
         if (!string.IsNullOrWhiteSpace(initial) && System.IO.Directory.Exists(initial))
             dlg.InitialDirectory = initial;
-        if (dlg.ShowDialog() == true) LoadPlcVariablesFrom(dlg.FileName);
+        if (dlg.ShowDialog() == true) LoadPlcVariablesFrom(dlg.FileName, silent: false);
     }
 
     /// <summary>当前画布是否有未保存改动（G7 切页确认依据）。</summary>
     [ObservableProperty]
     private bool _isDirty;
 
-    partial void OnIsDirtyChanged(bool value) => Shell.NotifyDirtyStateChanged();
+    private readonly DispatcherTimer _autoSaveTimer = new() { Interval = TimeSpan.FromMilliseconds(800) };
+
+    partial void OnIsDirtyChanged(bool value)
+    {
+        Shell.NotifyDirtyStateChanged();
+        if (value)
+        {
+            _autoSaveTimer.Stop();
+            _autoSaveTimer.Start();
+        }
+    }
 
     // ========== 工程文档 ==========
 
@@ -557,7 +695,41 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// 可用 Tag 列表：PLC 变量表（Device.Application.xml）非空时优先使用，
     /// 否则回退到 Shell.Tags（OPC UA 在线变量 + 演示数据）。
     /// </summary>
-    public IEnumerable<TagItem> AvailableTags => PlcTags.Count > 0 ? (IEnumerable<TagItem>)PlcTags : Shell.Tags;
+    public IEnumerable<TagItem> AvailableTags => PlcTags.Count > 0
+        ? (IEnumerable<TagItem>)PlcTags
+        : Shell.Tags.Where(t => !string.Equals(t.Group, "Imported", StringComparison.Ordinal));
+
+    /// <summary>「页面跳转」可选目标：固定段名 + 工程内用户页面。</summary>
+    public IEnumerable<NavigateTarget> NavigateTargets
+    {
+        get
+        {
+            var fixedTargets = new (string Title, string Key)[]
+            {
+                ("主界面",          "主界面"),
+                ("监控",            "监控"),
+                ("手动操作",        "手动操作"),
+                ("参数设定",        "参数设定"),
+                ("报警画面",        "报警画面"),
+                ("配方管理",        "配方管理"),
+                ("登录",            "登录"),
+                ("画布设计",        "画布设计"),
+                ("运行页面",        "运行页面"),
+            };
+            foreach (var (t, k) in fixedTargets)
+                yield return new NavigateTarget { DisplayName = t, RouteKey = k, Group = "固定页" };
+            if (Document is not null)
+                foreach (var p in Document.Pages)
+                    yield return new NavigateTarget { DisplayName = p.Title, RouteKey = p.RouteKey, Group = "用户页" };
+        }
+    }
+
+    public sealed class NavigateTarget
+    {
+        public string DisplayName { get; init; } = string.Empty;
+        public string RouteKey { get; init; } = string.Empty;
+        public string Group { get; init; } = string.Empty;
+    }
 
     /// <summary>
     /// 当前选中 widget 的可用设备名列表（按 TypeId 自动从 Shell 取真实设备）。
@@ -639,6 +811,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }
 
         OnPropertyChanged(nameof(CurrentBindingTagId));
+        OnPropertyChanged(nameof(WriteAddress));
+        OnPropertyChanged(nameof(WriteValue));
         OnPropertyChanged(nameof(AvailableDeviceNames));
         RefreshAnimationsList();
     }
@@ -873,7 +1047,49 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     public string? CurrentBindingTagId
     {
         get => SelectedWidget?.Binding?.TagId;
-        set => UpdateWidgetBinding(value);
+        set
+        {
+            UpdateWidgetBinding(value);
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>写入动作（write-bool/int/float）的地址部分。底层存到 <c>ActionParam</c>，格式 <c>addr|value</c>。</summary>
+    public string WriteAddress
+    {
+        get
+        {
+            var s = SelectedWidget?.ActionParam ?? string.Empty;
+            var i = s.IndexOf('|');
+            return i < 0 ? s : s.Substring(0, i);
+        }
+        set
+        {
+            if (SelectedWidget is null) return;
+            var v = WriteValue;
+            SelectedWidget.ActionParam = string.IsNullOrEmpty(v) ? (value ?? string.Empty) : $"{value}|{v}";
+            MarkPageEdited();
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>写入动作（write-bool/int/float）的值部分（True/False/整数/浮点）。</summary>
+    public string WriteValue
+    {
+        get
+        {
+            var s = SelectedWidget?.ActionParam ?? string.Empty;
+            var i = s.IndexOf('|');
+            return i < 0 ? string.Empty : s.Substring(i + 1);
+        }
+        set
+        {
+            if (SelectedWidget is null) return;
+            var a = WriteAddress;
+            SelectedWidget.ActionParam = string.IsNullOrEmpty(value) ? a : $"{a}|{value}";
+            MarkPageEdited();
+            OnPropertyChanged();
+        }
     }
 
     /// <summary>打开 Tag 浏览器对话框，选中后写入当前控件绑定。</summary>
@@ -916,7 +1132,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private void OpenTagBrowser()
     {
         if (SelectedWidget is null) return;
-        var dlg = new ApexHMI.Views.Dialogs.TagBrowserDialog(PlcTags.Count > 0 ? PlcTags : (System.Collections.Generic.IEnumerable<TagItem>)Shell.Tags)
+        var dlg = new ApexHMI.Views.Dialogs.TagBrowserDialog(AvailableTags)
         {
             Owner = System.Windows.Application.Current.MainWindow
         };

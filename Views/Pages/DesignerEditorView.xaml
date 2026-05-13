@@ -4,6 +4,7 @@
              xmlns:vm="clr-namespace:ApexHMI.ViewModels.Modules"
              xmlns:model="clr-namespace:ApexHMI.Models.RuntimeUi"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:b="clr-namespace:ApexHMI.Behaviors"
              mc:Ignorable="d"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -67,24 +68,6 @@
                             ToolTip="手动选择 Device.Application.xml 文件">
                         <materialDesign:PackIcon Kind="FolderOpen" Width="14" Height="14"/>
                     </Button>
-                    <Button Command="{Binding PreviewCommand}"
-                            Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
-                            Padding="8,5" Margin="0,0,4,0"
-                            ToolTip="预览：保存并在运行视图中查看当前页面">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Eye" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="预览" Margin="4,0,0,0" FontSize="11"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Command="{Binding SaveCommand}"
-                            Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
-                            Padding="8,5" Margin="0,0,4,0"
-                            ToolTip="保存工程 (Ctrl+S)">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ContentSave" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="保存" Margin="4,0,0,0" FontSize="11"/>
-                        </StackPanel>
-                    </Button>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                             Padding="8,5"
@@ -97,7 +80,20 @@
                 </StackPanel>
 
                 <!-- 横向工具箱（按分组） -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <Border x:Name="ToolboxPanel" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0">
+                    <DockPanel>
+                        <Thumb x:Name="ToolboxDragHandle" DockPanel.Dock="Top" Height="14"
+                               Background="#94A3B8" Cursor="SizeAll" Visibility="Collapsed"
+                               DragDelta="ToolboxDragHandle_DragDelta"
+                               ToolTip="拖动可移动工具栏"/>
+                        <Button x:Name="ToolboxFloatToggle" DockPanel.Dock="Right"
+                                Click="ToolboxFloatToggle_Click"
+                                Background="Transparent" BorderThickness="0" Padding="4"
+                                VerticalAlignment="Center" Margin="4,0,0,0"
+                                ToolTip="切换悬浮 / 固定">
+                            <materialDesign:PackIcon x:Name="ToolboxFloatIcon" Kind="PinOutline" Width="14" Height="14"/>
+                        </Button>
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
                     <ItemsControl x:Name="ToolboxItemsControl">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -143,6 +139,8 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+                    </DockPanel>
+                </Border>
             </DockPanel>
         </Border>
 
@@ -241,7 +239,8 @@
             </Border>
 
             <!-- ===== 中栏：设计画布 ===== -->
-            <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="10" Margin="0,0,10,0">
+            <ContentControl x:Name="CanvasHost" Grid.Column="1">
+            <Border x:Name="CanvasBorder" Style="{StaticResource CardBorderStyle}" Padding="10" Margin="0,0,10,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -255,6 +254,17 @@
                                 <CheckBox Content="吸附" IsChecked="{Binding SnapToGrid}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBlock Text="间距" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                 <TextBox Text="{Binding GridSize, UpdateSourceTrigger=PropertyChanged}" Width="44" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <TextBlock Text="缩放" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <ComboBox ItemsSource="{Binding ZoomOptions}"
+                                          SelectedItem="{Binding CanvasZoom}"
+                                          Width="76" VerticalAlignment="Center" Margin="0,0,4,0">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat={}{0:P0}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <Button Content="{Binding FitButtonText}" Click="FitToWindow_Click" Padding="8,3" VerticalAlignment="Center" Margin="0,0,12,0" MinWidth="80"/>
                                 <TextBlock Text="{Binding MouseCoord, StringFormat=({0})}" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="Consolas"/>
                                 <TextBlock Text="{Binding CurrentWidgets.Count, Mode=OneWay, StringFormat=控件数: {0}}"
                                            Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center"/>
@@ -275,8 +285,9 @@
                                     Padding="8,4" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"/>
                         </WrapPanel>
                     </StackPanel>
-                    <ScrollViewer Grid.Row="1" 
-                                  HorizontalScrollBarVisibility="Auto" 
+                    <ScrollViewer Grid.Row="1"
+                                  x:Name="DesignerCanvasScrollViewer"
+                                  HorizontalScrollBarVisibility="Auto"
                                   VerticalScrollBarVisibility="Auto">
                         <Canvas x:Name="DesignerCanvas"
                                 Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
@@ -289,6 +300,16 @@
                                 MouseLeftButtonUp="DesignerCanvas_BackgroundMouseUp"
                                 DragOver="DesignerCanvas_DragOver"
                                 Drop="DesignerCanvas_Drop">
+                            <Canvas.LayoutTransform>
+                                <ScaleTransform ScaleX="{Binding CanvasZoom}" ScaleY="{Binding CanvasZoom}"/>
+                            </Canvas.LayoutTransform>
+                            <!-- 画布有效范围边框 -->
+                            <Rectangle Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
+                                       Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}"
+                                       Stroke="#64748B" StrokeThickness="1"
+                                       Fill="Transparent"
+                                       IsHitTestVisible="False"
+                                       Panel.ZIndex="2000"/>
                             <!-- 网格背景层 -->
                             <Rectangle Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
                                        Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}"
@@ -437,6 +458,7 @@
                     </ScrollViewer>
                 </Grid>
             </Border>
+            </ContentControl>
 
             <!-- ===== 右栏：属性编辑器 ===== -->
             <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="12">
@@ -461,7 +483,7 @@
                             </WrapPanel>
 
                             <!-- 几何 -->
-                            <Expander Header="几何" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4">
+                            <Expander Header="几何" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                                     <TextBlock Text="位置 (X, Y)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <UniformGrid Columns="2" Margin="0,4,0,6">
@@ -477,7 +499,7 @@
                             </Expander>
 
                             <!-- 外观 / 控件属性 -->
-                            <Expander Header="外观 / 属性" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <Expander Header="外观 / 属性" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                             <ItemsControl ItemsSource="{Binding CurrentWidgetProperties}">
                                 <ItemsControl.ItemTemplate>
@@ -543,18 +565,18 @@
                             <!-- 数据绑定 -->
                             <Expander Header="数据绑定" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <TextBlock Text="绑定 Tag" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBlock Text="读取地址（订阅）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" FontWeight="SemiBold"/>
+                                    <TextBlock Foreground="{DynamicResource Brush.TextMuted}" FontSize="10" TextWrapping="Wrap" Margin="0,2,0,2"
+                                               Text="控件订阅此变量并实时刷新。当此变量在 PLC 端发生变化时：&#x0a;&#xa0;• 「指示灯 / 数值显示」等控件 → 直接显示新值&#xa;&#xa0;• 「切换开关」模式 → 决定下次写入的取反值&#xa;&#xa0;• 「状态动画」→ 根据条件自动改变控件外观&#xa;留空 = 不订阅，控件只响应点击不显示状态。"/>
                                     <DockPanel Margin="0,4,0,4">
                                         <Button DockPanel.Dock="Right" Content="🔍"
                                                 Command="{Binding OpenTagBrowserCommand}"
                                                 Padding="6,0" Margin="4,0,0,0"
                                                 ToolTip="打开 Tag 浏览器"/>
-                                        <ComboBox ItemsSource="{Binding AvailableTags}"
-                                                  DisplayMemberPath="Name"
-                                                  SelectedValuePath="Name"
-                                                  SelectedValue="{Binding CurrentBindingTagId, UpdateSourceTrigger=PropertyChanged}"
-                                                  IsEditable="False"
-                                                  ToolTip="选择要绑定的 OPC UA Tag，留空取消绑定"/>
+                                        <TextBox Text="{Binding CurrentBindingTagId, UpdateSourceTrigger=PropertyChanged}"
+                                                 VerticalContentAlignment="Center"
+                                                 b:TagAutoComplete.IsEnabled="True"
+                                                 ToolTip="绑定 Tag 名（输入时下方列出候选；Tab/Enter 补全，Esc 关闭，↑↓ 切换）"/>
                                     </DockPanel>
                                 </StackPanel>
                             </Expander>
@@ -564,18 +586,101 @@
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                                     <TextBlock Text="点击动作" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <ComboBox Margin="0,4,0,4"
+                                              SelectedValuePath="Tag"
                                               SelectedValue="{Binding SelectedWidget.ActionType, UpdateSourceTrigger=PropertyChanged}">
-                                        <ComboBoxItem Content="无"/>
-                                        <ComboBoxItem Content="write-bool"/>
-                                        <ComboBoxItem Content="write-int"/>
-                                        <ComboBoxItem Content="write-float"/>
-                                        <ComboBoxItem Content="navigate"/>
-                                        <ComboBoxItem Content="show-dialog"/>
+                                        <ComboBoxItem Content="无"          Tag="无"/>
+                                        <ComboBoxItem Content="设为 ON"     Tag="set-on"      ToolTip="按钮模式：单击写 True"/>
+                                        <ComboBoxItem Content="设为 OFF"    Tag="set-off"     ToolTip="按钮模式：单击写 False"/>
+                                        <ComboBoxItem Content="切换开关"    Tag="toggle"      ToolTip="按钮模式：单击读后写反值（读地址 = 数据绑定 Tag；留空 = 复用写地址）"/>
+                                        <ComboBoxItem Content="复归型 / 点动" Tag="momentary"  ToolTip="按钮模式：按下写 True，松开写 False"/>
+                                        <ComboBoxItem Content="写入布尔"    Tag="write-bool"  ToolTip="参数格式：TagName|True/False"/>
+                                        <ComboBoxItem Content="写入整数"    Tag="write-int"   ToolTip="参数格式：TagName|123"/>
+                                        <ComboBoxItem Content="写入浮点"    Tag="write-float" ToolTip="参数格式：TagName|1.23"/>
+                                        <ComboBoxItem Content="页面跳转"    Tag="navigate"    ToolTip="参数：目标 RouteKey"/>
+                                        <ComboBoxItem Content="弹窗提示"    Tag="show-dialog" ToolTip="参数：弹窗文字"/>
                                     </ComboBox>
                                     <TextBlock Text="动作参数" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <!-- 通用 TextBox：set-on/off/toggle/momentary 模式（地址）+ show-dialog（弹窗文字）+ 无动作 -->
                                     <TextBox Text="{Binding SelectedWidget.ActionParam, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0,4,0,4"
-                                             ToolTip="write-bool: TagName|True/False; navigate: 目标 RouteKey"/>
+                                             b:TagAutoComplete.IsEnabled="True"
+                                             ToolTip="set-on/off/toggle/momentary：写入 Tag 地址（值由模式决定）&#x0a;show-dialog：弹窗文字">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="navigate">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-bool">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-int">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-float">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                    <!-- 写入布尔/整数/浮点：拆成 写入地址 + 写入值 两个独立字段，底层合并为 addr|value 存入 ActionParam -->
+                                    <StackPanel>
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-bool">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-int">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-float">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="写入地址" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                        <TextBox Text="{Binding WriteAddress, UpdateSourceTrigger=PropertyChanged}"
+                                                 Margin="0,4,0,6"
+                                                 b:TagAutoComplete.IsEnabled="True"
+                                                 ToolTip="目标 Tag 地址（点击时把下面的值写入此地址）"/>
+                                        <TextBlock Text="写入值" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                        <TextBox Text="{Binding WriteValue, UpdateSourceTrigger=PropertyChanged}"
+                                                 Margin="0,4,0,4"
+                                                 ToolTip="布尔：True / False&#x0a;整数：如 42&#x0a;浮点：如 3.14"/>
+                                    </StackPanel>
+                                    <!-- 页面下拉：仅 navigate 时显示，列出固定页 + 工程内用户页面 -->
+                                    <ComboBox ItemsSource="{Binding NavigateTargets}"
+                                              SelectedValuePath="RouteKey"
+                                              SelectedValue="{Binding SelectedWidget.ActionParam, UpdateSourceTrigger=PropertyChanged}"
+                                              Margin="0,4,0,4"
+                                              ToolTip="选择跳转目标（写入 RouteKey 或固定段名）">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Group, StringFormat=[{0}]}"
+                                                               Foreground="#2563EB" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding DisplayName}"/>
+                                                    <TextBlock Text="{Binding RouteKey, StringFormat=  ({0})}"
+                                                               Foreground="{DynamicResource Brush.TextMuted}" FontSize="11" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                        <ComboBox.Style>
+                                            <Style TargetType="ComboBox">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="navigate">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ComboBox.Style>
+                                    </ComboBox>
                                 </StackPanel>
                             </Expander>
 
@@ -604,7 +709,8 @@
                                                                 <ColumnDefinition Width="*"/>
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Grid.Column="0" Text="Tag" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" FontSize="11"/>
-                                                            <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}" FontSize="11"/>
+                                                            <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}" FontSize="11"
+                                                                     b:TagAutoComplete.IsEnabled="True"/>
                                                         </Grid>
                                                         <Grid Margin="0,2,0,2">
                                                             <Grid.ColumnDefinitions>
@@ -670,6 +776,9 @@
                     </StackPanel>
                 </ScrollViewer>
             </Border>
+
+            <!-- 悬浮工具栏宿主层（默认无内容；点击图钉时把 ToolboxPanel 移入此层）-->
+            <Canvas x:Name="OverlayLayer" Grid.ColumnSpan="3" Background="{x:Null}" Panel.ZIndex="999"/>
         </Grid>
     </Grid>
 </UserControl>

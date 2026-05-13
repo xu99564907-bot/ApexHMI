@@ -1,6 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ApexHMI.Models;
 using ApexHMI.Models.RuntimeUi;
 using ApexHMI.ViewModels.Modules;
 
@@ -36,6 +41,144 @@ public partial class DesignerEditorView : UserControl
 
     private DesignerEditorViewModel? GetViewModel()
         => DataContext as DesignerEditorViewModel;
+
+    private void FitToWindow_Click(object sender, RoutedEventArgs e)
+    {
+        var vm = GetViewModel();
+        if (vm?.SelectedPage is null) return;
+        if (vm.IsFitToWindow) { vm.RestoreFromFit(); return; }
+        var sv = DesignerCanvasScrollViewer;
+        var cw = vm.SelectedPage.CanvasWidth;
+        var ch = vm.SelectedPage.CanvasHeight;
+        if (cw <= 0 || ch <= 0 || sv.ViewportWidth <= 0 || sv.ViewportHeight <= 0) return;
+        const double pad = 16.0;
+        var z = Math.Min((sv.ViewportWidth - pad) / cw, (sv.ViewportHeight - pad) / ch);
+        if (z <= 0) return;
+        z = Math.Max(0.1, Math.Min(4.0, z));
+        vm.ApplyFitToWindow(z);
+    }
+
+    // ===== 工具栏悬浮 / 固定 =====
+    private bool _isToolboxFloating;
+    private Panel? _toolboxOriginalParent;
+    private int _toolboxOriginalIndex;
+
+    private void ToolboxFloatToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_isToolboxFloating)
+        {
+            if (ToolboxPanel.Parent is not Panel parent) return;
+            _toolboxOriginalParent = parent;
+            _toolboxOriginalIndex = parent.Children.IndexOf(ToolboxPanel);
+            parent.Children.Remove(ToolboxPanel);
+
+            ToolboxPanel.BorderThickness = new Thickness(1);
+            ToolboxPanel.Effect = new System.Windows.Media.Effects.DropShadowEffect
+            { ShadowDepth = 2, BlurRadius = 8, Opacity = 0.35 };
+            ToolboxDragHandle.Visibility = Visibility.Visible;
+            ToolboxFloatIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Pin;
+
+            Canvas.SetLeft(ToolboxPanel, 20);
+            Canvas.SetTop(ToolboxPanel, 12);
+            OverlayLayer.Children.Add(ToolboxPanel);
+            _isToolboxFloating = true;
+        }
+        else
+        {
+            OverlayLayer.Children.Remove(ToolboxPanel);
+            ToolboxPanel.ClearValue(Canvas.LeftProperty);
+            ToolboxPanel.ClearValue(Canvas.TopProperty);
+            ToolboxPanel.BorderThickness = new Thickness(0);
+            ToolboxPanel.Effect = null;
+            ToolboxDragHandle.Visibility = Visibility.Collapsed;
+            ToolboxFloatIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.PinOutline;
+
+            _toolboxOriginalParent?.Children.Insert(
+                Math.Min(_toolboxOriginalIndex, _toolboxOriginalParent.Children.Count),
+                ToolboxPanel);
+            _isToolboxFloating = false;
+        }
+    }
+
+    private void ToolboxDragHandle_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
+    {
+        if (!_isToolboxFloating) return;
+        var left = Canvas.GetLeft(ToolboxPanel);
+        var top = Canvas.GetTop(ToolboxPanel);
+        if (double.IsNaN(left)) left = 0;
+        if (double.IsNaN(top)) top = 0;
+        Canvas.SetLeft(ToolboxPanel, Math.Max(0, left + e.HorizontalChange));
+        Canvas.SetTop(ToolboxPanel, Math.Max(0, top + e.VerticalChange));
+    }
+
+    // ===== 设计器弹出到独立窗口（包含工具栏 + 页面树 + 画布 + 属性编辑器）=====
+    private Window? _canvasPopupWindow;
+    private UIElement? _designerOriginalRoot;
+
+    private void PopOutCanvas()
+    {
+        if (_canvasPopupWindow != null) { _canvasPopupWindow.Activate(); return; }
+        if (this.Content is not UIElement root) return;
+
+        _designerOriginalRoot = root;
+        this.Content = null;
+
+        var placeholder = new Border
+        {
+            Background = System.Windows.Media.Brushes.WhiteSmoke,
+            BorderBrush = System.Windows.Media.Brushes.LightGray,
+            BorderThickness = new Thickness(1),
+            Child = new TextBlock
+            {
+                Text = "设计器已弹出到独立窗口\n关闭窗口以恢复",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = System.Windows.Media.Brushes.Gray,
+                TextAlignment = TextAlignment.Center,
+                FontSize = 14
+            }
+        };
+        this.Content = placeholder;
+
+        _canvasPopupWindow = new Window
+        {
+            Title = "设计器 - 独立窗口（关闭以恢复）",
+            Width = 1400,
+            Height = 880,
+            ShowInTaskbar = true,
+            DataContext = this.DataContext,
+            Content = root
+        };
+        // 主窗口关闭时同步关闭弹窗，避免遗留进程
+        var mainWindow = Window.GetWindow(this);
+        if (mainWindow != null)
+        {
+            EventHandler? closeHandler = null;
+            closeHandler = (_, _) =>
+            {
+                mainWindow.Closed -= closeHandler;
+                _canvasPopupWindow?.Close();
+            };
+            mainWindow.Closed += closeHandler;
+        }
+        // 把 Delete / Ctrl+C/V/Z/Y 等快捷键挂到弹出窗口
+        _canvasPopupWindow.PreviewKeyDown += DesignerEditorView_PreviewKeyDown;
+        _canvasPopupWindow.Closed += (_, _) => RestoreCanvas();
+        _canvasPopupWindow.Show();
+    }
+
+    private void RestoreCanvas()
+    {
+        if (_canvasPopupWindow is null) return;
+        var content = _canvasPopupWindow.Content as UIElement;
+        _canvasPopupWindow.PreviewKeyDown -= DesignerEditorView_PreviewKeyDown;
+        _canvasPopupWindow.Content = null;
+        _canvasPopupWindow = null;
+        this.Content = null;
+        if (content is not null) this.Content = content;
+        else if (_designerOriginalRoot is not null) this.Content = _designerOriginalRoot;
+        _designerOriginalRoot = null;
+    }
 
     // -- 工具箱拖拽到画布 --
     // 修复：单次按下既触发 Click(AddWidgetCommand) 又触发 DoDragDrop 会重复添加。
@@ -114,6 +257,17 @@ public partial class DesignerEditorView : UserControl
         // 仅当原始源是 Canvas 自身或其网格背景 Rectangle 时才视作"空白处"
         var orig = e.OriginalSource;
         if (orig is not Canvas && orig is not System.Windows.Shapes.Rectangle) return;
+
+        // 双击空白处：弹出画布到独立窗口
+        if (e.ClickCount >= 2)
+        {
+            if (_isMarqueeing) { canvas.ReleaseMouseCapture(); _isMarqueeing = false; }
+            var vm0 = GetViewModel();
+            if (vm0 is not null) { vm0.IsMarqueeActive = false; vm0.MarqueeWidth = 0; vm0.MarqueeHeight = 0; }
+            PopOutCanvas();
+            e.Handled = true;
+            return;
+        }
 
         var vm = GetViewModel();
         if (vm is null) return;
@@ -332,4 +486,5 @@ public partial class DesignerEditorView : UserControl
 
         e.Handled = true;
     }
+
 }
