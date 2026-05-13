@@ -27,8 +27,14 @@ public abstract partial class WidgetViewModelBase : ObservableObject
             dataContext.RegisterValueCallback(captured.TagId, val => ApplyAnimation(captured, val));
         }
 
+        // P6B: 语言切换 → 通知所有属性变化以刷新文本绑定
+        DesignerContext.LanguageChanged += OnLanguageOrResourcesChanged;
+        DesignerContext.ResourcesChanged += OnResourcesChanged;
         // 注：不在这里监听 Model.PropertyChanged 触发 OnPropertyChanged(string.Empty)。
     }
+
+    private void OnLanguageOrResourcesChanged(string _) => OnPropertyChanged(string.Empty);
+    private void OnResourcesChanged() => OnPropertyChanged(string.Empty);
 
     /// <summary>计算并应用单个动画规则。</summary>
     private void ApplyAnimation(WidgetAnimation anim, string rawValue)
@@ -69,12 +75,22 @@ public abstract partial class WidgetViewModelBase : ObservableObject
     protected virtual void OnTagValueChanged(string rawValue) { }
 
     /// <summary>便捷：从 Properties 取值，无则返回 fallback。
-    /// P3.2 i18n: 如果值是 ${KEY} 形式，自动解析为本地化资源。</summary>
+    /// <para>P3.2 i18n: 如果值是 ${KEY} 形式，自动解析为内置 .resx 本地化资源。</para>
+    /// <para>P6A: 如果值是 <c>{style:colors/xxx}</c> / <c>{style:fonts/xxx}</c>，解析工程级样式。</para>
+    /// <para>P6B: 如果值是 <c>{text:keyName}</c>，按当前语言解析工程级多语言文本。</para>
+    /// </summary>
     protected string Prop(string key, string fallback = "")
     {
         var raw = Model.Properties.TryGetValue(key, out var v) ? v : fallback;
-        return ResolveLocalized(raw);
+        raw = ResolveLocalized(raw);
+        raw = StyleResolver.Resolve(raw, DesignerContext.Document?.Styles);
+        raw = TextResolver.Resolve(raw, DesignerContext.Document?.Texts, DesignerContext.CurrentLanguage);
+        return raw;
     }
+
+    /// <summary>取原始 Property 值（不做任何解析），用于属性编辑器需要看到 <c>{style:...}</c> 等原始引用语法的场景。</summary>
+    protected string PropRaw(string key, string fallback = "")
+        => Model.Properties.TryGetValue(key, out var v) ? v : fallback;
 
     /// <summary>解析 ${KEY} 引用为本地化文本（不匹配时原样返回）。</summary>
     protected static string ResolveLocalized(string raw)

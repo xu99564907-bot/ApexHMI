@@ -22,6 +22,20 @@ public static class ProjectMigration
             }
         }
 
+        // P6A: 旧工程没有 Styles 节点，确保默认色板/字体注入
+        doc.Styles ??= new StyleDefinitions();
+        doc.Styles.EnsureDefaults();
+
+        // P6B: 文本资源默认空集合
+        doc.Texts ??= new TextResources();
+        doc.Texts.EnsureDefaults();
+
+        // P6C: 项目库默认空集合
+        doc.Library ??= new ProjectLibrary();
+
+        // P6E: 文本/图形列表资源默认空集合
+        doc.Lists ??= new ListResources();
+
         // 预留：后续版本在此添加 if (doc.SchemaVersion < N) 迁移块
         doc.SchemaVersion = CurrentSchemaVersion;
         return doc;

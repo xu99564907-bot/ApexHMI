@@ -68,6 +68,16 @@
                             ToolTip="手动选择 Device.Application.xml 文件">
                         <materialDesign:PackIcon Kind="FolderOpen" Width="14" Height="14"/>
                     </Button>
+                    <!-- P6A: 全局样式编辑入口 -->
+                    <Button Command="{Binding OpenStyleEditorCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,5" Margin="0,0,4,0"
+                            ToolTip="全局样式：色板 + 字体预设（P6A）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Palette" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="样式" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                             Padding="8,5"

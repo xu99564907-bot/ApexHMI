@@ -1509,6 +1509,31 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     {
         // 共享运行时已加载的 ProjectDocument 实例（InitializeDynamicRuntime 先于此方法执行）
         Document = _runtimeProjectService.Current ?? _runtimeProjectService.LoadDefault();
+        // P6: 确保资源节点存在（旧工程加载兜底；ProjectMigration 也会做同样的事）
+        Document.Styles ??= new StyleDefinitions();
+        Document.Styles.EnsureDefaults();
+        Document.Texts ??= new TextResources();
+        Document.Texts.EnsureDefaults();
+        Document.Library ??= new ProjectLibrary();
+        Document.Lists ??= new ListResources();
+        DesignerContext.Document = Document;
         SelectedPage = Document.Pages.FirstOrDefault();
     }
+
+    // ========== P6 资源编辑入口 ==========
+
+    /// <summary>P6A: 打开全局样式编辑器（色板 + 字体）。</summary>
+    [RelayCommand]
+    private void OpenStyleEditor()
+    {
+        Document.Styles ??= new StyleDefinitions();
+        Document.Styles.EnsureDefaults();
+        var dlg = new ApexHMI.Views.Dialogs.StyleEditorDialog(Document.Styles)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        dlg.ShowDialog();
+    }
+
+    // 其他 P6 资源编辑入口（OpenTextEditor / OpenListEditor / 库相关）在 B/C/E commit 中加入。
 }

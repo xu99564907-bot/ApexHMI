@@ -50,6 +50,7 @@ public class RuntimeProjectService
                     migrated = ProjectMigration.Migrate(migrated);
                     Save(migrated, DefaultProjectPath);
                     Current = migrated;
+                    ApexHMI.Services.RuntimeUi.DesignerContext.Document = migrated;
                     return migrated;
                 }
             }
@@ -63,6 +64,7 @@ public class RuntimeProjectService
         demo = ProjectMigration.Migrate(demo);
         Save(demo, DefaultProjectPath);
         Current = demo;
+        ApexHMI.Services.RuntimeUi.DesignerContext.Document = demo;
         return demo;
     }
 
@@ -73,6 +75,7 @@ public class RuntimeProjectService
                   ?? new ProjectDocument();
         doc = ProjectMigration.Migrate(doc);
         Current = doc;
+        ApexHMI.Services.RuntimeUi.DesignerContext.Document = doc;
         return doc;
     }
 
