@@ -47,6 +47,7 @@ public class RuntimeProjectService
                 if (v1Project is not null)
                 {
                     var migrated = V1ProjectMigrator.MigrateProject(v1Project);
+                    migrated = ProjectMigration.Migrate(migrated);
                     Save(migrated, DefaultProjectPath);
                     Current = migrated;
                     return migrated;
@@ -59,6 +60,7 @@ public class RuntimeProjectService
         }
 
         var demo = CreateDemoProject();
+        demo = ProjectMigration.Migrate(demo);
         Save(demo, DefaultProjectPath);
         Current = demo;
         return demo;

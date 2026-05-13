@@ -61,6 +61,12 @@ public partial class WidgetInstance : ObservableObject
     /// <summary>P2.5: 状态动画规则（Tag 值驱动属性变化）。</summary>
     public List<WidgetAnimation> Animations { get; set; } = new();
 
+    /// <summary>P1: 事件名 → 该事件下顺序执行的动作步骤列表。
+    /// <para>事件名约定：click / press / release / activate / deactivate / valueChanged</para>
+    /// <para>旧字段 ActionType+ActionParam 保留，加载时自动迁移到 Events["click"]。</para>
+    /// </summary>
+    public Dictionary<string, List<ActionStep>> Events { get; set; } = new();
+
     /// <summary>通知 Properties 字典内容已变更（用于编辑器属性修改后即时刷新）。</summary>
     public void NotifyPropertiesChanged()
     {
