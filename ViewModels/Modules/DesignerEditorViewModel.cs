@@ -1566,5 +1566,75 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     public System.Collections.Generic.IEnumerable<string> AvailableLanguages
         => Document?.Texts?.SupportedLanguages ?? new System.Collections.ObjectModel.ObservableCollection<string> { "zh-CN" };
 
-    // 其他 P6 资源编辑入口（OpenListEditor / 库相关）在 C/E commit 中加入。
+    /// <summary>P6C: 把当前选中的 widget 保存到项目库。</summary>
+    [RelayCommand]
+    private void SaveSelectedToProjectLibrary()
+    {
+        if (SelectedWidget is null) return;
+        Document.Library ??= new ProjectLibrary();
+        var clone = LibraryService.CloneWidget(SelectedWidget);
+        Document.Library.Assets.Add(new LibraryAsset
+        {
+            Name = $"{SelectedWidget.TypeId}_{System.DateTime.Now:HHmmss}",
+            Category = "通用",
+            Widget = clone,
+        });
+        SaveStatus = "已存入项目库";
+        OnPropertyChanged(nameof(ProjectLibraryAssets));
+    }
+
+    /// <summary>P6C: 把当前选中的 widget 保存到全局库（跨工程共享）。</summary>
+    [RelayCommand]
+    private void SaveSelectedToGlobalLibrary()
+    {
+        if (SelectedWidget is null) return;
+        var clone = LibraryService.CloneWidget(SelectedWidget);
+        GlobalLibraryService.Instance.AddAsset(new LibraryAsset
+        {
+            Name = $"{SelectedWidget.TypeId}_{System.DateTime.Now:HHmmss}",
+            Category = "通用",
+            Widget = clone,
+        });
+        SaveStatus = "已存入全局库";
+        OnPropertyChanged(nameof(GlobalLibraryAssets));
+    }
+
+    /// <summary>P6C: 项目库资产列表（绑定到工具箱"我的库"分组）。</summary>
+    public System.Collections.ObjectModel.ObservableCollection<LibraryAsset> ProjectLibraryAssets
+        => Document?.Library?.Assets ?? new System.Collections.ObjectModel.ObservableCollection<LibraryAsset>();
+
+    /// <summary>P6C: 全局库资产列表（绑定到工具箱"全局库"分组）。</summary>
+    public System.Collections.ObjectModel.ObservableCollection<LibraryAsset> GlobalLibraryAssets
+        => GlobalLibraryService.Instance.Library.Assets;
+
+    /// <summary>P6C: 从库面板插入一个资产到当前页面（指定位置）。</summary>
+    public void InsertLibraryAsset(LibraryAsset asset, double x, double y)
+    {
+        if (SelectedPage is null) return;
+        var w = LibraryService.CloneWidget(asset.Widget);
+        w.X = SnapValue(x);
+        w.Y = SnapValue(y);
+        SelectedPage.Widgets.Add(w);
+        AddWidgetItem(w);
+        SelectSingleWidget(w);
+    }
+
+    /// <summary>P6C: 从项目库中移除资产。</summary>
+    [RelayCommand]
+    private void RemoveProjectLibraryAsset(LibraryAsset? asset)
+    {
+        if (asset is null || Document.Library is null) return;
+        Document.Library.Assets.Remove(asset);
+    }
+
+    /// <summary>P6C: 从全局库中移除资产。</summary>
+    [RelayCommand]
+    private void RemoveGlobalLibraryAsset(LibraryAsset? asset)
+    {
+        if (asset is null) return;
+        GlobalLibraryService.Instance.RemoveAsset(asset);
+        OnPropertyChanged(nameof(GlobalLibraryAssets));
+    }
+
+    // 其他 P6 资源编辑入口（OpenListEditor）在 E commit 中加入。
 }

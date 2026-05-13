@@ -315,10 +315,11 @@ public partial class DesignerEditorView : UserControl
 
     private void DesignerCanvas_DragOver(object sender, DragEventArgs e)
     {
-        // 接受两种拖源：工具箱 TypeId 字符串 + PLC 变量 TagItem
+        // 接受三种拖源：工具箱 TypeId 字符串 + PLC 变量 TagItem + P6C 库资产 LibraryAsset
         var hasTag = e.Data.GetDataPresent(typeof(TagItem));
         var hasType = e.Data.GetDataPresent(DataFormats.StringFormat);
-        e.Effects = (hasTag || hasType) ? DragDropEffects.Copy : DragDropEffects.None;
+        var hasAsset = e.Data.GetDataPresent(typeof(LibraryAsset));
+        e.Effects = (hasTag || hasType || hasAsset) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
@@ -326,6 +327,17 @@ public partial class DesignerEditorView : UserControl
     {
         var vm = GetViewModel();
         if (vm is null || sender is not Canvas canvas) return;
+
+        // 0) P6C 库资产拖入：深拷贝插入
+        if (e.Data.GetDataPresent(typeof(LibraryAsset)))
+        {
+            if (e.Data.GetData(typeof(LibraryAsset)) is LibraryAsset asset)
+            {
+                var pos = e.GetPosition(canvas);
+                vm.InsertLibraryAsset(asset, pos.X, pos.Y);
+            }
+            return;
+        }
 
         // 1) PLC 变量拖入：弹候选菜单
         if (e.Data.GetDataPresent(typeof(TagItem)))
@@ -345,6 +357,38 @@ public partial class DesignerEditorView : UserControl
             var position = e.GetPosition(canvas);
             vm.AddWidgetAtDropCommand.Execute($"{typeId}|{position.X}|{position.Y}");
         }
+    }
+
+    // ===== P6C 库资产拖源 =====
+    private bool _libDragging;
+    private Point _libPressPoint;
+    private LibraryAsset? _libPressItem;
+
+    private void LibraryItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _libDragging = false;
+        _libPressPoint = e.GetPosition(null);
+        if (e.OriginalSource is FrameworkElement fe)
+        {
+            var item = ItemsControl.ContainerFromElement(sender as ListBox, fe) as ListBoxItem;
+            _libPressItem = item?.DataContext as LibraryAsset
+                            ?? fe.DataContext as LibraryAsset;
+        }
+    }
+
+    private void LibraryItem_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_libDragging || _libPressItem is null) return;
+        if (e.LeftButton != MouseButtonState.Pressed) return;
+        var pos = e.GetPosition(null);
+        if (Math.Abs(pos.X - _libPressPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(pos.Y - _libPressPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+        _libDragging = true;
+        var data = new DataObject(typeof(LibraryAsset), _libPressItem);
+        DragDrop.DoDragDrop(sender as DependencyObject ?? this, data, DragDropEffects.Copy);
+        _libDragging = false;
+        _libPressItem = null;
     }
 
     // ===== PLC 变量列表拖源 =====
