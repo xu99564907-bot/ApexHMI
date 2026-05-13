@@ -32,7 +32,15 @@ public partial class IoGraphicWidgetViewModel : WidgetViewModelBase
     }
 
     public string Mode       => Prop("mode",       "Output");
-    public string EntriesRaw => Prop("entries",    "");
+    public string EntriesRaw
+    {
+        get
+        {
+            // P6E: 支持 {graphicList:name} 引用展开。
+            var raw = Prop("entries", "");
+            return ListResolver.Resolve(raw, DesignerContext.Document?.Lists);
+        }
+    }
     public string Stretch    => Prop("stretch",    "Uniform");
 
     private string? ResolveTag()

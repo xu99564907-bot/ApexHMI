@@ -1669,5 +1669,15 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         public System.Collections.Generic.IReadOnlyList<IndustrialSymbol> Items { get; }
     }
 
-    // 其他 P6 资源编辑入口（OpenListEditor）在 E commit 中加入。
+    /// <summary>P6E: 打开文本/图形列表资源编辑器。</summary>
+    [RelayCommand]
+    private void OpenListEditor()
+    {
+        Document.Lists ??= new ListResources();
+        var dlg = new ApexHMI.Views.Dialogs.ListResourceDialog(Document.Lists)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        dlg.ShowDialog();
+    }
 }

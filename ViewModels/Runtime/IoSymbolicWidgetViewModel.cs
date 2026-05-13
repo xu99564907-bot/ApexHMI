@@ -34,7 +34,15 @@ public partial class IoSymbolicWidgetViewModel : WidgetViewModelBase
     }
 
     public string Mode       => Prop("mode",       "Output");
-    public string EntriesRaw => Prop("entries",    "");
+    public string EntriesRaw
+    {
+        get
+        {
+            // P6E: 若值为 {textList:...} 引用，先展开为 inline；否则原样返回。
+            var raw = Prop("entries", "");
+            return ListResolver.Resolve(raw, DesignerContext.Document?.Lists);
+        }
+    }
     public string Background => Prop("background", "#FFFFFF");
     public string Foreground => Prop("foreground", "#0F172A");
 

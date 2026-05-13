@@ -105,6 +105,16 @@
                               SelectedItem="{Binding CurrentLanguage, UpdateSourceTrigger=PropertyChanged}"
                               MinWidth="80" Margin="0,0,8,0" VerticalAlignment="Center"
                               ToolTip="当前显示语言（切换后所有 {text:...} 引用刷新）"/>
+                    <!-- P6E: 列表资源编辑入口 -->
+                    <Button Command="{Binding OpenListEditorCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,5" Margin="0,0,4,0"
+                            ToolTip="文本列表 / 图形列表资源（P6E）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FormatListBulleted" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="列表" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                             Padding="8,5"
