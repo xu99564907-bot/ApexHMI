@@ -72,6 +72,7 @@ public static class Bootstrapper
         services.AddSingleton<IDataPointCatalog, DataPointCatalog>();
         services.AddSingleton<IWidgetViewFactory, WidgetRegistry>();
         services.AddSingleton<RuntimeProjectService>();
+        services.AddSingleton<ProjectPackageService>();
         services.AddSingleton<RuntimeDataBindingService>();
 
         // 开放平台 — 编辑器服务 (Phase B)

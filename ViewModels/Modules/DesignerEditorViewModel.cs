@@ -1621,6 +1621,64 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }
     }
 
+    /// <summary>P10D: 导出当前工程为 zip 包。</summary>
+    [RelayCommand]
+    private void ExportProjectZip()
+    {
+        try
+        {
+            _runtimeProjectService.Save(Document);
+            var srcDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "projects", "_sample");
+            var projectJson = System.IO.Path.Combine(srcDir, "project.json");
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "导出工程到 zip",
+                Filter = "ApexHMI 工程包 (*.apexpkg.zip)|*.apexpkg.zip|Zip 文件 (*.zip)|*.zip",
+                FileName = (Document?.ProjectName ?? "project") + ".apexpkg.zip",
+            };
+            if (dlg.ShowDialog() != true) return;
+            var pkg = new ApexHMI.Services.ProjectPackageService();
+            pkg.Export(projectJson, dlg.FileName);
+            SaveStatus = $"已导出  {DateTime.Now:HH:mm:ss}";
+            Shell.ShowPopup("导出工程", $"已导出到：\n{dlg.FileName}", "Info");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "DesignerEditor: 导出工程 zip 失败");
+            Shell.ShowPopup("导出失败", ex.Message, "Error");
+        }
+    }
+
+    /// <summary>P10D: 从 zip 包导入工程（替换当前 _sample 目录），导入后刷新运行时。</summary>
+    [RelayCommand]
+    private async Task ImportProjectZipAsync()
+    {
+        try
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "导入工程 zip",
+                Filter = "ApexHMI 工程包 (*.apexpkg.zip;*.zip)|*.apexpkg.zip;*.zip",
+            };
+            if (dlg.ShowDialog() != true) return;
+            if (!Shell.RequestConfirmation("导入工程", "导入将覆盖当前工程，确认继续？")) return;
+            var targetDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "projects", "_sample");
+            var pkg = new ApexHMI.Services.ProjectPackageService();
+            pkg.Import(dlg.FileName, targetDir);
+            // 让 RuntimeProjectService 重新读盘
+            _runtimeProjectService.Load(System.IO.Path.Combine(targetDir, "project.json"));
+            if (Shell is MainWindowViewModel mvm)
+                await mvm.PublishProjectAsync();
+            SaveStatus = $"已导入  {DateTime.Now:HH:mm:ss}";
+            Shell.ShowPopup("导入工程", "导入完成。", "Info");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "DesignerEditor: 导入工程 zip 失败");
+            Shell.ShowPopup("导入失败", ex.Message, "Error");
+        }
+    }
+
     /// <summary>预览：保存当前工程并切到 Tab 10 加载当前编辑页（不影响运行模式 IsRuntimeMode）。</summary>
     [RelayCommand]
     private async Task PreviewAsync()

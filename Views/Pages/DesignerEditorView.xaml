@@ -138,6 +138,25 @@
                             <TextBlock Text="Faceplate" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </ToggleButton>
+                    <!-- P10D: 导出 / 导入 zip 包 -->
+                    <Button Command="{Binding ExportProjectZipCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,5" Margin="0,0,4,0"
+                            ToolTip="导出工程为 zip 包（P10D）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="PackageDown" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="导出" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ImportProjectZipCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,5" Margin="0,0,4,0"
+                            ToolTip="从 zip 包导入工程（覆盖当前工程）（P10D）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="PackageUp" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="导入" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                             Padding="8,5"
