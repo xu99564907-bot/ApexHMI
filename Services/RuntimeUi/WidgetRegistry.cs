@@ -58,6 +58,9 @@ public class WidgetRegistry : IWidgetViewFactory
 
         // P8B 用户视图
         Register("user-view",     (m, ctx) => CreateView(new UserViewWidgetViewModel(m, ctx),     new UserViewWidget()));
+
+        // P8C 系统诊断视图
+        Register("diagnostic-view", (m, ctx) => CreateView(new DiagnosticViewWidgetViewModel(m, ctx), new DiagnosticViewWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

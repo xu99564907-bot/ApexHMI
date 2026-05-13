@@ -400,6 +400,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("recipe-view",    "配方视图",   "BookCogOutline"),
             // P8B 用户视图
             new ToolboxItem("user-view",      "用户视图",   "AccountMultipleOutline"),
+            // P8C 系统诊断
+            new ToolboxItem("diagnostic-view","系统诊断",   "Stethoscope"),
         }),
     };
 

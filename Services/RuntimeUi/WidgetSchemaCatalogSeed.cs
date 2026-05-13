@@ -53,7 +53,24 @@ internal static class WidgetSchemaCatalogSeed
 
         // P8B 用户视图
         Add(map, BuildUserView());
+
+        // P8C 系统诊断视图
+        Add(map, BuildDiagnosticView());
     }
+
+    // ---------------- diagnostic-view (P8C) ----------------
+    private static WidgetSchema BuildDiagnosticView() => new()
+    {
+        TypeId = "diagnostic-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "showCommSection", DisplayName = "显示通讯状态", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showPlcSection",  DisplayName = "显示 PLC 状态", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showHmiSection",  DisplayName = "显示 HMI 资源", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "refreshInterval", DisplayName = "刷新间隔(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "数据" },
+            new PropertyDescriptor { Key = "background",      DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#F8FAFC", Category = "外观" },
+        }
+    };
 
     // ---------------- user-view (P8B) ----------------
     private static WidgetSchema BuildUserView() => new()
