@@ -67,7 +67,6 @@ internal static class WidgetSchemaCatalogSeed
         Add(map, BuildHtmlBrowser());
         Add(map, BuildPdfView());
         Add(map, BuildMediaPlayer());
-        Add(map, BuildCameraView());
         Add(map, BuildXyTrend());
         Add(map, BuildReportView());
     }
@@ -108,20 +107,6 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "loop", DisplayName = "循环", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
             new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "volume", DisplayName = "音量", EditorType = PropertyEditorType.Number, DefaultValue = "0.5", Category = "行为", Description = "0~1" },
-        }
-    };
-
-    // ---------------- camera-view (P9D) ----------------
-    private static WidgetSchema BuildCameraView() => new()
-    {
-        TypeId = "camera-view",
-        Properties = new[]
-        {
-            new PropertyDescriptor { Key = "url", DisplayName = "URL", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "rtsp:// / http:// MJPEG / 本地视频文件" },
-            new PropertyDescriptor { Key = "username", DisplayName = "用户名", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "认证" },
-            new PropertyDescriptor { Key = "password", DisplayName = "密码", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "认证" },
-            new PropertyDescriptor { Key = "autoReconnect", DisplayName = "自动重连", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
-            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#000000", Category = "外观" },
         }
     };
 

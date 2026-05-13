@@ -72,7 +72,6 @@ public class WidgetRegistry : IWidgetViewFactory
         Register("html-browser",  (m, ctx) => CreateView(new HtmlBrowserWidgetViewModel(m, ctx),  new HtmlBrowserWidget()));
         Register("pdf-view",      (m, ctx) => CreateView(new PdfViewWidgetViewModel(m, ctx),      new PdfViewWidget()));
         Register("media-player",  (m, ctx) => CreateView(new MediaPlayerWidgetViewModel(m, ctx),  new MediaPlayerWidget()));
-        Register("camera-view",   (m, ctx) => CreateView(new CameraViewWidgetViewModel(m, ctx),   new CameraViewWidget()));
         Register("xy-trend",      (m, ctx) => CreateView(new XyTrendWidgetViewModel(m, ctx),      new XyTrendWidget()));
         Register("report-view",   (m, ctx) => CreateView(new ReportViewWidgetViewModel(m, ctx),   new ReportViewWidget()));
     }

@@ -413,7 +413,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("html-browser",  "HTML 浏览器", "Web"),
             new ToolboxItem("pdf-view",      "PDF 视图",    "FilePdfBox"),
             new ToolboxItem("media-player",  "媒体播放器",  "Movie"),
-            new ToolboxItem("camera-view",   "摄像头",      "Cctv"),
             new ToolboxItem("xy-trend",      "XY 趋势",     "ChartScatterPlot"),
             new ToolboxItem("report-view",   "报表视图",    "FileChartOutline"),
         }),
