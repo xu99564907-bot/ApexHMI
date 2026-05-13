@@ -74,6 +74,7 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
             foreach (var widget in TemplatePage.Widgets)
             {
                 var view = _widgetFactory.Create(widget, this);
+                ApexHMI.Services.RuntimeUi.AnimationEngine.Subscribe(widget, view, this);
                 WidgetElements.Add(new PositionedWidget(view, widget.X, widget.Y));
             }
         }
@@ -81,6 +82,8 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
         foreach (var widget in page.Widgets)
         {
             var view = _widgetFactory.Create(widget, this);
+            // P2-V2 动画引擎：挂载新动画订阅（Appearance/Visibility/Movement）
+            ApexHMI.Services.RuntimeUi.AnimationEngine.Subscribe(widget, view, this);
             WidgetElements.Add(new PositionedWidget(view, widget.X, widget.Y));
         }
     }

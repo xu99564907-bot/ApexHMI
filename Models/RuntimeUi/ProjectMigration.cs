@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ApexHMI.Models.RuntimeUi;
@@ -11,10 +12,14 @@ public static class ProjectMigration
     public static ProjectDocument Migrate(ProjectDocument doc)
     {
         // P1: 把旧 ActionType+ActionParam 自动迁移到 Events["click"]
+        // P2: 把旧 Animations 列表自动拆分到 Appearance / Visibility / Movement
         foreach (var page in doc.Pages)
         {
             foreach (var w in page.Widgets)
+            {
                 MigrateLegacyEvents(w);
+                MigrateLegacyAnimations(w);
+            }
         }
 
         // 预留：后续版本在此添加 if (doc.SchemaVersion < N) 迁移块
@@ -36,6 +41,131 @@ public static class ProjectMigration
         {
             new() { FunctionId = w.ActionType!, Args = args }
         };
+    }
+
+    /// <summary>P2-V2: 把旧 <c>List&lt;WidgetAnimation&gt;</c> 按 TargetProperty 拆到新模型。
+    /// <para>已有任一新模型字段（Appearance/Visibility/Movement）则跳过迁移，避免覆盖用户编辑。</para>
+    /// <para>旧 Animations 列表本身保留不删，可作为遗留 fallback。</para>
+    /// </summary>
+    public static void MigrateLegacyAnimations(WidgetInstance w)
+    {
+        if (w.Animations is null || w.Animations.Count == 0) return;
+        if (w.Appearance is not null || w.Visibility is not null || w.Movement is not null) return;
+
+        foreach (var a in w.Animations)
+        {
+            var prop = (a.TargetProperty ?? string.Empty).ToLowerInvariant();
+            switch (prop)
+            {
+                case "background":
+                case "foreground":
+                    MergeIntoAppearance(w, a, prop);
+                    break;
+                case "visibility":
+                case "isvisible":
+                case "visible":
+                    AssignVisibility(w, a);
+                    break;
+                case "x":
+                case "left":
+                case "canvas.left":
+                    AssignMove(w, a, isVertical: false);
+                    break;
+                case "y":
+                case "top":
+                case "canvas.top":
+                    AssignMove(w, a, isVertical: true);
+                    break;
+                // 其他未识别 TargetProperty：保留在旧 Animations 不动
+            }
+        }
+    }
+
+    private static void MergeIntoAppearance(WidgetInstance w, WidgetAnimation a, string prop)
+    {
+        w.Appearance ??= new AppearanceAnimation { TagId = a.TagId, MatchType = AppearanceMatchType.Range };
+        if (string.IsNullOrEmpty(w.Appearance.TagId)) w.Appearance.TagId = a.TagId;
+
+        var row = new AppearanceRow();
+        var op = (a.Op ?? "eq").ToLowerInvariant();
+        switch (op)
+        {
+            case "true":
+                row.RangeFrom = "1"; row.RangeTo = "1";
+                break;
+            case "false":
+                row.RangeFrom = "0"; row.RangeTo = "0";
+                break;
+            case "eq":
+            case "ne":
+                row.RangeFrom = a.CompareTo;
+                row.RangeTo = a.CompareTo;
+                break;
+            case "gt":
+                row.RangeFrom = a.CompareTo; row.RangeTo = "99999999";
+                break;
+            case "gte":
+                row.RangeFrom = a.CompareTo; row.RangeTo = "99999999";
+                break;
+            case "lt":
+                row.RangeFrom = "-99999999"; row.RangeTo = a.CompareTo;
+                break;
+            case "lte":
+                row.RangeFrom = "-99999999"; row.RangeTo = a.CompareTo;
+                break;
+            default:
+                row.RangeFrom = a.CompareTo;
+                row.RangeTo = a.CompareTo;
+                break;
+        }
+
+        if (prop == "background") row.Background = a.TargetValue ?? string.Empty;
+        else if (prop == "foreground") row.Foreground = a.TargetValue ?? string.Empty;
+
+        w.Appearance.Rows.Add(row);
+    }
+
+    private static void AssignVisibility(WidgetInstance w, WidgetAnimation a)
+    {
+        if (w.Visibility is not null) return;
+        var op = (a.Op ?? "true").ToLowerInvariant();
+        var mode = op switch
+        {
+            "true"  => VisibilityMode.WhenTrue,
+            "false" => VisibilityMode.WhenFalse,
+            _       => VisibilityMode.WhenInRange,
+        };
+        w.Visibility = new VisibilityAnimation
+        {
+            TagId = a.TagId,
+            Mode = mode,
+            RangeFrom = a.CompareTo,
+            RangeTo = a.CompareTo,
+            Otherwise = string.Equals(a.TargetValue, "Disabled", StringComparison.OrdinalIgnoreCase)
+                ? VisibilityOtherwise.Disabled
+                : VisibilityOtherwise.Hidden,
+        };
+    }
+
+    private static void AssignMove(WidgetInstance w, WidgetAnimation a, bool isVertical)
+    {
+        w.Movement ??= new MoveAnimation
+        {
+            MoveType = isVertical ? MoveType.Vertical : MoveType.Horizontal,
+        };
+        // 仅在尚未设过对应轴时填充（避免覆盖）
+        if (isVertical)
+        {
+            w.Movement.TagIdY = a.TagId;
+            if (double.TryParse(a.TargetValue, out var py)) w.Movement.PixelEndY = py;
+            if (double.TryParse(a.CompareTo, out var ry))  w.Movement.RangeMaxY = ry;
+        }
+        else
+        {
+            w.Movement.TagIdX = a.TagId;
+            if (double.TryParse(a.TargetValue, out var px)) w.Movement.PixelEndX = px;
+            if (double.TryParse(a.CompareTo, out var rx))  w.Movement.RangeMaxX = rx;
+        }
     }
 
     private static Dictionary<string, string> ParseLegacyParam(string actionType, string param)
