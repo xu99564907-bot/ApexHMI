@@ -78,6 +78,20 @@
                             <TextBlock Text="样式" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
+                    <!-- P6B: 多语言文本资源 + 当前语言切换 -->
+                    <Button Command="{Binding OpenTextEditorCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,5" Margin="0,0,4,0"
+                            ToolTip="多语言文本资源（P6B）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Translate" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="文本" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                              SelectedItem="{Binding CurrentLanguage, UpdateSourceTrigger=PropertyChanged}"
+                              MinWidth="80" Margin="0,0,8,0" VerticalAlignment="Center"
+                              ToolTip="当前显示语言（切换后所有 {text:...} 引用刷新）"/>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
                             Padding="8,5"
@@ -1424,13 +1438,24 @@
                     </Grid>
                 </TabItem>
 
-                <!-- ===== 文本 Tab ===== -->
+                <!-- ===== 文本 Tab（P6B）===== -->
                 <TabItem Header="文本">
-                    <Grid>
-                        <TextBlock Text="文本 Tab — 将在 P6 阶段实现（多语言）"
-                                   Foreground="#94A3B8" FontSize="13"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Grid>
+                    <DockPanel Margin="8">
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <TextBlock Text="多语言文本（P6B）" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Brush.Text}"/>
+                            <TextBlock Text="点击下方按钮打开项目级文本资源编辑器；控件属性写 {text:welcome} 即可引用。"
+                                       FontSize="11" Foreground="{DynamicResource Brush.TextMuted}"
+                                       TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            <Button Content="打开文本资源编辑器…"
+                                    Command="{Binding OpenTextEditorCommand}"
+                                    HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,5"
+                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"/>
+                        </StackPanel>
+                        <TextBlock Text="（当前控件用到的文本 key 检索预览将在 P7 完善。）"
+                                   FontSize="11" Foreground="{DynamicResource Brush.TextMuted}"
+                                   VerticalAlignment="Top"/>
+                    </DockPanel>
                 </TabItem>
                 </TabControl>
                 </Grid>

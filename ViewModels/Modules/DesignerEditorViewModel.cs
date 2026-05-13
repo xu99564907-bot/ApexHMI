@@ -1535,5 +1535,36 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         dlg.ShowDialog();
     }
 
-    // 其他 P6 资源编辑入口（OpenTextEditor / OpenListEditor / 库相关）在 B/C/E commit 中加入。
+    /// <summary>P6B: 打开多语言文本资源编辑器。</summary>
+    [RelayCommand]
+    private void OpenTextEditor()
+    {
+        Document.Texts ??= new TextResources();
+        Document.Texts.EnsureDefaults();
+        var dlg = new ApexHMI.Views.Dialogs.TextResourceDialog(Document.Texts)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        dlg.ShowDialog();
+        // 强制刷新当前语言下拉项
+        OnPropertyChanged(nameof(AvailableLanguages));
+    }
+
+    /// <summary>P6B: 当前设计/运行时语言。绑定到顶部语言下拉。</summary>
+    public string CurrentLanguage
+    {
+        get => DesignerContext.CurrentLanguage;
+        set
+        {
+            if (DesignerContext.CurrentLanguage == value) return;
+            DesignerContext.CurrentLanguage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>P6B: 工程支持的语言列表（绑定到顶部语言 ComboBox）。</summary>
+    public System.Collections.Generic.IEnumerable<string> AvailableLanguages
+        => Document?.Texts?.SupportedLanguages ?? new System.Collections.ObjectModel.ObservableCollection<string> { "zh-CN" };
+
+    // 其他 P6 资源编辑入口（OpenListEditor / 库相关）在 C/E commit 中加入。
 }
