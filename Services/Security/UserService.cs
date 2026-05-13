@@ -167,6 +167,55 @@ public class UserService : IUserService
         }
     }
 
+    public bool AddUser(string username, string password, UserRole role)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return false;
+        lock (_lock)
+        {
+            if (_users.Any(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase)))
+                return false;
+            _users.Add(CreateUser(username.Trim(), role, password ?? string.Empty));
+            SaveTo(_configPath, _users);
+            Log.Information("UserService: 已新增用户 {Username} 角色 {Role}", username, role);
+            return true;
+        }
+    }
+
+    public bool RemoveUser(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return false;
+        if (string.Equals(username, "admin", StringComparison.OrdinalIgnoreCase))
+        {
+            Log.Warning("UserService: 拒绝删除内置 admin 账号");
+            return false;
+        }
+        lock (_lock)
+        {
+            var user = _users.FirstOrDefault(u =>
+                string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+            if (user is null) return false;
+            _users.Remove(user);
+            SaveTo(_configPath, _users);
+            Log.Information("UserService: 已删除用户 {Username}", username);
+            return true;
+        }
+    }
+
+    public bool SetUserRole(string username, UserRole role)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return false;
+        lock (_lock)
+        {
+            var user = _users.FirstOrDefault(u =>
+                string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+            if (user is null) return false;
+            user.Role = role;
+            SaveTo(_configPath, _users);
+            Log.Information("UserService: 用户 {Username} 角色改为 {Role}", username, role);
+            return true;
+        }
+    }
+
     public void Save()
     {
         lock (_lock) SaveTo(_configPath, _users);

@@ -95,22 +95,133 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
     [RelayCommand]
     private void AddUser()
     {
-        MessageBox.Show("当前 IUserService 接口暂未提供新增用户 API。\n如需启用，请扩展 IUserService.AddUser。",
-            "用户管理", MessageBoxButton.OK, MessageBoxImage.Information);
+        if (!AllowEdit || _userService is null) return;
+        var dlg = new AddUserPromptWindow();
+        if (dlg.ShowDialog() != true) return;
+        if (string.IsNullOrWhiteSpace(dlg.UsernameText))
+        {
+            MessageBox.Show("用户名不能为空。", "用户管理", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        if (_userService.AddUser(dlg.UsernameText.Trim(), dlg.PasswordText, dlg.SelectedRole))
+        {
+            MessageBox.Show($"已新增用户 {dlg.UsernameText.Trim()}。", "用户管理");
+            Refresh();
+        }
+        else
+        {
+            MessageBox.Show("新增失败（重名或非法）。", "用户管理", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     [RelayCommand]
     private void RemoveUser()
     {
-        MessageBox.Show("当前 IUserService 接口暂未提供删除用户 API。\n如需启用，请扩展 IUserService.RemoveUser。",
-            "用户管理", MessageBoxButton.OK, MessageBoxImage.Information);
+        if (!AllowEdit || _userService is null || SelectedUser is null) return;
+        if (MessageBox.Show($"确认删除用户 {SelectedUser.Username}？",
+                "用户管理", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK) return;
+        if (_userService.RemoveUser(SelectedUser.Username))
+        {
+            Refresh();
+        }
+        else
+        {
+            MessageBox.Show("删除失败（admin 账号不可删除）。", "用户管理", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     [RelayCommand]
     private void SwitchRole()
     {
-        MessageBox.Show("当前 IUserService 接口暂未提供改角色 API。\n如需启用，请扩展 IUserService.SetRole。",
-            "用户管理", MessageBoxButton.OK, MessageBoxImage.Information);
+        if (!AllowEdit || _userService is null || SelectedUser is null) return;
+        var dlg = new RolePromptWindow(SelectedUser.Username, SelectedUser.Role);
+        if (dlg.ShowDialog() != true) return;
+        if (_userService.SetUserRole(SelectedUser.Username, dlg.SelectedRole))
+        {
+            MessageBox.Show($"{SelectedUser.Username} 角色改为 {dlg.SelectedRole}。", "用户管理");
+            Refresh();
+        }
+    }
+}
+
+/// <summary>P10B: 新增用户弹窗。</summary>
+internal sealed class AddUserPromptWindow : Window
+{
+    private readonly System.Windows.Controls.TextBox _user = new() { Width = 220, Margin = new Thickness(8) };
+    private readonly System.Windows.Controls.PasswordBox _pwd = new() { Width = 220, Margin = new Thickness(8) };
+    private readonly System.Windows.Controls.ComboBox _role = new() { Width = 220, Margin = new Thickness(8) };
+
+    public string UsernameText => _user.Text ?? string.Empty;
+    public string PasswordText => _pwd.Password ?? string.Empty;
+    public UserRole SelectedRole => (UserRole)(_role.SelectedItem ?? UserRole.Operator);
+
+    public AddUserPromptWindow()
+    {
+        Title = "新增用户";
+        SizeToContent = SizeToContent.WidthAndHeight;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        ResizeMode = ResizeMode.NoResize;
+
+        _role.ItemsSource = new[] { UserRole.Operator, UserRole.Engineer, UserRole.Administrator };
+        _role.SelectedIndex = 0;
+
+        var stack = new System.Windows.Controls.StackPanel { Margin = new Thickness(12) };
+        stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "用户名：" });
+        stack.Children.Add(_user);
+        stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "密码：" });
+        stack.Children.Add(_pwd);
+        stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "角色：" });
+        stack.Children.Add(_role);
+
+        var btns = new System.Windows.Controls.StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 8, 0, 0),
+        };
+        var ok = new System.Windows.Controls.Button { Content = "确定", Width = 70, Margin = new Thickness(4), IsDefault = true };
+        var cancel = new System.Windows.Controls.Button { Content = "取消", Width = 70, Margin = new Thickness(4), IsCancel = true };
+        ok.Click += (_, _) => { DialogResult = true; Close(); };
+        btns.Children.Add(ok);
+        btns.Children.Add(cancel);
+        stack.Children.Add(btns);
+        Content = stack;
+    }
+}
+
+/// <summary>P10B: 切换角色弹窗。</summary>
+internal sealed class RolePromptWindow : Window
+{
+    private readonly System.Windows.Controls.ComboBox _role = new() { Width = 220, Margin = new Thickness(8) };
+    public UserRole SelectedRole => (UserRole)(_role.SelectedItem ?? UserRole.Operator);
+
+    public RolePromptWindow(string username, UserRole current)
+    {
+        Title = $"切换角色 — {username}";
+        SizeToContent = SizeToContent.WidthAndHeight;
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        ResizeMode = ResizeMode.NoResize;
+
+        _role.ItemsSource = new[] { UserRole.Operator, UserRole.Engineer, UserRole.Administrator };
+        _role.SelectedItem = current;
+
+        var stack = new System.Windows.Controls.StackPanel { Margin = new Thickness(12) };
+        stack.Children.Add(new System.Windows.Controls.TextBlock { Text = $"为 {username} 选择新角色：", Margin = new Thickness(8, 0, 8, 4) });
+        stack.Children.Add(_role);
+
+        var btns = new System.Windows.Controls.StackPanel
+        {
+            Orientation = System.Windows.Controls.Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Margin = new Thickness(0, 8, 0, 0),
+        };
+        var ok = new System.Windows.Controls.Button { Content = "确定", Width = 70, Margin = new Thickness(4), IsDefault = true };
+        var cancel = new System.Windows.Controls.Button { Content = "取消", Width = 70, Margin = new Thickness(4), IsCancel = true };
+        ok.Click += (_, _) => { DialogResult = true; Close(); };
+        btns.Children.Add(ok);
+        btns.Children.Add(cancel);
+        stack.Children.Add(btns);
+        Content = stack;
     }
 }
 
