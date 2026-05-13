@@ -38,6 +38,7 @@ public static class ProjectMigration
 
         // P7: Faceplate 库默认空集合
         doc.Faceplates ??= new FaceplateLibrary();
+        // 注：P7F 内置 Faceplate 注入由 RuntimeProjectService 统一处理（避免 Models → Services 反向依赖）
 
         // 预留：后续版本在此添加 if (doc.SchemaVersion < N) 迁移块
         doc.SchemaVersion = CurrentSchemaVersion;

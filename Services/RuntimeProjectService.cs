@@ -48,6 +48,7 @@ public class RuntimeProjectService
                 {
                     var migrated = V1ProjectMigrator.MigrateProject(v1Project);
                     migrated = ProjectMigration.Migrate(migrated);
+                    ApexHMI.Services.RuntimeUi.BuiltInFaceplates.EnsureInjected(migrated.Faceplates ??= new Models.RuntimeUi.FaceplateLibrary());
                     Save(migrated, DefaultProjectPath);
                     Current = migrated;
                     ApexHMI.Services.RuntimeUi.DesignerContext.Document = migrated;
@@ -62,6 +63,8 @@ public class RuntimeProjectService
 
         var demo = CreateDemoProject();
         demo = ProjectMigration.Migrate(demo);
+        // P7F: 注入内置 Faceplate
+        ApexHMI.Services.RuntimeUi.BuiltInFaceplates.EnsureInjected(demo.Faceplates ??= new Models.RuntimeUi.FaceplateLibrary());
         Save(demo, DefaultProjectPath);
         Current = demo;
         ApexHMI.Services.RuntimeUi.DesignerContext.Document = demo;
@@ -74,6 +77,8 @@ public class RuntimeProjectService
         var doc = JsonSerializer.Deserialize<ProjectDocument>(json, _jsonOptions)
                   ?? new ProjectDocument();
         doc = ProjectMigration.Migrate(doc);
+        // P7F: 注入内置 Faceplate（不在 Migration 内做，避免 Models → Services 反向依赖）
+        ApexHMI.Services.RuntimeUi.BuiltInFaceplates.EnsureInjected(doc.Faceplates ??= new Models.RuntimeUi.FaceplateLibrary());
         Current = doc;
         ApexHMI.Services.RuntimeUi.DesignerContext.Document = doc;
         return doc;
