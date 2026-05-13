@@ -853,14 +853,17 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     }
 
     /// <summary>P7.5B: 根据 SelectedWidget 的 TypeId 重建 schema-driven 属性面板分组。
-    /// <para>找不到 schema 时清空集合，UI 回退到旧 fallback。</para></summary>
+    /// <para>找不到 schema 时清空集合，UI 回退到旧 fallback。</para>
+    /// <para>P10E: 多选时，若所有选中 widget TypeId 相同，则在交集 Schema 上编辑；
+    /// 值一致时显示原值；不一致时显示 "—— 多个值 ——"，写入会应用到全部选中。</para>
+    /// </summary>
     private void RefreshGroupedPropertyEditors()
     {
         GroupedPropertyEditors.Clear();
         if (SelectedWidget is null)
         {
             OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
-        OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+            OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
             return;
         }
 
@@ -868,16 +871,33 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (schema is null)
         {
             OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
-        OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+            OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
             return;
         }
 
-        // 按 Category 分组（保持原顺序）
+        // P10E: 多选场景：只有所有 widget TypeId 一致才走多选共编辑路径
+        var multi = SelectedWidgets.Count > 1
+                    && SelectedWidgets.All(w => string.Equals(w.TypeId, SelectedWidget.TypeId, StringComparison.OrdinalIgnoreCase));
+
         var groupOrder = new List<string>();
         var groups = new Dictionary<string, List<PropertyEditorVM>>();
         foreach (var desc in schema.Properties)
         {
-            var value = SelectedWidget.Properties.TryGetValue(desc.Key, out var v) ? v : desc.DefaultValue;
+            string value;
+            if (multi)
+            {
+                // 计算所有选中 widget 该 key 的值集合
+                var distinct = SelectedWidgets
+                    .Select(w => w.Properties.TryGetValue(desc.Key, out var x) ? (x ?? desc.DefaultValue) : desc.DefaultValue)
+                    .Distinct(StringComparer.Ordinal)
+                    .Take(2)
+                    .ToList();
+                value = distinct.Count == 1 ? (distinct[0] ?? string.Empty) : "—— 多个值 ——";
+            }
+            else
+            {
+                value = SelectedWidget.Properties.TryGetValue(desc.Key, out var v) ? v : desc.DefaultValue;
+            }
             var editor = new PropertyEditorVM(desc, value ?? string.Empty, OnSchemaEditorChanged);
             if (!groups.TryGetValue(desc.Category, out var list))
             {
@@ -895,9 +915,24 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
     }
 
-    /// <summary>P7.5B: schema 编辑器 Value 变化 → 写入 widget。</summary>
+    /// <summary>P7.5B: schema 编辑器 Value 变化 → 写入 widget。
+    /// P10E: 多选共编辑场景下应用到全部选中（仅当 TypeId 一致）。</summary>
     private void OnSchemaEditorChanged(string key, string? value)
     {
+        // 忽略 "—— 多个值 ——" 占位写回
+        if (string.Equals(value, "—— 多个值 ——", StringComparison.Ordinal)) return;
+
+        if (SelectedWidgets.Count > 1
+            && SelectedWidget is not null
+            && SelectedWidgets.All(w => string.Equals(w.TypeId, SelectedWidget.TypeId, StringComparison.OrdinalIgnoreCase)))
+        {
+            MarkPageEdited();
+            foreach (var w in SelectedWidgets.ToList())
+            {
+                _widgetEditor.UpdateProperty(w, key, value);
+            }
+            return;
+        }
         UpdateWidgetProperty(key, value);
     }
 
