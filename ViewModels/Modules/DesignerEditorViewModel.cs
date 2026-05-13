@@ -760,6 +760,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         OnPropertyChanged(nameof(AvailableDeviceNames));
         RefreshAnimationsList();
         RefreshCurrentEventSteps();
+        NotifyAnimationSelectionChanged();
     }
 
     private void OnWidgetPropertyItemChanged(object? sender, PropertyChangedEventArgs e)

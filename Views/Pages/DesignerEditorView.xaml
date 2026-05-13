@@ -693,9 +693,11 @@
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 状态动画 -->
-                            <Expander Header="状态动画" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- 状态动画（旧版） -->
+                            <Expander Header="状态动画（旧版）" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <TextBlock Text="提示：推荐使用顶部「动画」Tab 配置外观/可见性/移动动画（结构化模型，运行更顺滑）；本区域为旧版兼容入口"
+                                               Foreground="#94A3B8" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
                                     <Button Content="+ 添加动画" Command="{Binding AddAnimationCommand}"
                                             Padding="8,4" Margin="0,0,0,6" HorizontalAlignment="Left"
                                             Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"/>
@@ -786,12 +788,443 @@
                 </ScrollViewer>
                 </TabItem>
 
-                <!-- ===== 动画 Tab ===== -->
+                <!-- ===== 动画 Tab (P2-V2) ===== -->
                 <TabItem Header="动画">
-                    <Grid>
-                        <TextBlock Text="动画 Tab — 将在 P2 阶段实现"
-                                   Foreground="#94A3B8" FontSize="13"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="请从画布中选中一个控件"
+                                   Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="13"
+                                   Margin="12,12,0,0"
+                                   Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                        <Grid Grid.Row="1"
+                              Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 左：分组导航 -->
+                            <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="0,0,1,0">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding AnimationCategories}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel>
+                                                    <Button DockPanel.Dock="Top"
+                                                            Command="{Binding DataContext.SelectAnimationCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding CategoryId}"
+                                                            BorderThickness="0" Padding="8,6"
+                                                            HorizontalContentAlignment="Stretch" Margin="0,0,0,1">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                <Setter Property="Foreground" Value="#334155"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                        <Setter Property="Background" Value="#2563EB"/>
+                                                                        <Setter Property="Foreground" Value="White"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <DockPanel>
+                                                            <!-- 启用状态点 -->
+                                                            <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center">
+                                                                <Ellipse.Style>
+                                                                    <Style TargetType="Ellipse">
+                                                                        <Setter Property="Fill" Value="#CBD5E1"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                                                <Setter Property="Fill" Value="#16A34A"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Ellipse.Style>
+                                                            </Ellipse>
+                                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" FontSize="12"/>
+                                                        </DockPanel>
+                                                    </Button>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- 右：内容区按选中分类切换 -->
+                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Margin="10,8,8,8">
+                                <Grid>
+                                    <!-- ====== 总览面板 ====== -->
+                                    <StackPanel Visibility="{Binding IsOverviewSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="总览" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"/>
+                                        <ItemsControl ItemsSource="{Binding AnimationCategories}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Margin="0,0,0,6" Padding="8,6"
+                                                            BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                                            CornerRadius="4" Background="White"
+                                                            Visibility="{Binding Group, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=总览}">
+                                                        <!-- 总览自身不显示 → 用反向 visibility -->
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <!-- 简洁版：直接渲染非总览的 6 项 -->
+                                        <ItemsControl ItemsSource="{Binding AnimationCategories}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,0,0,6">
+                                                        <Grid.Style>
+                                                            <Style TargetType="Grid">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding CategoryId}" Value="overview">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Grid.Style>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="22"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14" FontWeight="Bold">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="✗"/>
+                                                                    <Setter Property="Foreground" Value="#94A3B8"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                                            <Setter Property="Text" Value="✓"/>
+                                                                            <Setter Property="Foreground" Value="#16A34A"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Brush.Text}" FontSize="12"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Summary}" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <Button Grid.Column="3" Content="跳转" Padding="6,2" FontSize="11" Margin="0,0,4,0"
+                                                                Command="{Binding DataContext.SelectAnimationCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding CategoryId}"
+                                                                Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                        <Button Grid.Column="4" Content="删除" Padding="6,2" FontSize="11"
+                                                                Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                                Command="{Binding DataContext.DisableAnimationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding CategoryId}"
+                                                                Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <!-- ====== 外观面板 ====== -->
+                                    <StackPanel Visibility="{Binding IsAppearanceSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="外观动画" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}"/>
+                                            <Button DockPanel.Dock="Right" Content="启用" Padding="10,3"
+                                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                    Command="{Binding EnableAnimationCommand}" CommandParameter="appearance"
+                                                    Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                            <Button DockPanel.Dock="Right" Content="停用" Padding="10,3" Margin="0,0,6,0"
+                                                    Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                    Command="{Binding DisableAnimationCommand}" CommandParameter="appearance"
+                                                    Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                        </DockPanel>
+                                        <TextBlock Text="该控件未启用外观动画" Foreground="#94A3B8" FontSize="12" Margin="0,4,0,0"
+                                                   Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                        <StackPanel Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}}"
+                                                    DataContext="{Binding WidgetAppearance}">
+                                            <!-- 变量 -->
+                                            <Grid Margin="0,4,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="60"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="变量" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}"
+                                                         b:TagAutoComplete.IsEnabled="True"
+                                                         VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <!-- 匹配类型 -->
+                                            <StackPanel Orientation="Horizontal" Margin="60,0,0,8">
+                                                <RadioButton Content="范围"   GroupName="AppMatch" Margin="0,0,12,0"
+                                                             IsChecked="{Binding MatchType, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Range}"/>
+                                                <RadioButton Content="多个位" GroupName="AppMatch" Margin="0,0,12,0"
+                                                             IsChecked="{Binding MatchType, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=MultiBit}"/>
+                                                <RadioButton Content="单个位" GroupName="AppMatch"
+                                                             IsChecked="{Binding MatchType, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=SingleBit}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!-- 行表格 -->
+                                        <DockPanel Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,0,0,4">
+                                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,4">
+                                                <Button Content="＋ 新增行" Padding="8,3"
+                                                        Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                        Command="{Binding AddAppearanceRowCommand}"/>
+                                            </StackPanel>
+                                            <ItemsControl ItemsSource="{Binding AppearanceRows}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4"
+                                                                Background="White" Padding="6" Margin="0,0,0,4">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="110"/>
+                                                                    <ColumnDefinition Width="110"/>
+                                                                    <ColumnDefinition Width="50"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <!-- 范围编辑（按 MatchType 切换；先实现 Range：From-To） -->
+                                                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                                    <TextBlock Text="从" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="0,0,4,0"/>
+                                                                    <TextBox Width="60" Text="{Binding RangeFrom, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                    <TextBlock Text="到" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="4,0,4,0"/>
+                                                                    <TextBox Width="60" Text="{Binding RangeTo, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                    <TextBlock Text="位号" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="8,0,4,0"/>
+                                                                    <TextBox Width="40" Text="{Binding BitIndex, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                    <TextBlock Text="掩码" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="8,0,4,0"/>
+                                                                    <TextBox Width="60" Text="{Binding BitMask, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                </StackPanel>
+                                                                <!-- 背景色 + 动态化图标 demo -->
+                                                                <Grid Grid.Column="1">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBox Grid.Column="0" Text="{Binding Background, UpdateSourceTrigger=PropertyChanged}" ToolTip="背景色 hex（如 #2563EB）"/>
+                                                                    <materialDesign:PackIcon Grid.Column="1" Kind="TriangleSmallDown" Width="12" Height="12"
+                                                                                              Foreground="#94A3B8" VerticalAlignment="Center" Margin="2,0,2,0"
+                                                                                              ToolTip="动态化（点击绑定到变量，演示中）"
+                                                                                              Cursor="Hand"/>
+                                                                </Grid>
+                                                                <TextBox Grid.Column="2" Text="{Binding Foreground, UpdateSourceTrigger=PropertyChanged}"
+                                                                         ToolTip="前景色 hex（如 #FFFFFF）" Margin="4,0,0,0"/>
+                                                                <CheckBox Grid.Column="3" IsChecked="{Binding Blink}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                                <StackPanel Grid.Column="4" Orientation="Horizontal">
+                                                                    <Button Content="↑" Padding="4,1" Margin="4,0,2,0" FontSize="11"
+                                                                            Command="{Binding DataContext.MoveAppearanceRowUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                            CommandParameter="{Binding}"/>
+                                                                    <Button Content="↓" Padding="4,1" Margin="0,0,2,0" FontSize="11"
+                                                                            Command="{Binding DataContext.MoveAppearanceRowDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                            CommandParameter="{Binding}"/>
+                                                                    <Button Content="✕" Padding="4,1" FontSize="11"
+                                                                            Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                                            Command="{Binding DataContext.RemoveAppearanceRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                            CommandParameter="{Binding}"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </DockPanel>
+                                    </StackPanel>
+
+                                    <!-- ====== 可见性面板 ====== -->
+                                    <StackPanel Visibility="{Binding IsVisibilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="可见性动画" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}"/>
+                                            <Button DockPanel.Dock="Right" Content="启用" Padding="10,3"
+                                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                    Command="{Binding EnableAnimationCommand}" CommandParameter="visibility"
+                                                    Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                            <Button DockPanel.Dock="Right" Content="停用" Padding="10,3" Margin="0,0,6,0"
+                                                    Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                    Command="{Binding DisableAnimationCommand}" CommandParameter="visibility"
+                                                    Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                        </DockPanel>
+                                        <TextBlock Text="该控件未启用可见性动画" Foreground="#94A3B8" FontSize="12"
+                                                   Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                        <StackPanel Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}}"
+                                                    DataContext="{Binding WidgetVisibility}">
+                                            <Grid Margin="0,4,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="60"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="变量" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}"
+                                                         b:TagAutoComplete.IsEnabled="True" VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <TextBlock Text="条件" Margin="0,4,0,2" Foreground="#64748B" FontSize="12"/>
+                                            <StackPanel Margin="60,0,0,6">
+                                                <RadioButton Content="变量为 True 时显示" GroupName="VisMode"
+                                                             IsChecked="{Binding Mode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=WhenTrue}"/>
+                                                <RadioButton Content="变量为 False 时显示" GroupName="VisMode" Margin="0,4,0,0"
+                                                             IsChecked="{Binding Mode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=WhenFalse}"/>
+                                                <DockPanel Margin="0,4,0,0">
+                                                    <RadioButton Content="值在范围" GroupName="VisMode" VerticalAlignment="Center"
+                                                                 IsChecked="{Binding Mode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=WhenInRange}"/>
+                                                    <TextBox Width="60" Margin="6,0,0,0" Text="{Binding RangeFrom, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="-" Margin="4,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBox Width="60" Text="{Binding RangeTo, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="内显示" Margin="6,0,0,0" Foreground="#64748B" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </StackPanel>
+                                            <TextBlock Text="否则" Margin="0,4,0,2" Foreground="#64748B" FontSize="12"/>
+                                            <StackPanel Orientation="Horizontal" Margin="60,0,0,0">
+                                                <RadioButton Content="隐藏" GroupName="VisOther" Margin="0,0,12,0"
+                                                             IsChecked="{Binding Otherwise, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Hidden}"/>
+                                                <RadioButton Content="禁用（灰色）" GroupName="VisOther"
+                                                             IsChecked="{Binding Otherwise, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Disabled}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- ====== 移动面板（4 类共用） ====== -->
+                                    <StackPanel>
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsHorizontalSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsVerticalSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsDirectSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsDiagonalSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="移动动画"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsHorizontalSelected}" Value="True"><Setter Property="Text" Value="水平移动"/></DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsVerticalSelected}" Value="True"><Setter Property="Text" Value="垂直移动"/></DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsDirectSelected}" Value="True"><Setter Property="Text" Value="直接移动"/></DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsDiagonalSelected}" Value="True"><Setter Property="Text" Value="对角线移动"/></DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <Button DockPanel.Dock="Right" Content="启用" Padding="10,3"
+                                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                    Command="{Binding EnableAnimationCommand}"
+                                                    CommandParameter="{Binding SelectedAnimationCategory}"
+                                                    Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                            <Button DockPanel.Dock="Right" Content="停用" Padding="10,3" Margin="0,0,6,0"
+                                                    Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                    Command="{Binding DisableAnimationCommand}"
+                                                    CommandParameter="{Binding SelectedAnimationCategory}"
+                                                    Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                        </DockPanel>
+
+                                        <TextBlock Text="该控件未启用此类移动动画" Foreground="#94A3B8" FontSize="12"
+                                                   Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+
+                                        <StackPanel Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}}"
+                                                    DataContext="{Binding WidgetMovement}">
+                                            <!-- X 轴变量 + 范围 -->
+                                            <Grid Margin="0,4,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="变量 X" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                <TextBox Grid.Column="1" Text="{Binding TagIdX, UpdateSourceTrigger=PropertyChanged}"
+                                                         b:TagAutoComplete.IsEnabled="True" VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="X 变量范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <TextBlock Text="从" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding RangeMinX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="到" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding RangeMaxX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            <Grid Margin="0,0,0,8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="X 像素范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <TextBlock Text="起" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding PixelStartX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="终" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding PixelEndX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Y 轴（仅 Vertical/Direct/Diagonal 显示） -->
+                                            <StackPanel>
+                                                <StackPanel.Style>
+                                                    <Style TargetType="StackPanel">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding MoveType, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=Vertical}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding MoveType, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=Direct}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding MoveType, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=Diagonal}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </StackPanel.Style>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="变量 Y" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                    <TextBox Grid.Column="1" Text="{Binding TagIdY, UpdateSourceTrigger=PropertyChanged}"
+                                                             b:TagAutoComplete.IsEnabled="True" VerticalContentAlignment="Center"/>
+                                                </Grid>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Y 变量范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="从" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding RangeMinY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        <TextBlock Text="到" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding RangeMaxY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Y 像素范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="起" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding PixelStartY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        <TextBlock Text="终" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding PixelEndY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
                     </Grid>
                 </TabItem>
 

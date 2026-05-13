@@ -20,6 +20,7 @@
         <converters:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter"/>
         <converters:NormalizedHeightConverter x:Key="NormalizedHeightConverter"/>
         <converters:EqualsToBoolConverter x:Key="EqualsToBoolConverter"/>
+        <converters:EnumEqualsConverter x:Key="EnumEqualsConverter"/>
         <Style x:Key="SparklinePathStyle" TargetType="Path">
             <Setter Property="StrokeThickness" Value="2.5"/>
             <Setter Property="Stretch" Value="Fill"/>
