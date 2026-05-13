@@ -11,6 +11,8 @@
                 <ResourceDictionary Source="/Themes/Cards.xaml"/>
                 <ResourceDictionary Source="/Themes/DataGrid.xaml"/>
                 <ResourceDictionary Source="/Themes/Inputs.xaml"/>
+                <!-- P7.5: Schema-driven 属性编辑器模板 -->
+                <ResourceDictionary Source="/Views/Controls/PropertyEditors/PropertyEditorTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
         <!-- 通用转换器 -->
