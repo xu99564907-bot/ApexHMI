@@ -44,6 +44,10 @@ public class WidgetRegistry : IWidgetViewFactory
         Register("listbox",      (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new ListBoxWidget()));
         Register("checkbox",     (m, ctx) => CreateView(new CheckBoxWidgetViewModel(m, ctx),     new CheckBoxWidget()));
         Register("optiongroup",  (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new OptionGroupWidget()));
+
+        // P5 控件
+        Register("screen-window", (m, ctx) => CreateView(new ScreenWindowWidgetViewModel(m, ctx), new ScreenWindowWidget()));
+        Register("table-view",    (m, ctx) => CreateView(new TableViewWidgetViewModel(m, ctx),    new TableViewWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

@@ -1,0 +1,19 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.TableViewWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <Border BorderBrush="#94A3B8" BorderThickness="1" Background="#FFFFFF">
+        <DataGrid x:Name="Grid"
+                  ItemsSource="{Binding Rows}"
+                  AutoGenerateColumns="False"
+                  HeadersVisibility="Column"
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  CanUserResizeRows="False"
+                  GridLinesVisibility="All"
+                  RowHeight="24"
+                  FontSize="12"
+                  IsReadOnly="True"
+                  Loaded="OnLoaded"/>
+    </Border>
+</UserControl>

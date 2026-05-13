@@ -389,6 +389,12 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("checkbox",      "复选框",     "CheckboxOutline"),
             new ToolboxItem("optiongroup",   "单选",       "RadioboxMarked"),
         }),
+        // P5 高级控件
+        new ToolboxGroup("控件", new[]
+        {
+            new ToolboxItem("table-view",     "表格视图",   "Table"),
+            new ToolboxItem("screen-window",  "画面窗口",   "WindowMaximize"),
+        }),
     };
 
     public sealed class ToolboxGroup
