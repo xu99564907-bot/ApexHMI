@@ -32,8 +32,8 @@
         <!-- Row 0: 横向工具箱 + 右侧紧凑动作组 -->
         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="10,8" Margin="0,0,0,10">
             <DockPanel>
-                <!-- 右侧动作 / 状态 -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                <!-- 顶部动作 / 状态（独占一行，避免被工具箱拉高） -->
+                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,8">
                     <!-- PLC 变量表导入状态 -->
                     <Border Background="#0369A1" CornerRadius="12" Padding="8,3"
                             VerticalAlignment="Center" Margin="0,0,8,0">
@@ -191,7 +191,7 @@
                                 ToolTip="切换悬浮 / 固定">
                             <materialDesign:PackIcon x:Name="ToolboxFloatIcon" Kind="PinOutline" Width="14" Height="14"/>
                         </Button>
-                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="180">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="130">
                     <ItemsControl x:Name="ToolboxItemsControl">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
