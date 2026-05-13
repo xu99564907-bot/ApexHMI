@@ -759,6 +759,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         OnPropertyChanged(nameof(WriteValue));
         OnPropertyChanged(nameof(AvailableDeviceNames));
         RefreshAnimationsList();
+        RefreshCurrentEventSteps();
     }
 
     private void OnWidgetPropertyItemChanged(object? sender, PropertyChangedEventArgs e)
@@ -1114,6 +1115,167 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (SelectedWidget is null) return;
         SelectedWidget.ActionType = actionType;
         SelectedWidget.ActionParam = actionParam;
+    }
+
+    // ========== P1 事件 Tab ==========
+
+    /// <summary>左侧 6 个事件入口（按钮控件实际只走 click/press/release，其余事件保留扩展）。</summary>
+    public ObservableCollection<EventEntryViewModel> AvailableEvents { get; } = new()
+    {
+        new() { EventId = "click",        DisplayName = "单击"      },
+        new() { EventId = "press",        DisplayName = "按下"      },
+        new() { EventId = "release",      DisplayName = "释放"      },
+        new() { EventId = "activate",     DisplayName = "激活"      },
+        new() { EventId = "deactivate",   DisplayName = "取消激活"  },
+        new() { EventId = "valueChanged", DisplayName = "数值更改"  },
+    };
+
+    /// <summary>当前选中的事件名。</summary>
+    [ObservableProperty]
+    private string _selectedEventName = "click";
+
+    /// <summary>当前事件下的动作步骤集合（绑定到事件 Tab 右栏 ListBox）。</summary>
+    public ObservableCollection<ActionStepViewModel> CurrentEventSteps { get; } = new();
+
+    partial void OnSelectedEventNameChanged(string value) => RefreshCurrentEventSteps();
+
+    /// <summary>当前选中事件入口（用于左列高亮）。</summary>
+    public EventEntryViewModel? CurrentEventEntry =>
+        AvailableEvents.FirstOrDefault(e => e.EventId == SelectedEventName);
+
+    /// <summary>把当前选中 widget+event 下的 ActionStep 列表刷到 VM 集合，并更新徽章计数。</summary>
+    private void RefreshCurrentEventSteps()
+    {
+        CurrentEventSteps.Clear();
+        var w = SelectedWidget;
+        if (w is not null && w.Events.TryGetValue(SelectedEventName, out var steps))
+        {
+            foreach (var s in steps)
+                CurrentEventSteps.Add(new ActionStepViewModel(s));
+        }
+        RefreshEventEntryBadges();
+        OnPropertyChanged(nameof(CurrentEventEntry));
+    }
+
+    /// <summary>刷新左列每个事件入口的动作数徽章 + 选中态。</summary>
+    private void RefreshEventEntryBadges()
+    {
+        var w = SelectedWidget;
+        foreach (var ev in AvailableEvents)
+        {
+            ev.StepCount = (w is not null && w.Events.TryGetValue(ev.EventId, out var lst))
+                ? lst.Count : 0;
+            ev.IsSelected = ev.EventId == SelectedEventName;
+        }
+    }
+
+    /// <summary>切换当前选中事件。</summary>
+    [RelayCommand]
+    private void SelectEvent(string? eventId)
+    {
+        if (string.IsNullOrEmpty(eventId)) return;
+        SelectedEventName = eventId!;
+    }
+
+    /// <summary>新建动作：弹系统函数选择对话框，将选中函数加入当前事件链尾。</summary>
+    [RelayCommand]
+    private void AddAction()
+    {
+        if (SelectedWidget is null) return;
+        var dlg = new ApexHMI.Views.Dialogs.SystemFunctionPickerDialog
+        {
+            Owner = System.Windows.Application.Current?.MainWindow
+        };
+        if (dlg.ShowDialog() != true || string.IsNullOrEmpty(dlg.SelectedFunctionId)) return;
+
+        EnsureEventList(SelectedWidget, SelectedEventName)
+            .Add(new ActionStep { FunctionId = dlg.SelectedFunctionId! });
+
+        MarkPageEdited();
+        RefreshCurrentEventSteps();
+        SyncLegacyFromEvents();
+    }
+
+    /// <summary>从当前事件链中删除指定动作步骤。</summary>
+    [RelayCommand]
+    private void DeleteAction(ActionStepViewModel? stepVm)
+    {
+        if (stepVm is null || SelectedWidget is null) return;
+        if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
+        steps.Remove(stepVm.Model);
+        if (steps.Count == 0) SelectedWidget.Events.Remove(SelectedEventName);
+        MarkPageEdited();
+        RefreshCurrentEventSteps();
+        SyncLegacyFromEvents();
+    }
+
+    /// <summary>当前事件链中上移指定动作（同时上移 model 与 VM 集合）。</summary>
+    [RelayCommand]
+    private void MoveActionUp(ActionStepViewModel? stepVm)
+    {
+        if (stepVm is null || SelectedWidget is null) return;
+        if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
+        var idx = steps.IndexOf(stepVm.Model);
+        if (idx <= 0) return;
+        (steps[idx - 1], steps[idx]) = (steps[idx], steps[idx - 1]);
+        MarkPageEdited();
+        RefreshCurrentEventSteps();
+        SyncLegacyFromEvents();
+    }
+
+    /// <summary>当前事件链中下移指定动作。</summary>
+    [RelayCommand]
+    private void MoveActionDown(ActionStepViewModel? stepVm)
+    {
+        if (stepVm is null || SelectedWidget is null) return;
+        if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
+        var idx = steps.IndexOf(stepVm.Model);
+        if (idx < 0 || idx >= steps.Count - 1) return;
+        (steps[idx + 1], steps[idx]) = (steps[idx], steps[idx + 1]);
+        MarkPageEdited();
+        RefreshCurrentEventSteps();
+        SyncLegacyFromEvents();
+    }
+
+    private static List<ActionStep> EnsureEventList(WidgetInstance w, string eventName)
+    {
+        if (!w.Events.TryGetValue(eventName, out var steps))
+            w.Events[eventName] = steps = new List<ActionStep>();
+        return steps;
+    }
+
+    /// <summary>把 Events["click"] 的第一个 step 反向同步回旧 ActionType/ActionParam，
+    /// 让旧 Expander UI 与新事件 Tab 在 click 单动作场景下数据保持一致。
+    /// 多动作场景下旧 Expander 只反映第一个动作（提示用户走新 Tab）。</summary>
+    private void SyncLegacyFromEvents()
+    {
+        var w = SelectedWidget;
+        if (w is null) return;
+        if (w.Events.TryGetValue("click", out var steps) && steps.Count > 0)
+        {
+            var first = steps[0];
+            w.ActionType = first.FunctionId;
+            w.ActionParam = first.Args.TryGetValue("address", out var a) ? a
+                : first.Args.TryGetValue("routeKey", out var r) ? r
+                : first.Args.TryGetValue("text", out var t) ? t
+                : first.Args.TryGetValue("value", out var v) ? v
+                : string.Empty;
+            // write-bool/int/float 需要 addr|value 合并
+            if (first.FunctionId is "write-bool" or "write-int" or "write-float")
+            {
+                first.Args.TryGetValue("address", out var addr);
+                first.Args.TryGetValue("value", out var val);
+                w.ActionParam = string.IsNullOrEmpty(val) ? (addr ?? "") : $"{addr}|{val}";
+            }
+        }
+        else
+        {
+            // click 链为空 → 清空旧字段
+            w.ActionType = null;
+            w.ActionParam = null;
+        }
+        OnPropertyChanged(nameof(WriteAddress));
+        OnPropertyChanged(nameof(WriteValue));
     }
 
     // ========== B-08: 主题 ==========

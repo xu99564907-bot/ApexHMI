@@ -460,12 +460,19 @@
             </Border>
             </ContentControl>
 
-            <!-- ===== 右栏：属性编辑器 ===== -->
-            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="12">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <!-- ===== 右栏：属性编辑器 V2（4 Tab） ===== -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="属性编辑器" FontSize="16" FontWeight="Bold"
+                               Foreground="{DynamicResource Brush.Text}" Margin="12,12,12,4"/>
+                <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Padding="0">
+                <TabItem Header="属性">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                     <StackPanel>
-                        <TextBlock Text="属性编辑器" FontSize="18" FontWeight="Bold" 
-                                   Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
 
                         <!-- 未选中控件时的提示 -->
                         <TextBlock Text="请从画布中选中一个控件"
@@ -581,9 +588,11 @@
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 事件 / 动作 -->
-                            <Expander Header="事件 / 动作" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- 事件 / 动作（单动作快捷编辑；多动作链请用顶部「事件」Tab） -->
+                            <Expander Header="事件 / 动作（单动作快捷）" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <TextBlock Text="提示：高级编辑请见顶部「事件」Tab 多动作链"
+                                               Foreground="#0EA5E9" FontSize="10" FontStyle="Italic" Margin="0,0,0,4"/>
                                     <TextBlock Text="点击动作" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <ComboBox Margin="0,4,0,4"
                                               SelectedValuePath="Tag"
@@ -775,6 +784,181 @@
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== 动画 Tab ===== -->
+                <TabItem Header="动画">
+                    <Grid>
+                        <TextBlock Text="动画 Tab — 将在 P2 阶段实现"
+                                   Foreground="#94A3B8" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </TabItem>
+
+                <!-- ===== 事件 Tab ===== -->
+                <TabItem Header="事件">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="请从画布中选中一个控件"
+                                   Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="13"
+                                   Margin="6,12,0,0"
+                                   Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                        <Grid Grid.Row="1"
+                              Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- 左：事件入口列表 -->
+                            <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}"
+                                    BorderThickness="0,0,1,0">
+                                <ItemsControl ItemsSource="{Binding AvailableEvents}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Command="{Binding DataContext.SelectEventCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding EventId}"
+                                                    BorderThickness="0" Padding="8,8"
+                                                    HorizontalContentAlignment="Stretch" Margin="0,0,0,1">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                        <Setter Property="Foreground" Value="#334155"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="Background" Value="#2563EB"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <DockPanel>
+                                                    <Border DockPanel.Dock="Right" Background="#F59E0B" CornerRadius="8"
+                                                            Padding="6,1" Margin="6,0,0,0" VerticalAlignment="Center"
+                                                            Visibility="{Binding HasSteps, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <TextBlock Text="{Binding StepCount}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                            <!-- 右：动作列表 -->
+                            <DockPanel Grid.Column="1" Margin="8,0,0,0">
+                                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,4,0,8">
+                                    <Button Content="↑" Command="{Binding MoveActionUpCommand}"
+                                            CommandParameter="{Binding SelectedItem, ElementName=EventActionList}"
+                                            Padding="8,3" Margin="0,0,4,0" ToolTip="上移"/>
+                                    <Button Content="↓" Command="{Binding MoveActionDownCommand}"
+                                            CommandParameter="{Binding SelectedItem, ElementName=EventActionList}"
+                                            Padding="8,3" Margin="0,0,4,0" ToolTip="下移"/>
+                                    <Button Content="✕" Command="{Binding DeleteActionCommand}"
+                                            CommandParameter="{Binding SelectedItem, ElementName=EventActionList}"
+                                            Padding="8,3" Margin="0,0,12,0"
+                                            Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                            ToolTip="删除"/>
+                                    <Button Content="＋ 新建动作" Command="{Binding AddActionCommand}"
+                                            Padding="10,3"
+                                            Background="#2563EB" Foreground="White" BorderBrush="#2563EB"/>
+                                </StackPanel>
+                                <ListBox x:Name="EventActionList"
+                                         ItemsSource="{Binding CurrentEventSteps}"
+                                         Background="Transparent" BorderThickness="0"
+                                         HorizontalContentAlignment="Stretch"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0,0,0,6"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4"
+                                                    Background="White" Padding="8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold"
+                                                               Foreground="{DynamicResource Brush.Text}"/>
+                                                    <ItemsControl ItemsSource="{Binding ArgEditors}" Margin="0,4,0,0">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid Margin="0,4,0,0">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="80"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                                                               Foreground="#64748B" VerticalAlignment="Center" FontSize="11"/>
+                                                                    <!-- TagAddress: TextBox + 自动补全 -->
+                                                                    <TextBox Grid.Column="1"
+                                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                             b:TagAutoComplete.IsEnabled="True"
+                                                                             VerticalContentAlignment="Center"
+                                                                             Visibility="{Binding IsTagAddress, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                    <!-- Text/Number: 普通 TextBox -->
+                                                                    <TextBox Grid.Column="1"
+                                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                             VerticalContentAlignment="Center"
+                                                                             Visibility="{Binding IsText, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                    <TextBox Grid.Column="1"
+                                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                             VerticalContentAlignment="Center"
+                                                                             Visibility="{Binding IsNumber, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                    <!-- Boolean: True/False ComboBox -->
+                                                                    <ComboBox Grid.Column="1"
+                                                                              SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                              SelectedValuePath="Content"
+                                                                              IsEditable="True"
+                                                                              Visibility="{Binding IsBoolean, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <ComboBoxItem Content="True"/>
+                                                                        <ComboBoxItem Content="False"/>
+                                                                    </ComboBox>
+                                                                    <!-- PageRouteKey: NavigateTargets ComboBox -->
+                                                                    <ComboBox Grid.Column="1"
+                                                                              ItemsSource="{Binding DataContext.NavigateTargets, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                              SelectedValuePath="RouteKey"
+                                                                              SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                              Visibility="{Binding IsPageRouteKey, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <ComboBox.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <StackPanel Orientation="Horizontal">
+                                                                                    <TextBlock Text="{Binding Group, StringFormat=[{0}]}"
+                                                                                               Foreground="#2563EB" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                                                    <TextBlock Text="{Binding DisplayName}"/>
+                                                                                </StackPanel>
+                                                                            </DataTemplate>
+                                                                        </ComboBox.ItemTemplate>
+                                                                    </ComboBox>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- ===== 文本 Tab ===== -->
+                <TabItem Header="文本">
+                    <Grid>
+                        <TextBlock Text="文本 Tab — 将在 P6 阶段实现（多语言）"
+                                   Foreground="#94A3B8" FontSize="13"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </TabItem>
+                </TabControl>
+                </Grid>
             </Border>
 
             <!-- 悬浮工具栏宿主层（默认无内容；点击图钉时把 ToolboxPanel 移入此层）-->
