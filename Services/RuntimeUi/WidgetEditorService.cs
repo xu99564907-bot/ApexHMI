@@ -230,6 +230,20 @@ public sealed class WidgetEditorService : IWidgetEditorService
             }
         }
 
+        // P7.5B: 若有 schema，则用 schema 的 DefaultValue 补齐尚未设置的 key
+        // （schema 是真值来源；上方 DefaultProperties 表保留作 fallback，未来逐步迁移）
+        var schema = WidgetSchemaCatalog.Lookup(typeId);
+        if (schema is not null)
+        {
+            foreach (var desc in schema.Properties)
+            {
+                if (!widget.Properties.ContainsKey(desc.Key) && !string.IsNullOrEmpty(desc.DefaultValue))
+                {
+                    widget.Properties[desc.Key] = desc.DefaultValue;
+                }
+            }
+        }
+
         page.Widgets.Add(widget);
         Log.Information("WidgetEditor: 已添加控件 typeId={TypeId} id={Id} x={X} y={Y}", typeId, widget.Id, x, y);
         return widget;

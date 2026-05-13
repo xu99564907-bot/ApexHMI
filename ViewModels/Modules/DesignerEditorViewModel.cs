@@ -641,8 +641,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>设计器画布渲染项：模型 + 预创建的真容视图（避免 XAML 中即时调用工厂引发卡死）。</summary>
     public ObservableCollection<DesignerWidgetItem> CurrentWidgetItems { get; } = new();
 
-    /// <summary>当前选中控件的属性列表，绑定到属性编辑器 ItemsControl。</summary>
+    /// <summary>当前选中控件的属性列表，绑定到属性编辑器 ItemsControl（旧 fallback 通道）。</summary>
     public ObservableCollection<WidgetPropertyItem> CurrentWidgetProperties { get; } = new();
+
+    /// <summary>P7.5B: Schema-driven 属性编辑器组（按 Category 分组）。
+    /// 若 schema 找不到，则该集合为空，UI 回退到旧 <see cref="CurrentWidgetProperties"/>。</summary>
+    public ObservableCollection<PropertyCategoryGroup> GroupedPropertyEditors { get; } = new();
+
+    /// <summary>P7.5B: 当前选中控件是否有 Schema（控制 schema 面板 vs fallback 显隐）。</summary>
+    public bool HasSchemaForSelectedWidget => GroupedPropertyEditors.Count > 0;
+
+    /// <summary>P7.5B: HasSchemaForSelectedWidget 的反值（XAML 绑定用，BooleanToVisibilityConverter 不支持 Invert 参数）。</summary>
+    public bool HasNoSchemaForSelectedWidget => !HasSchemaForSelectedWidget;
 
     /// <summary>已订阅 PropertyChanged 的 widget → 处理器映射，便于解订避免内存泄漏。</summary>
     private readonly Dictionary<WidgetInstance, PropertyChangedEventHandler> _widgetHandlers = new();
@@ -819,6 +829,57 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         NotifyAnimationSelectionChanged();
         // P7D: 刷新 Faceplate 接口属性面板
         RefreshFaceplateInterfaceArgs();
+        // P7.5B: 刷新 Schema-driven 属性编辑器
+        RefreshGroupedPropertyEditors();
+    }
+
+    /// <summary>P7.5B: 根据 SelectedWidget 的 TypeId 重建 schema-driven 属性面板分组。
+    /// <para>找不到 schema 时清空集合，UI 回退到旧 fallback。</para></summary>
+    private void RefreshGroupedPropertyEditors()
+    {
+        GroupedPropertyEditors.Clear();
+        if (SelectedWidget is null)
+        {
+            OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
+        OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+            return;
+        }
+
+        var schema = ApexHMI.Services.RuntimeUi.WidgetSchemaCatalog.Lookup(SelectedWidget.TypeId);
+        if (schema is null)
+        {
+            OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
+        OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+            return;
+        }
+
+        // 按 Category 分组（保持原顺序）
+        var groupOrder = new List<string>();
+        var groups = new Dictionary<string, List<PropertyEditorVM>>();
+        foreach (var desc in schema.Properties)
+        {
+            var value = SelectedWidget.Properties.TryGetValue(desc.Key, out var v) ? v : desc.DefaultValue;
+            var editor = new PropertyEditorVM(desc, value ?? string.Empty, OnSchemaEditorChanged);
+            if (!groups.TryGetValue(desc.Category, out var list))
+            {
+                list = new List<PropertyEditorVM>();
+                groups[desc.Category] = list;
+                groupOrder.Add(desc.Category);
+            }
+            list.Add(editor);
+        }
+
+        foreach (var cat in groupOrder)
+            GroupedPropertyEditors.Add(new PropertyCategoryGroup(cat, groups[cat]));
+
+        OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
+        OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+    }
+
+    /// <summary>P7.5B: schema 编辑器 Value 变化 → 写入 widget。</summary>
+    private void OnSchemaEditorChanged(string key, string? value)
+    {
+        UpdateWidgetProperty(key, value);
     }
 
     private void OnWidgetPropertyItemChanged(object? sender, PropertyChangedEventArgs e)
@@ -1023,6 +1084,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
         var oldValue = SelectedWidget.Properties.TryGetValue(key, out var existing) ? existing : null;
         _widgetEditor.UpdateProperty(SelectedWidget, key, value);
+
+        // P7.5B: 同步 schema-driven 编辑器值（防止外部修改时 UI 不刷新）
+        foreach (var grp in GroupedPropertyEditors)
+        {
+            foreach (var ed in grp.Items)
+            {
+                if (string.Equals(ed.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    ed.SetValueSilent(value ?? string.Empty);
+                }
+            }
+        }
 
         // 同步 CurrentWidgetProperties 以保持 UI 一致（防止递归）
         var item = CurrentWidgetProperties.FirstOrDefault(p => p.Key == key);

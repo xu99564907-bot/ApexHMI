@@ -5,6 +5,7 @@
              xmlns:model="clr-namespace:ApexHMI.Models.RuntimeUi"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:b="clr-namespace:ApexHMI.Behaviors"
+             xmlns:propEditors="clr-namespace:ApexHMI.Views.Controls.PropertyEditors"
              mc:Ignorable="d"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -19,6 +20,8 @@
                 <x:Type TypeName="model:FaceplatePropertyType"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <!-- P7.5: Schema-driven 属性编辑器模板选择器 -->
+        <propEditors:PropertyEditorTemplateSelector x:Key="PropEditorSelector"/>
     </UserControl.Resources>
     <Grid Margin="12">
         <Grid.RowDefinitions>
@@ -871,71 +874,79 @@
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 外观 / 控件属性 -->
-                            <Expander Header="外观 / 属性" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
-                                <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                            <ItemsControl ItemsSource="{Binding CurrentWidgetProperties}">
+                            <!-- P7.5B: Schema-driven 属性面板（按 Category 分组，类型化编辑器） -->
+                            <ItemsControl ItemsSource="{Binding GroupedPropertyEditors}"
+                                          Visibility="{Binding HasSchemaForSelectedWidget, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="0,0,0,8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" MinWidth="92"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0"
-                                                       Text="{Binding DisplayName}"
-                                                       Foreground="{DynamicResource Brush.TextSecondary}"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"
-                                                       ToolTip="{Binding Key}"/>
-                                            <!-- 普通属性：TextBox（variable 键自动启用 Tag 补全） -->
-                                            <TextBox Grid.Column="1"
-                                                     Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                                     VerticalAlignment="Center">
-                                                <TextBox.Style>
-                                                    <Style TargetType="TextBox">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                            <Setter Property="b:TagAutoComplete.IsEnabled" Value="False"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsDeviceNameProp}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding Key}" Value="variable">
-                                                                <Setter Property="b:TagAutoComplete.IsEnabled" Value="True"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
+                                        <Expander Header="{Binding Category}" IsExpanded="True" FontWeight="SemiBold"
+                                                  Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                                            <ItemsControl ItemsSource="{Binding Items}"
+                                                          Margin="6,4,0,0" TextElement.FontWeight="Normal"
+                                                          ItemTemplateSelector="{StaticResource PropEditorSelector}">
+                                                <ItemsControl.ItemContainerStyle>
+                                                    <Style TargetType="ContentPresenter">
+                                                        <Setter Property="Margin" Value="0,0,0,8"/>
                                                     </Style>
-                                                </TextBox.Style>
-                                            </TextBox>
-                                            <!-- deviceName 属性：下拉框（自动列出真实设备） -->
-                                            <ComboBox Grid.Column="1"
-                                                      ItemsSource="{Binding DataContext.AvailableDeviceNames, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                      Text="{Binding Value, UpdateSourceTrigger=LostFocus}"
-                                                      IsEditable="True" IsTextSearchEnabled="True"
-                                                      VerticalAlignment="Center"
-                                                      ToolTip="选择设备；列表为空时可手动输入设备名">
-                                                <ComboBox.Style>
-                                                    <Style TargetType="ComboBox">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsDeviceNameProp}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </ComboBox.Style>
-                                            </ComboBox>
-                                            <!-- 颜色属性显示色板预览 -->
-                                            <Border Grid.Column="2"
-                                                    Width="22" Height="22" CornerRadius="4"
-                                                    Margin="6,0,0,0" BorderBrush="#CBD5E1" BorderThickness="1"
-                                                    Visibility="{Binding IsColorProperty, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                    Background="{Binding Value, Converter={StaticResource StringToBrushConverter}}"/>
-                                        </Grid>
+                                                </ItemsControl.ItemContainerStyle>
+                                                <ItemsControl.Template>
+                                                    <ControlTemplate TargetType="ItemsControl">
+                                                        <Grid>
+                                                            <ItemsPresenter/>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </ItemsControl.Template>
+                                            </ItemsControl>
+                                        </Expander>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+
+                            <!-- P7.5B: Fallback —— schema 找不到时显示旧 generic 属性面板 -->
+                            <Expander Header="外观 / 属性 (回退)" IsExpanded="False" FontWeight="SemiBold"
+                                      Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="{Binding HasNoSchemaForSelectedWidget, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <TextBlock Text="该控件类型未注册 Schema，使用通用编辑器"
+                                               Foreground="#94A3B8" FontSize="10" FontStyle="Italic" Margin="0,0,0,4"/>
+                                    <ItemsControl ItemsSource="{Binding CurrentWidgetProperties}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="92"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding DisplayName}"
+                                                               Foreground="{DynamicResource Brush.TextSecondary}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"
+                                                               ToolTip="{Binding Key}"/>
+                                                    <TextBox Grid.Column="1"
+                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                             VerticalAlignment="Center">
+                                                        <TextBox.Style>
+                                                            <Style TargetType="TextBox">
+                                                                <Setter Property="b:TagAutoComplete.IsEnabled" Value="False"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Key}" Value="variable">
+                                                                        <Setter Property="b:TagAutoComplete.IsEnabled" Value="True"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBox.Style>
+                                                    </TextBox>
+                                                    <Border Grid.Column="2"
+                                                            Width="22" Height="22" CornerRadius="4"
+                                                            Margin="6,0,0,0" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                            Visibility="{Binding IsColorProperty, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                            Background="{Binding Value, Converter={StaticResource StringToBrushConverter}}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </StackPanel>
                             </Expander>
 
