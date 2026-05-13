@@ -48,6 +48,8 @@ public class WidgetRegistry : IWidgetViewFactory
         // P5 控件
         Register("screen-window", (m, ctx) => CreateView(new ScreenWindowWidgetViewModel(m, ctx), new ScreenWindowWidget()));
         Register("table-view",    (m, ctx) => CreateView(new TableViewWidgetViewModel(m, ctx),    new TableViewWidget()));
+        Register("alarm-view",    (m, ctx) => CreateView(new AlarmViewWidgetViewModel(m, ctx),    new AlarmViewWidget()));
+        Register("trend-view",    (m, ctx) => CreateView(new TrendViewWidgetViewModel(m, ctx),    new TrendViewWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

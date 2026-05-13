@@ -1,0 +1,32 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.TrendViewWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <Border BorderBrush="#94A3B8" BorderThickness="1" Background="#FFFFFF">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Background="#F1F5F9" Padding="4"
+                    Visibility="{Binding ToolbarVisibility}">
+                <StackPanel Orientation="Horizontal">
+                    <Button Command="{Binding TogglePauseCommand}" Margin="2" Padding="6,2" FontSize="12">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Content" Value="暂停"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Paused}" Value="True">
+                                        <Setter Property="Content" Value="继续"/>
+                                        <Setter Property="Background" Value="#FBBF24"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Content="重置缩放" Command="{Binding ResetZoomCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="导出 CSV"  Command="{Binding ExportCsvCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="导出 PNG"  Command="{Binding ExportPngCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                </StackPanel>
+            </Border>
+            <oxy:PlotView Model="{Binding PlotModel}"/>
+        </DockPanel>
+    </Border>
+</UserControl>

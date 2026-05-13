@@ -392,6 +392,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         // P5 高级控件
         new ToolboxGroup("控件", new[]
         {
+            new ToolboxItem("trend-view",     "趋势视图",   "ChartLine"),
+            new ToolboxItem("alarm-view",     "报警视图",   "BellOutline"),
             new ToolboxItem("table-view",     "表格视图",   "Table"),
             new ToolboxItem("screen-window",  "画面窗口",   "WindowMaximize"),
         }),
