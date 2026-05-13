@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:model="clr-namespace:ApexHMI.Models"
              xmlns:controls="clr-namespace:ApexHMI.Views.Controls"
-             xmlns:runtime="clr-namespace:ApexHMI.Views.Runtime"
              xmlns:conv="clr-namespace:ApexHMI.Converters">
     <UserControl.Resources>
         <conv:ViewportToCylinderItemWidthConverter x:Key="ViewportToCylinderItemWidthConverter"/>
@@ -42,25 +41,7 @@
                         <Border Style="{StaticResource CardBorderStyle}" Padding="16">
                             <StackPanel>
                                 <TextBlock Text="{Binding CurrentManualTitle}" FontSize="20" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,12"/>
-                                <!-- 路径B：设计器布局视图 -->
-                                <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF"
-                                        Padding="6" Margin="0,0,0,12"
-                                        Visibility="{Binding UseDesignerManualLayout, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                    <runtime:DynamicPageHost DataContext="{Binding ManualPage}"
-                                                              MinHeight="540"/>
-                                </Border>
-                                <!-- 旧硬编码 UI（设计器布局开启时整体隐藏） -->
                                 <StackPanel>
-                                    <StackPanel.Style>
-                                        <Style TargetType="StackPanel">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding UseDesignerManualLayout}" Value="True">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </StackPanel.Style>
                                 <Border Style="{StaticResource CardBorderStyle}" Background="#FFFFFF" Padding="12" Margin="0,0,0,12" Visibility="{Binding IsManualCylinderPageVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <StackPanel>
                                         <!-- MA5 气缸搜索框 -->

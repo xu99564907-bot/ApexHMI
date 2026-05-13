@@ -28,7 +28,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private readonly IProjectEditorService _projectEditor;
     private readonly IWidgetEditorService _widgetEditor;
     private readonly RuntimeProjectService _runtimeProjectService;
-    private readonly WidgetBlockGenerator _blockGenerator;
     private readonly PlcVariableImportService _plcVariableImport;
     private readonly EditStack _editStack = new();
     private bool _suppressEditRecording;
@@ -358,46 +357,13 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>设计模式数据上下文（无 OPC UA 推送，但暴露 Shell 供业务 widget 取真实数据）。</summary>
     public IWidgetDataContext DesignModeContext { get; }
 
-    /// <summary>工具箱控件类型列表（与 WidgetEditorService.DefaultProperties 对齐）。</summary>
-    public static readonly IReadOnlyList<string> ToolboxTypes = new[]
-    {
-        // 基础控件
-        "text", "bool-lamp", "numeric-readonly", "button", "page-button",
-        // 业务复合控件（手动操作）
-        "manual-cylinder-block", "manual-axis-block", "manual-robot-block", "manual-stopper-block",
-        // 业务控件（数据/报警）
-        "alarm-list", "opc-tag-value",
-        // 旧通用工业控件
-        "motor", "alarm-banner"
-    };
-
     /// <summary>工具箱分组定义（绑到 DesignerEditorView 的折叠分组列表）。</summary>
     public static readonly IReadOnlyList<ToolboxGroup> ToolboxGroups = new[]
     {
         new ToolboxGroup("基础控件", new[]
         {
-            new ToolboxItem("text",             "文本",       "FormatText"),
-            new ToolboxItem("bool-lamp",        "指示灯",     "Lightbulb"),
-            new ToolboxItem("numeric-readonly", "数值显示",   "Numeric"),
-            new ToolboxItem("button",           "按钮",       "GestureTap"),
-            new ToolboxItem("page-button",      "页面跳转",   "PageNext"),
-        }),
-        new ToolboxGroup("手动操作", new[]
-        {
-            new ToolboxItem("manual-cylinder-block", "气缸",   "Piston"),
-            new ToolboxItem("manual-axis-block",     "轴",     "AxisArrow"),
-            new ToolboxItem("manual-robot-block",    "机械手", "Robot"),
-            new ToolboxItem("manual-stopper-block",  "挡停",   "StopCircle"),
-        }),
-        new ToolboxGroup("数据 / 报警", new[]
-        {
-            new ToolboxItem("alarm-list",    "报警列表", "BellAlert"),
-            new ToolboxItem("opc-tag-value", "Tag 值",   "Tag"),
-        }),
-        new ToolboxGroup("通用工业控件", new[]
-        {
-            new ToolboxItem("motor",         "电机",     "Engine"),
-            new ToolboxItem("alarm-banner",  "报警条",   "AlertBox"),
+            new ToolboxItem("text",   "文本", "FormatText"),
+            new ToolboxItem("button", "按钮", "GestureTap"),
         }),
     };
 
@@ -425,7 +391,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         IProjectEditorService projectEditor,
         IWidgetEditorService widgetEditor,
         RuntimeProjectService runtimeProjectService,
-        WidgetBlockGenerator blockGenerator,
         IWidgetViewFactory widgetViewFactory,
         PlcVariableImportService plcVariableImport)
         : base(shell, "画布设计")
@@ -433,7 +398,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         _projectEditor = projectEditor;
         _widgetEditor = widgetEditor;
         _runtimeProjectService = runtimeProjectService;
-        _blockGenerator = blockGenerator;
         _plcVariableImport = plcVariableImport;
         WidgetViewFactory = widgetViewFactory;
         DesignModeContext = new DesignModeWidgetDataContext(shell);
@@ -732,30 +696,10 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     }
 
     /// <summary>
-    /// 当前选中 widget 的可用设备名列表（按 TypeId 自动从 Shell 取真实设备）。
-    /// 用于属性面板 deviceName 下拉框。
+    /// 当前选中 widget 的可用设备名列表（P0 清洗后仅基础控件，永远为空）。
+    /// 保留属性以兼容现有 XAML 绑定。
     /// </summary>
-    public IEnumerable<string> AvailableDeviceNames
-    {
-        get
-        {
-            if (SelectedWidget?.TypeId is null) return Enumerable.Empty<string>();
-            return SelectedWidget.TypeId.ToLowerInvariant() switch
-            {
-                "cylinder" or "manual-cylinder-block" =>
-                    Shell.ManualCylinderBlockCards.Select(c =>
-                        string.IsNullOrWhiteSpace(c.DisplayName) ? $"Cyl{c.CylinderIndex}" : c.DisplayName),
-                "axis" or "manual-axis-block" =>
-                    Shell.ManualAxisBlockCards.Select(a =>
-                        string.IsNullOrWhiteSpace(a.DisplayName) ? $"Axis{a.AxisIndex}" : a.DisplayName),
-                "stopper" or "manual-stopper-block" =>
-                    Shell.Tags
-                        .Where(t => t.Name?.IndexOf("stopper", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                        .Select(t => t.Name),
-                _ => Enumerable.Empty<string>(),
-            };
-        }
-    }
+    public IEnumerable<string> AvailableDeviceNames => Enumerable.Empty<string>();
 
     // ========== 选中页切换 ==========
 
@@ -1276,108 +1220,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         OnPropertyChanged(nameof(CanRedo));
         OnPropertyChanged(nameof(UndoDescription));
         OnPropertyChanged(nameof(RedoDescription));
-    }
-
-    // ========== 批量生成功能块 ==========
-
-    /// <summary>可选的功能块类型列表。</summary>
-    public IReadOnlyList<string> BatchBlockTypes => WidgetBlockGenerator.BlockTypes;
-
-    /// <summary>功能块中文名称映射，用于 UI 显示。</summary>
-    public IReadOnlyDictionary<string, string> BatchBlockTypeLabels => WidgetBlockGenerator.BlockTypeLabels;
-
-    [ObservableProperty]
-    private string _batchBlockType = "cylinder";
-
-    [ObservableProperty]
-    private string _batchNamePrefix = "CYL";
-
-    [ObservableProperty]
-    private int _batchCount = 3;
-
-    [ObservableProperty]
-    private double _batchStartX = 40;
-
-    [ObservableProperty]
-    private double _batchStartY = 40;
-
-    [ObservableProperty]
-    private bool _batchLayoutHorizontal = true;
-
-    partial void OnBatchBlockTypeChanged(string value)
-    {
-        // 自动更新默认前缀
-        BatchNamePrefix = value.ToUpperInvariant() switch
-        {
-            "CYLINDER" => "CYL",
-            "MOTOR"    => "MOT",
-            "AXIS"     => "AXIS",
-            "ROBOT"    => "ROB",
-            "STOPPER"  => "STP",
-            _          => value.ToUpperInvariant()[..Math.Min(3, value.Length)]
-        };
-    }
-
-    [RelayCommand]
-    private void BatchGenerate()
-    {
-        if (SelectedPage is null)
-        {
-            Log.Warning("DesignerEditor: 批量生成失败，未选中页面");
-            return;
-        }
-
-        var count = Math.Max(1, Math.Min(BatchCount, 50));
-        var deviceNames = ResolveBatchDeviceNames(BatchBlockType, count);
-
-        var generated = _blockGenerator.GenerateForDevices(
-            SelectedPage,
-            BatchBlockType,
-            deviceNames,
-            BatchStartX,
-            BatchStartY,
-            BatchLayoutHorizontal);
-
-        foreach (var w in generated)
-        {
-            CurrentWidgets.Add(w);
-            AddWidgetItem(w);
-        }
-
-        if (generated.Count > 0)
-        {
-            SelectedWidget = generated[0];
-            MarkPageEdited();
-        }
-
-        Log.Information("DesignerEditor: 批量生成 {Count} 个 {BlockType} 功能块", generated.Count, BatchBlockType);
-    }
-
-    /// <summary>
-    /// 解析批量生成时使用的设备名列表。
-    /// 优先从 Shell 取真实设备（IO 已导入时），否则用 前缀+序号 占位名。
-    /// </summary>
-    private IReadOnlyList<string> ResolveBatchDeviceNames(string blockType, int desiredCount)
-    {
-        var fromShell = blockType.ToLowerInvariant() switch
-        {
-            "cylinder" => Shell.ManualCylinderBlockCards.Select(c =>
-                string.IsNullOrWhiteSpace(c.DisplayName) ? $"Cyl{c.CylinderIndex}" : c.DisplayName).ToList(),
-            "axis"     => Shell.ManualAxisBlockCards.Select(a =>
-                string.IsNullOrWhiteSpace(a.DisplayName) ? $"Axis{a.AxisIndex}" : a.DisplayName).ToList(),
-            _ => new List<string>()
-        };
-
-        if (fromShell.Count > 0)
-        {
-            return fromShell.Take(desiredCount).ToList();
-        }
-
-        // 占位命名
-        var prefix = string.IsNullOrWhiteSpace(BatchNamePrefix) ? "DEV" : BatchNamePrefix;
-        var list = new List<string>();
-        for (int i = 0; i < desiredCount; i++) list.Add($"{prefix}{i + 1}");
-        return list;
     }
 
     // ========== 保存 / 发布 ==========

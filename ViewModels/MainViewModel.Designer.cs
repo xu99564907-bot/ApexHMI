@@ -660,20 +660,6 @@ public partial class MainViewModel
                 AddLog("IO 生成", $"轴块刷新失败：{ex.Message}", "Warning");
             }
 
-            // 路径B: 同步生成/更新开放平台 manual.* 页面（DynamicPageHost 可加载）
-            try
-            {
-                await RunOnUiThreadAsync(() =>
-                {
-                    if (this is ApexHMI.ViewModels.Shell.MainWindowViewModel mvm)
-                        mvm.RegenerateManualPages();
-                });
-            }
-            catch (Exception ex)
-            {
-                AddLog("IO 生成", $"开放平台手动页面生成失败：{ex.Message}", "Warning");
-            }
-
             try
             {
                 await SyncGeneratedArtifactsToGitAsync(result);

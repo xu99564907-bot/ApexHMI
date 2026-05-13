@@ -18,33 +18,8 @@ public class WidgetRegistry : IWidgetViewFactory
 
     public WidgetRegistry()
     {
-        Register("text",            (m, ctx) => CreateView(new TextWidgetViewModel(m, ctx),            new TextWidget()));
-        Register("bool-lamp",       (m, ctx) => CreateView(new BoolLampWidgetViewModel(m, ctx),       new BoolLampWidget()));
-        Register("numeric-readonly",(m, ctx) => CreateView(new NumericReadonlyWidgetViewModel(m, ctx), new NumericReadonlyWidget()));
-        Register("button",          (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),          new ButtonWidget()));
-
-        // 业务复合控件：复用 Tab 3 手动页的真实卡片 UI/数据
-        Register("manual-cylinder-block", (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
-        Register("manual-axis-block",     (m, ctx) => CreateView(new ManualAxisBlockWidgetViewModel(m, ctx),     new ManualAxisBlockWidget()));
-        Register("manual-robot-block",    (m, ctx) => CreateView(new ManualRobotBlockWidgetViewModel(m, ctx),    new ManualRobotBlockWidget()));
-        Register("manual-stopper-block",  (m, ctx) => CreateView(new ManualStopperBlockWidgetViewModel(m, ctx),  new ManualStopperBlockWidget()));
-
-        // 兼容旧 typeId：自动升级到 manual-* 业务控件
-        Register("cylinder", (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
-        Register("axis",     (m, ctx) => CreateView(new ManualAxisBlockWidgetViewModel(m, ctx),     new ManualAxisBlockWidget()));
-        Register("robot",    (m, ctx) => CreateView(new ManualRobotBlockWidgetViewModel(m, ctx),    new ManualRobotBlockWidget()));
-        Register("stopper",  (m, ctx) => CreateView(new ManualStopperBlockWidgetViewModel(m, ctx),  new ManualStopperBlockWidget()));
-
-        // 暂未升级的工业控件（继续用通用 StatusWidget）
-        Register("motor",        (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
-        Register("alarm-banner", (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
-
-        // 业务控件第二批：报警列表 / 通用 Tag 值
-        Register("alarm-list",     (m, ctx) => CreateView(new AlarmListWidgetViewModel(m, ctx),    new AlarmListWidget()));
-        Register("opc-tag-value",  (m, ctx) => CreateView(new OpcTagValueWidgetViewModel(m, ctx),  new OpcTagValueWidget()));
-
-        // page-button 复用 ButtonWidget
-        Register("page-button",  (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx), new ButtonWidget()));
+        Register("text",   (m, ctx) => CreateView(new TextWidgetViewModel(m, ctx),   new TextWidget()));
+        Register("button", (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx), new ButtonWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

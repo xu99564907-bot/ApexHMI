@@ -21,8 +21,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly IWidgetViewFactory _widgetFactory;
     private readonly IProjectEditorService _projectEditorService;
     private readonly IWidgetEditorService _widgetEditorService;
-    private readonly WidgetBlockGenerator _widgetBlockGenerator;
-    private readonly ManualPageAutoGenerator _manualPageAutoGenerator;
 
     public MainWindowViewModel(
         IOpcUaService opcUaService,
@@ -45,8 +43,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
         RuntimeDataBindingService dataBindingService,
         IProjectEditorService projectEditorService,
         IWidgetEditorService widgetEditorService,
-        WidgetBlockGenerator widgetBlockGenerator,
-        ManualPageAutoGenerator manualPageAutoGenerator,
         IUserService userService,
         PlcVariableImportService plcVariableImportService,
         IProductionCountService productionCountService)
@@ -72,8 +68,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _widgetFactory = widgetFactory;
         _projectEditorService = projectEditorService;
         _widgetEditorService = widgetEditorService;
-        _widgetBlockGenerator = widgetBlockGenerator;
-        _manualPageAutoGenerator = manualPageAutoGenerator;
 
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -92,7 +86,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
         // 先初始化运行时（LoadDefault 设置 Current），再让编辑器共享同一 ProjectDocument
         InitializeDynamicRuntime();
-        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetBlockGenerator, _widgetFactory, plcVariableImportService);
+        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetFactory, plcVariableImportService);
         Designer = new DesignerViewModel(this);
     }
 
@@ -110,10 +104,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
     public CountViewModel Count { get; }
 
     public DynamicPageHostViewModel RuntimePage { get; private set; } = null!;
-
-    /// <summary>专用于 Tab 3 「手动操作」的 DynamicPageHost；独立于 Tab 10，
-    /// 这样手动子页签切换不会污染 Tab 10 当前页。</summary>
-    public DynamicPageHostViewModel ManualPage { get; private set; } = null!;
 
     public ProjectDocument? RuntimeProject => _runtimeProjectService.Current;
 
@@ -175,74 +165,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
     [RelayCommand]
     private void ToggleRuntimeFullScreen() => IsRuntimeFullScreen = !IsRuntimeFullScreen;
 
-    /// <summary>
-    /// Tab 3 「手动操作」是否使用设计器布局（路径 B）。
-    /// true：显示 ManualPage DynamicPageHost，按子页签加载 manual.* 页面，
-    ///       内容来自 IO 导入自动生成或用户编辑后的 ProjectDocument。
-    /// false（默认）：显示原有硬编码 ManualView UI。
-    /// </summary>
-    [ObservableProperty]
-    private bool _useDesignerManualLayout;
-
-    /// <summary>当前 Tab 3 子页签 → 对应 manual.* 页面 RouteKey 的映射。</summary>
-    private static string ResolveManualRouteKey(string subSection) => subSection switch
-    {
-        "气缸" => Services.RuntimeUi.ManualPageAutoGenerator.CylindersRouteKey,
-        "轴"   => Services.RuntimeUi.ManualPageAutoGenerator.AxesRouteKey,
-        "机械手" => Services.RuntimeUi.ManualPageAutoGenerator.RobotsRouteKey,
-        "挡停" => Services.RuntimeUi.ManualPageAutoGenerator.StoppersRouteKey,
-        _ => string.Empty
-    };
-
-    /// <summary>根据当前手动子页签加载对应的 manual.* 页到 ManualPage（设计器布局开关下使用）。</summary>
-    internal async Task LoadManualPageForCurrentSubSectionAsync()
-    {
-        if (!UseDesignerManualLayout) return;
-        var routeKey = ResolveManualRouteKey(CurrentManualSubSection);
-        if (string.IsNullOrEmpty(routeKey)) return;
-
-        var project = _runtimeProjectService.Current;
-        if (project is null) return;
-
-        var page = project.Pages.FirstOrDefault(p =>
-            string.Equals(p.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
-        if (page is null) return;
-
-        ManualPage.LoadPage(page);
-        await _dataBindingService.AttachAsync(ManualPage);
-    }
-
-    partial void OnUseDesignerManualLayoutChanged(bool value)
-    {
-        if (value)
-            _ = LoadManualPageForCurrentSubSectionAsync();
-    }
-
-    /// <summary>
-    /// IO 导入后调用：自动生成/刷新 manual.* 系列页面，并保存工程。
-    /// </summary>
-    internal void RegenerateManualPages()
-    {
-        var project = _runtimeProjectService.Current;
-        if (project is null) return;
-        try
-        {
-            _manualPageAutoGenerator.GenerateAll(
-                project,
-                ManualCylinderBlockCards,
-                ManualAxisBlockCards,
-                RobotControlViewModel is not null,
-                Tags);
-            _runtimeProjectService.Save(project);
-            RefreshTopNavUserPages();
-            Log.Information("MainWindowViewModel: 手动页面已根据 IO 重新生成");
-        }
-        catch (System.Exception ex)
-        {
-            Log.Error(ex, "RegenerateManualPages 失败");
-        }
-    }
-
     [RelayCommand]
     private async Task NavigateToUserPage(string? routeKey)
     {
@@ -280,10 +202,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private void InitializeDynamicRuntime()
     {
         RuntimePage = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
-        ManualPage  = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
         // 顶部页面标签栏：点击切换 Tab 10 当前页
         RuntimePage.RequestLoadPage = key => _ = NavigateToRuntimePageAsync(key);
-        ManualPage.RequestLoadPage  = key => _ = NavigateToRuntimePageAsync(key);
         var project = _runtimeProjectService.LoadDefault();
         var defaultPage = project.Pages.FirstOrDefault(p =>
             string.Equals(p.RouteKey, project.DefaultPageRouteKey, StringComparison.OrdinalIgnoreCase))
