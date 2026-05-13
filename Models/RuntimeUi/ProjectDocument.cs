@@ -40,4 +40,7 @@ public class ProjectDocument
     /// <summary>P6E: 工程级文本/图形列表资源（INT → 文字 / INT → 图片）。
     /// io-symbolic 可写 <c>{textList:status}</c>、io-graphic 可写 <c>{graphicList:state}</c> 引用。</summary>
     public ListResources? Lists { get; set; } = new();
+
+    /// <summary>P7: 工程级 Faceplate 库（可复用 / 有接口属性 / 有版本号的复合控件模板）。</summary>
+    public FaceplateLibrary? Faceplates { get; set; } = new();
 }

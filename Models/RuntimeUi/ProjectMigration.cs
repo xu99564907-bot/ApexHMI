@@ -36,6 +36,9 @@ public static class ProjectMigration
         // P6E: 文本/图形列表资源默认空集合
         doc.Lists ??= new ListResources();
 
+        // P7: Faceplate 库默认空集合
+        doc.Faceplates ??= new FaceplateLibrary();
+
         // 预留：后续版本在此添加 if (doc.SchemaVersion < N) 迁移块
         doc.SchemaVersion = CurrentSchemaVersion;
         return doc;

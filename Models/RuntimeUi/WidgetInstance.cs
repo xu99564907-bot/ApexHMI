@@ -58,6 +58,11 @@ public partial class WidgetInstance : ObservableObject
     [ObservableProperty]
     private string? _requiredRole;
 
+    /// <summary>P7: Faceplate 实例化时使用的 Faceplate 版本号（仅当 TypeId 以 <c>faceplate:</c> 开头时有意义）。
+    /// <para>用于检测原 Faceplate 升级后实例是否需要同步。</para></summary>
+    [ObservableProperty]
+    private string? _faceplateVersion;
+
     /// <summary>P2.5: 状态动画规则（Tag 值驱动属性变化）。
     /// <para>P2-V2 之后保留为旧字段，迁移到 <see cref="Appearance"/> / <see cref="Visibility"/> / <see cref="Movement"/>。
     /// 新模型为空时运行时仍 fallback 使用本列表（向后兼容）。</para></summary>
