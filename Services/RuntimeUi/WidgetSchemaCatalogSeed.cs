@@ -5,33 +5,15 @@ using ApexHMI.Models.RuntimeUi;
 namespace ApexHMI.Services.RuntimeUi;
 
 /// <summary>
-/// P7.5C: 10 个高频 widget 的 Schema 种子数据。
+/// P7.5C / P10A: Widget Schema 种子数据（已覆盖 27 个）。
 /// </summary>
 /// <remarks>
-/// <para>已覆盖（10 个）：text / rectangle / ellipse / button / io-numeric / io-symbolic /
-/// switch / bar / gauge / trend-view。</para>
-///
-/// <para><b>TODO P7.5C-续 — 中频 17 个 widget schema 待补：</b></para>
-/// <list type="number">
-///   <item>line — stroke/strokeThickness/strokeDashArray/x1,y1,x2,y2</item>
-///   <item>polyline — points/stroke/strokeThickness/strokeDashArray/opacity</item>
-///   <item>polygon — points/fill/stroke/strokeThickness/strokeDashArray/opacity</item>
-///   <item>graphic-view — source(图片路径)/stretch(Enum)/opacity</item>
-///   <item>io-graphic — variable/mode/entries(GraphicListRef)/stretch</item>
-///   <item>datetime — mode(SystemTime/Tag)/variable/format/background/foreground</item>
-///   <item>slider — variable/min/max/step/orientation/showLabel/showValue/snapToStep/writeOnChange</item>
-///   <item>scrollbar — 同 slider</item>
-///   <item>clock — mode(digital/analog)/format/foreground/background/fontSize/analogShowSeconds</item>
-///   <item>combobox — variable/items(TextListRef 或字符串)</item>
-///   <item>listbox — 同 combobox</item>
-///   <item>checkbox — variable/text/checkedColor/uncheckedColor/foreground</item>
-///   <item>optiongroup — variable/items/orientation</item>
-///   <item>round-button — text/background/foreground/cornerRadius(由 width/2 接管)</item>
-///   <item>alarm-view — filterCategory/columns(Json)/maxRows/showAck</item>
-///   <item>table-view — columns(Json)/dataSource/showHeader/alternateRowColor</item>
-///   <item>screen-window — pageRoute(PageRoute)/showHeader/zoomToFit</item>
-/// </list>
-/// 补全方式：在本类中追加 BuildXxx() 方法并在 Seed 里 Add；类型不确定时回退到 String。
+/// 高频 10：text / rectangle / ellipse / button / io-numeric / io-symbolic / switch / bar / gauge / trend-view。
+/// 业务类 11：recipe-view / user-view / diagnostic-view / alarm-indicator / status-force /
+/// html-browser / pdf-view / media-player / xy-trend / report-view / 待补少量。
+/// 中频 17 (P10A 补全)：line / polyline / polygon / graphic-view / io-graphic / datetime /
+/// slider / scrollbar / clock / combobox / listbox / checkbox / optiongroup / round-button /
+/// alarm-view / table-view / screen-window。
 /// </remarks>
 internal static class WidgetSchemaCatalogSeed
 {
@@ -69,7 +51,285 @@ internal static class WidgetSchemaCatalogSeed
         Add(map, BuildMediaPlayer());
         Add(map, BuildXyTrend());
         Add(map, BuildReportView());
+
+        // P10A 中频 17 个 widget schema
+        Add(map, BuildLine());
+        Add(map, BuildPolyline());
+        Add(map, BuildPolygon());
+        Add(map, BuildGraphicView());
+        Add(map, BuildIoGraphic());
+        Add(map, BuildDateTime());
+        Add(map, BuildSlider());
+        Add(map, BuildScrollbar());
+        Add(map, BuildClock());
+        Add(map, BuildCombobox());
+        Add(map, BuildListbox());
+        Add(map, BuildCheckbox());
+        Add(map, BuildOptionGroup());
+        Add(map, BuildRoundButton());
+        Add(map, BuildAlarmView());
+        Add(map, BuildTableView());
+        Add(map, BuildScreenWindow());
     }
+
+    // ================= P10A 中频 17 widget schema =================
+
+    private static WidgetSchema BuildLine() => new()
+    {
+        TypeId = "line",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "stroke", DisplayName = "描边色", EditorType = PropertyEditorType.Color, DefaultValue = "#1F2937", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeThickness", DisplayName = "描边宽度", EditorType = PropertyEditorType.Number, DefaultValue = "2", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeDashArray", DisplayName = "虚线段", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "外观", Description = "例 '4,2'" },
+            new PropertyDescriptor { Key = "x1", DisplayName = "起点 X (相对)", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "布局" },
+            new PropertyDescriptor { Key = "y1", DisplayName = "起点 Y (相对)", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "布局" },
+            new PropertyDescriptor { Key = "x2", DisplayName = "终点 X (相对)", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "布局" },
+            new PropertyDescriptor { Key = "y2", DisplayName = "终点 Y (相对)", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "布局" },
+        }
+    };
+
+    private static WidgetSchema BuildPolyline() => new()
+    {
+        TypeId = "polyline",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "points", DisplayName = "点列表", EditorType = PropertyEditorType.String, DefaultValue = "0,0 60,40 120,0", Category = "布局", Description = "'x1,y1 x2,y2 ...'" },
+            new PropertyDescriptor { Key = "stroke", DisplayName = "描边色", EditorType = PropertyEditorType.Color, DefaultValue = "#1F2937", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeThickness", DisplayName = "描边宽度", EditorType = PropertyEditorType.Number, DefaultValue = "2", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeDashArray", DisplayName = "虚线段", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "外观" },
+            new PropertyDescriptor { Key = "opacity", DisplayName = "不透明度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildPolygon() => new()
+    {
+        TypeId = "polygon",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "points", DisplayName = "点列表", EditorType = PropertyEditorType.String, DefaultValue = "60,0 120,60 60,120 0,60", Category = "布局" },
+            new PropertyDescriptor { Key = "fill", DisplayName = "填充色", EditorType = PropertyEditorType.Color, DefaultValue = "#F59E0B", Category = "外观" },
+            new PropertyDescriptor { Key = "stroke", DisplayName = "描边色", EditorType = PropertyEditorType.Color, DefaultValue = "#92400E", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeThickness", DisplayName = "描边宽度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+            new PropertyDescriptor { Key = "strokeDashArray", DisplayName = "虚线段", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "外观" },
+            new PropertyDescriptor { Key = "opacity", DisplayName = "不透明度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildGraphicView() => new()
+    {
+        TypeId = "graphic-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "source", DisplayName = "图片路径", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "本地路径或 pack:// URI" },
+            new PropertyDescriptor
+            {
+                Key = "stretch", DisplayName = "拉伸模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Uniform", Category = "外观",
+                EnumOptions = new[] { "None|原始", "Fill|填充", "Uniform|等比", "UniformToFill|等比填充" }
+            },
+            new PropertyDescriptor { Key = "opacity", DisplayName = "不透明度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildIoGraphic() => new()
+    {
+        TypeId = "io-graphic",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Output", Category = "数据",
+                EnumOptions = new[] { "Input|输入", "Output|输出", "InputOutput|输入输出" }
+            },
+            new PropertyDescriptor { Key = "entries", DisplayName = "图形条目", EditorType = PropertyEditorType.GraphicListRef, DefaultValue = "", Category = "数据", Description = "引用图形列表 {graphicList:xxx} 或 'value=path;...'" },
+            new PropertyDescriptor
+            {
+                Key = "stretch", DisplayName = "拉伸", EditorType = PropertyEditorType.Enum, DefaultValue = "Uniform", Category = "外观",
+                EnumOptions = new[] { "None|原始", "Fill|填充", "Uniform|等比", "UniformToFill|等比填充" }
+            },
+        }
+    };
+
+    private static WidgetSchema BuildDateTime() => new()
+    {
+        TypeId = "datetime",
+        Properties = new[]
+        {
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "SystemTime", Category = "数据",
+                EnumOptions = new[] { "SystemTime|系统时间", "Tag|读 Tag", "Input|输入回写" }
+            },
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "format", DisplayName = "格式", EditorType = PropertyEditorType.String, DefaultValue = "yyyy-MM-dd HH:mm:ss", Category = "格式" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildSlider() => new()
+    {
+        TypeId = "slider",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "minValue", DisplayName = "最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值" },
+            new PropertyDescriptor { Key = "maxValue", DisplayName = "最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "限值" },
+            new PropertyDescriptor { Key = "step", DisplayName = "步长", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "限值" },
+            new PropertyDescriptor
+            {
+                Key = "orientation", DisplayName = "方向", EditorType = PropertyEditorType.Enum, DefaultValue = "horizontal", Category = "布局",
+                EnumOptions = new[] { "horizontal|水平", "vertical|垂直" }
+            },
+            new PropertyDescriptor { Key = "showLabel", DisplayName = "显示标签", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "showValue", DisplayName = "显示数值", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "snapToStep", DisplayName = "对齐步长", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "writeOnChange", DisplayName = "拖动写入", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为", Description = "false=松手再写；true=拖动即写" },
+        }
+    };
+
+    private static WidgetSchema BuildScrollbar() => new()
+    {
+        TypeId = "scrollbar",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "minValue", DisplayName = "最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值" },
+            new PropertyDescriptor { Key = "maxValue", DisplayName = "最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "限值" },
+            new PropertyDescriptor { Key = "step", DisplayName = "步长", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "限值" },
+            new PropertyDescriptor
+            {
+                Key = "orientation", DisplayName = "方向", EditorType = PropertyEditorType.Enum, DefaultValue = "horizontal", Category = "布局",
+                EnumOptions = new[] { "horizontal|水平", "vertical|垂直" }
+            },
+            new PropertyDescriptor { Key = "showLabel", DisplayName = "显示标签", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "showValue", DisplayName = "显示数值", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "snapToStep", DisplayName = "对齐步长", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "writeOnChange", DisplayName = "拖动写入", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+        }
+    };
+
+    private static WidgetSchema BuildClock() => new()
+    {
+        TypeId = "clock",
+        Properties = new[]
+        {
+            new PropertyDescriptor
+            {
+                Key = "mode", DisplayName = "样式", EditorType = PropertyEditorType.Enum, DefaultValue = "digital", Category = "数据",
+                EnumOptions = new[] { "digital|数字", "analog|指针" }
+            },
+            new PropertyDescriptor { Key = "format", DisplayName = "数字格式", EditorType = PropertyEditorType.String, DefaultValue = "yyyy-MM-dd HH:mm:ss", Category = "格式" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "fontSize", DisplayName = "字号", EditorType = PropertyEditorType.Number, DefaultValue = "14", Category = "外观" },
+            new PropertyDescriptor { Key = "analogShowSeconds", DisplayName = "指针显示秒针", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildCombobox() => new()
+    {
+        TypeId = "combobox",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "items", DisplayName = "选项", EditorType = PropertyEditorType.TextListRef, DefaultValue = "0=选项1;1=选项2;2=选项3", Category = "数据", Description = "'value=text;...' 或 {textList:xxx}" },
+        }
+    };
+
+    private static WidgetSchema BuildListbox() => new()
+    {
+        TypeId = "listbox",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "items", DisplayName = "选项", EditorType = PropertyEditorType.TextListRef, DefaultValue = "0=选项1;1=选项2;2=选项3", Category = "数据" },
+        }
+    };
+
+    private static WidgetSchema BuildCheckbox() => new()
+    {
+        TypeId = "checkbox",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "text", DisplayName = "文本", EditorType = PropertyEditorType.String, DefaultValue = "选项", Category = "文本" },
+            new PropertyDescriptor { Key = "checkedColor", DisplayName = "选中颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#10B981", Category = "外观" },
+            new PropertyDescriptor { Key = "uncheckedColor", DisplayName = "未选颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#94A3B8", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildOptionGroup() => new()
+    {
+        TypeId = "optiongroup",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "variable", DisplayName = "变量", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "items", DisplayName = "选项", EditorType = PropertyEditorType.TextListRef, DefaultValue = "0=选项A;1=选项B;2=选项C", Category = "数据" },
+            new PropertyDescriptor
+            {
+                Key = "orientation", DisplayName = "方向", EditorType = PropertyEditorType.Enum, DefaultValue = "vertical", Category = "布局",
+                EnumOptions = new[] { "horizontal|水平", "vertical|垂直" }
+            },
+        }
+    };
+
+    private static WidgetSchema BuildRoundButton() => new()
+    {
+        TypeId = "round-button",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "text", DisplayName = "按钮文本", EditorType = PropertyEditorType.String, DefaultValue = "按钮", Category = "文本" },
+            new PropertyDescriptor { Key = "fontSize", DisplayName = "字号", EditorType = PropertyEditorType.Number, DefaultValue = "14", Category = "文本" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "文字颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#2563EB", Category = "外观" },
+            new PropertyDescriptor { Key = "pressedBackground", DisplayName = "按下背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#1E40AF", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildAlarmView() => new()
+    {
+        TypeId = "alarm-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor
+            {
+                Key = "filterCategory", DisplayName = "分类过滤", EditorType = PropertyEditorType.Enum, DefaultValue = "All", Category = "数据",
+                EnumOptions = new[] { "All|全部", "Info|信息", "Warning|警告", "Error|错误", "Alarm|报警" }
+            },
+            new PropertyDescriptor { Key = "columns", DisplayName = "列配置", EditorType = PropertyEditorType.Json, DefaultValue = "[]", Category = "数据", Description = "JSON 数组，每项 {field,header,width}" },
+            new PropertyDescriptor { Key = "maxRows", DisplayName = "最大行数", EditorType = PropertyEditorType.Integer, DefaultValue = "100", Category = "数据" },
+            new PropertyDescriptor { Key = "showAck", DisplayName = "显示确认按钮", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildTableView() => new()
+    {
+        TypeId = "table-view",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "columns", DisplayName = "列配置", EditorType = PropertyEditorType.Json, DefaultValue = "[]", Category = "数据", Description = "JSON 数组，每项 {field,header,width}" },
+            new PropertyDescriptor { Key = "dataSource", DisplayName = "数据源", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "Tag 表前缀或数据集 Id" },
+            new PropertyDescriptor { Key = "showHeader", DisplayName = "显示表头", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "alternateRowColor", DisplayName = "斑马纹颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#F8FAFC", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+        }
+    };
+
+    private static WidgetSchema BuildScreenWindow() => new()
+    {
+        TypeId = "screen-window",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "pageRoute", DisplayName = "嵌入页面", EditorType = PropertyEditorType.PageRoute, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "showHeader", DisplayName = "显示标题栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "zoomToFit", DisplayName = "缩放适应", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+        }
+    };
 
     // ---------------- html-browser (P9A) ----------------
     private static WidgetSchema BuildHtmlBrowser() => new()
