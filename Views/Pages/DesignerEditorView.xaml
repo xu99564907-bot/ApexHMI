@@ -34,38 +34,6 @@
             <DockPanel>
                 <!-- 右侧动作 / 状态：固定宽度 WrapPanel，自动多行 + ItemHeight 制造行间距 -->
                 <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" Width="420" ItemHeight="36" Margin="10,0,0,0">
-                    <!-- PLC 变量表导入状态 -->
-                    <Border Background="#0369A1" CornerRadius="12" Padding="8,3"
-                            VerticalAlignment="Center" Margin="0,0,8,0">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding PlcVariableStatus}" Value="">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock Text="{Binding PlcVariableStatus}" Foreground="White"
-                                   FontWeight="SemiBold" FontSize="11"
-                                   ToolTip="{Binding PlcVariableFilePath}"/>
-                    </Border>
-                    <Border Background="#10B981" CornerRadius="12" Padding="8,3"
-                            VerticalAlignment="Center" Margin="0,0,8,0">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SaveStatus}" Value="">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock Text="{Binding SaveStatus}" Foreground="White"
-                                   FontWeight="SemiBold" FontSize="11"/>
-                    </Border>
                     <!-- 紧凑图标按钮组 -->
                     <Button Command="{Binding ReloadPlcVariablesCommand}"
                             Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
