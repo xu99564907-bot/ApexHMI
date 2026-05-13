@@ -79,7 +79,7 @@
                     </Button>
                 </StackPanel>
 
-                <!-- 横向工具箱（按分组） -->
+                <!-- 工具箱：每分组一行，组内 WrapPanel 自适应换行 -->
                 <Border x:Name="ToolboxPanel" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0">
                     <DockPanel>
                         <Thumb x:Name="ToolboxDragHandle" DockPanel.Dock="Top" Height="14"
@@ -89,30 +89,32 @@
                         <Button x:Name="ToolboxFloatToggle" DockPanel.Dock="Right"
                                 Click="ToolboxFloatToggle_Click"
                                 Background="Transparent" BorderThickness="0" Padding="4"
-                                VerticalAlignment="Center" Margin="4,0,0,0"
+                                VerticalAlignment="Top" Margin="4,0,0,0"
                                 ToolTip="切换悬浮 / 固定">
                             <materialDesign:PackIcon x:Name="ToolboxFloatIcon" Kind="PinOutline" Width="14" Height="14"/>
                         </Button>
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="180">
                     <ItemsControl x:Name="ToolboxItemsControl">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal"/>
+                                <StackPanel Orientation="Vertical"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="0,0,14,0">
-                                    <TextBlock Text="{Binding Title}" FontSize="10" Foreground="{DynamicResource Brush.TextMuted}" Margin="2,0,0,3"/>
+                                <DockPanel Margin="0,0,0,4">
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding Title}" Width="60"
+                                               FontSize="10" Foreground="{DynamicResource Brush.TextMuted}"
+                                               VerticalAlignment="Top" Margin="0,8,6,0"/>
                                     <ItemsControl ItemsSource="{Binding Items}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal"/>
+                                                <WrapPanel Orientation="Horizontal"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Button Margin="0,0,4,0" Padding="8,5"
+                                                <Button Margin="0,0,4,4" Padding="6,4"
                                                         Background="#F8FAFC" Foreground="#334155"
                                                         BorderBrush="{DynamicResource Brush.Border}" FontWeight="Normal"
                                                         Command="{Binding DataContext.AddWidgetCommand,
@@ -124,17 +126,17 @@
                                                         PreviewMouseLeftButtonUp="ToolboxItem_PreviewMouseLeftButtonUp">
                                                     <StackPanel Orientation="Horizontal">
                                                         <materialDesign:PackIcon Kind="{Binding IconKind, FallbackValue=Widgets}"
-                                                                                Width="16" Height="16"
+                                                                                Width="14" Height="14"
                                                                                 VerticalAlignment="Center"
                                                                                 Foreground="#2563EB"
-                                                                                Margin="0,0,6,0"/>
-                                                        <TextBlock Text="{Binding DisplayName}" FontSize="12" VerticalAlignment="Center"/>
+                                                                                Margin="0,0,4,0"/>
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="11" VerticalAlignment="Center"/>
                                                     </StackPanel>
                                                 </Button>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </StackPanel>
+                                </DockPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

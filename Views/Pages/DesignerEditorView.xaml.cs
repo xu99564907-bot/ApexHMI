@@ -77,6 +77,9 @@ public partial class DesignerEditorView : UserControl
             { ShadowDepth = 2, BlurRadius = 8, Opacity = 0.35 };
             ToolboxDragHandle.Visibility = Visibility.Visible;
             ToolboxFloatIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Pin;
+            // 悬浮态：约束宽高，避免内容溢出屏幕导致无法选中
+            ToolboxPanel.Width = 700;
+            ToolboxPanel.MaxHeight = 280;
 
             Canvas.SetLeft(ToolboxPanel, 20);
             Canvas.SetTop(ToolboxPanel, 12);
@@ -88,6 +91,8 @@ public partial class DesignerEditorView : UserControl
             OverlayLayer.Children.Remove(ToolboxPanel);
             ToolboxPanel.ClearValue(Canvas.LeftProperty);
             ToolboxPanel.ClearValue(Canvas.TopProperty);
+            ToolboxPanel.ClearValue(FrameworkElement.WidthProperty);
+            ToolboxPanel.ClearValue(FrameworkElement.MaxHeightProperty);
             ToolboxPanel.BorderThickness = new Thickness(0);
             ToolboxPanel.Effect = null;
             ToolboxDragHandle.Visibility = Visibility.Collapsed;
