@@ -927,10 +927,25 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             && SelectedWidgets.All(w => string.Equals(w.TypeId, SelectedWidget.TypeId, StringComparison.OrdinalIgnoreCase)))
         {
             MarkPageEdited();
-            foreach (var w in SelectedWidgets.ToList())
+            // 快照每个 widget 的原值，用于 undo
+            var widgets = SelectedWidgets.ToList();
+            var oldValues = widgets.ToDictionary(
+                w => w,
+                w => w.Properties.TryGetValue(key, out var old) ? old : null);
+
+            Action doIt = () =>
             {
-                _widgetEditor.UpdateProperty(w, key, value);
-            }
+                foreach (var w in widgets)
+                    _widgetEditor.UpdateProperty(w, key, value);
+            };
+            Action undoIt = () =>
+            {
+                foreach (var w in widgets)
+                    _widgetEditor.UpdateProperty(w, key, oldValues[w]);
+            };
+            doIt();
+            _editStack.Execute(new ApexHMI.Services.RuntimeUi.ActionEdit($"批量修改 {key} ({widgets.Count} 控件)", undoIt, doIt));
+            OnPropertyChanged(nameof(CanUndo));
             return;
         }
         UpdateWidgetProperty(key, value);
@@ -1285,24 +1300,55 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private void AddAnimation()
     {
         if (SelectedWidget is null) return;
+        var widget = SelectedWidget;
         var a = new WidgetAnimation { TagId = "", Op = "true", TargetProperty = "background", TargetValue = "#EF4444" };
-        SelectedWidget.Animations.Add(a);
-        CurrentAnimations.Add(a);
+
+        Action doIt = () =>
+        {
+            widget.Animations.Add(a);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Add(a);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        Action undoIt = () =>
+        {
+            widget.Animations.Remove(a);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Remove(a);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        doIt();
         MarkPageEdited();
-        // 重建 view 让动画注册生效
-        var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, SelectedWidget));
-        if (item is not null) item.View = BuildWidgetView(SelectedWidget);
+        _editStack.Execute(new ActionEdit("新增动画行", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     [RelayCommand]
     private void RemoveAnimation(WidgetAnimation? anim)
     {
         if (anim is null || SelectedWidget is null) return;
-        SelectedWidget.Animations.Remove(anim);
-        CurrentAnimations.Remove(anim);
+        var widget = SelectedWidget;
+        var index = widget.Animations.IndexOf(anim);
+        if (index < 0) return;
+
+        Action doIt = () =>
+        {
+            widget.Animations.Remove(anim);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Remove(anim);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        Action undoIt = () =>
+        {
+            widget.Animations.Insert(Math.Min(index, widget.Animations.Count), anim);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Insert(Math.Min(index, CurrentAnimations.Count), anim);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        doIt();
         MarkPageEdited();
-        var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, SelectedWidget));
-        if (item is not null) item.View = BuildWidgetView(SelectedWidget);
+        _editStack.Execute(new ActionEdit("删除动画行", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     [RelayCommand]
@@ -1420,12 +1466,30 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         };
         if (dlg.ShowDialog() != true || string.IsNullOrEmpty(dlg.SelectedFunctionId)) return;
 
-        EnsureEventList(SelectedWidget, SelectedEventName)
-            .Add(new ActionStep { FunctionId = dlg.SelectedFunctionId! });
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        var step = new ActionStep { FunctionId = dlg.SelectedFunctionId! };
 
+        Action doIt = () =>
+        {
+            EnsureEventList(widget, eventName).Add(step);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            if (widget.Events.TryGetValue(eventName, out var steps))
+            {
+                steps.Remove(step);
+                if (steps.Count == 0) widget.Events.Remove(eventName);
+            }
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
         MarkPageEdited();
-        RefreshCurrentEventSteps();
-        SyncLegacyFromEvents();
+        _editStack.Execute(new ActionEdit("新增事件动作", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     /// <summary>从当前事件链中删除指定动作步骤。</summary>
@@ -1434,11 +1498,33 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     {
         if (stepVm is null || SelectedWidget is null) return;
         if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
-        steps.Remove(stepVm.Model);
-        if (steps.Count == 0) SelectedWidget.Events.Remove(SelectedEventName);
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        var step = stepVm.Model;
+        var index = steps.IndexOf(step);
+        if (index < 0) return;
+
+        Action doIt = () =>
+        {
+            if (widget.Events.TryGetValue(eventName, out var s))
+            {
+                s.Remove(step);
+                if (s.Count == 0) widget.Events.Remove(eventName);
+            }
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            var s = EnsureEventList(widget, eventName);
+            s.Insert(Math.Min(index, s.Count), step);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
         MarkPageEdited();
-        RefreshCurrentEventSteps();
-        SyncLegacyFromEvents();
+        _editStack.Execute(new ActionEdit("删除事件动作", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     /// <summary>当前事件链中上移指定动作（同时上移 model 与 VM 集合）。</summary>
@@ -1449,10 +1535,28 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
         var idx = steps.IndexOf(stepVm.Model);
         if (idx <= 0) return;
-        (steps[idx - 1], steps[idx]) = (steps[idx], steps[idx - 1]);
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        Action doIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx <= 0 || idx >= s.Count) return;
+            (s[idx - 1], s[idx]) = (s[idx], s[idx - 1]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx <= 0 || idx >= s.Count) return;
+            (s[idx], s[idx - 1]) = (s[idx - 1], s[idx]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
         MarkPageEdited();
-        RefreshCurrentEventSteps();
-        SyncLegacyFromEvents();
+        _editStack.Execute(new ActionEdit("动作上移", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     /// <summary>当前事件链中下移指定动作。</summary>
@@ -1463,10 +1567,28 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
         var idx = steps.IndexOf(stepVm.Model);
         if (idx < 0 || idx >= steps.Count - 1) return;
-        (steps[idx + 1], steps[idx]) = (steps[idx], steps[idx + 1]);
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        Action doIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx < 0 || idx >= s.Count - 1) return;
+            (s[idx + 1], s[idx]) = (s[idx], s[idx + 1]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx < 0 || idx >= s.Count - 1) return;
+            (s[idx], s[idx + 1]) = (s[idx + 1], s[idx]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
         MarkPageEdited();
-        RefreshCurrentEventSteps();
-        SyncLegacyFromEvents();
+        _editStack.Execute(new ActionEdit("动作下移", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     private static List<ActionStep> EnsureEventList(WidgetInstance w, string eventName)
