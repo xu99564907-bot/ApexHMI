@@ -234,6 +234,32 @@
                         <TextBox Text="{Binding SelectedPage.NavOrder, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,10" FontSize="12"/>
 
+                        <!-- ===== PLC 变量（可拖到画布生成控件） ===== -->
+                        <Expander Header="PLC 变量 (拖到画布)" IsExpanded="True" Margin="0,4,0,0"
+                                  FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}">
+                            <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                    CornerRadius="4" MaxHeight="260">
+                                <ListBox x:Name="PlcVariableList"
+                                         ItemsSource="{Binding PlcTags}"
+                                         BorderThickness="0"
+                                         FontSize="11"
+                                         FontFamily="Consolas"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         PreviewMouseLeftButtonDown="PlcVariableItem_PreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="PlcVariableItem_PreviewMouseMove">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" ToolTip="{Binding Name}">
+                                                <TextBlock Text="{Binding DataType}" Width="48"
+                                                           Foreground="#2563EB" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Name}" Foreground="#0F172A"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Expander>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -523,16 +549,20 @@
                                                        VerticalAlignment="Center"
                                                        Margin="0,0,8,0"
                                                        ToolTip="{Binding Key}"/>
-                                            <!-- 普通属性：TextBox -->
+                                            <!-- 普通属性：TextBox（variable 键自动启用 Tag 补全） -->
                                             <TextBox Grid.Column="1"
                                                      Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
                                                      VerticalAlignment="Center">
                                                 <TextBox.Style>
                                                     <Style TargetType="TextBox">
-                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Setter Property="b:TagAutoComplete.IsEnabled" Value="False"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding IsDeviceNameProp}" Value="True">
                                                                 <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Key}" Value="variable">
+                                                                <Setter Property="b:TagAutoComplete.IsEnabled" Value="True"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>

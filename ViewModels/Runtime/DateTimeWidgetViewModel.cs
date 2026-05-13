@@ -17,6 +17,8 @@ public partial class DateTimeWidgetViewModel : WidgetViewModelBase
 {
     [ObservableProperty] private string _displayText = string.Empty;
     [ObservableProperty] private string _editText = string.Empty;
+    [ObservableProperty] private DateTime? _editDate = DateTime.Today;
+    [ObservableProperty] private string _editTime = DateTime.Now.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
 
     private DispatcherTimer? _timer;
 
@@ -73,10 +75,26 @@ public partial class DateTimeWidgetViewModel : WidgetViewModelBase
         {
             try { DisplayText = dt.ToString(Format, CultureInfo.InvariantCulture); }
             catch (FormatException) { DisplayText = dt.ToString(CultureInfo.InvariantCulture); }
+            EditDate = dt.Date;
+            EditTime = dt.ToString("HH:mm:ss", CultureInfo.InvariantCulture);
         }
         else
         {
             DisplayText = rawValue;
         }
+    }
+
+    /// <summary>Input 模式：写回组合后的日期时间到 Tag。</summary>
+    public void CommitDateTime()
+    {
+        if (!IsInput) return;
+        var tag = ResolveTag();
+        if (string.IsNullOrWhiteSpace(tag)) return;
+        var date = EditDate ?? DateTime.Today;
+        if (!TimeSpan.TryParse(EditTime, CultureInfo.InvariantCulture, out var t))
+            t = DateTime.Now.TimeOfDay;
+        var dt = date.Date + t;
+        var s = dt.ToString(Format, CultureInfo.InvariantCulture);
+        _dataContext.ExecuteAction("write-string", $"{tag}|{s}");
     }
 }

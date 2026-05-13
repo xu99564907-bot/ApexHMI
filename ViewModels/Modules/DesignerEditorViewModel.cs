@@ -884,6 +884,31 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         Log.Information("DesignerEditor: 已添加控件 typeId={TypeId} id={Id}", typeId, widget.Id);
     }
 
+    /// <summary>变量拖放生成控件：在指定坐标添加 typeId 控件，并预填 variable 属性 = tagName。</summary>
+    public WidgetInstance? AddWidgetWithVariable(string typeId, string tagName, double x, double y)
+    {
+        if (SelectedPage is null || string.IsNullOrWhiteSpace(typeId)) return null;
+        var widget = _widgetEditor.AddWidget(SelectedPage, typeId, x, y);
+        if (!string.IsNullOrWhiteSpace(tagName))
+        {
+            // 大多数 P3/P4 控件用 Properties["variable"] 作读地址；同时设置 Binding.TagId 兼容基础控件
+            widget.Properties["variable"] = tagName;
+            _widgetEditor.UpdateBinding(widget, new BindingSpec
+            {
+                TagId = tagName,
+                AccessMode = BindingAccessMode.Subscribe,
+                DataType = "String"
+            });
+            widget.NotifyPropertiesChanged();
+        }
+        CurrentWidgets.Add(widget);
+        AddWidgetItem(widget);
+        SelectedWidget = widget;
+        MarkPageEdited();
+        Log.Information("DesignerEditor: 变量拖放添加控件 typeId={TypeId} tag={Tag}", typeId, tagName);
+        return widget;
+    }
+
     [RelayCommand]
     private void AddWidgetAtDrop(string? payload)
     {

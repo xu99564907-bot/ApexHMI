@@ -8,8 +8,41 @@
     </UserControl.Resources>
     <Border Background="{Binding Background, Converter={StaticResource StringToBrushConverter}}"
             Padding="4,0">
-        <TextBlock Text="{Binding DisplayText}"
-                   Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}"
-                   VerticalAlignment="Center" TextAlignment="Center"/>
+        <Grid>
+            <TextBlock Text="{Binding DisplayText}"
+                       Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}"
+                       VerticalAlignment="Center" TextAlignment="Center">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsInput}" Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <DockPanel>
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsInput}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+                <DatePicker x:Name="EditDatePicker"
+                            SelectedDate="{Binding EditDate, Mode=TwoWay}"
+                            VerticalAlignment="Center" Width="120"
+                            SelectedDateChanged="EditDatePicker_SelectedDateChanged"/>
+                <TextBox Text="{Binding EditTime, UpdateSourceTrigger=PropertyChanged}"
+                         VerticalContentAlignment="Center" Margin="4,0,0,0"
+                         KeyDown="EditTime_KeyDown" LostFocus="EditTime_LostFocus"
+                         ToolTip="HH:mm:ss"/>
+            </DockPanel>
+        </Grid>
     </Border>
 </UserControl>

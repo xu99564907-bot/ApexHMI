@@ -310,23 +310,144 @@ public partial class DesignerEditorView : UserControl
 
     private void DesignerCanvas_DragOver(object sender, DragEventArgs e)
     {
-        e.Effects = e.Data.GetDataPresent(DataFormats.StringFormat)
-            ? DragDropEffects.Copy
-            : DragDropEffects.None;
+        // 接受两种拖源：工具箱 TypeId 字符串 + PLC 变量 TagItem
+        var hasTag = e.Data.GetDataPresent(typeof(TagItem));
+        var hasType = e.Data.GetDataPresent(DataFormats.StringFormat);
+        e.Effects = (hasTag || hasType) ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
     }
 
     private void DesignerCanvas_Drop(object sender, DragEventArgs e)
     {
         var vm = GetViewModel();
-        if (vm is null || sender is not Canvas canvas || !e.Data.GetDataPresent(DataFormats.StringFormat))
+        if (vm is null || sender is not Canvas canvas) return;
+
+        // 1) PLC 变量拖入：弹候选菜单
+        if (e.Data.GetDataPresent(typeof(TagItem)))
+        {
+            var tag = e.Data.GetData(typeof(TagItem)) as TagItem;
+            if (tag is null || string.IsNullOrWhiteSpace(tag.Name)) return;
+            var pos = e.GetPosition(canvas);
+            ShowVariableCandidateMenu(tag, pos);
             return;
+        }
 
-        var typeId = e.Data.GetData(DataFormats.StringFormat)?.ToString();
-        if (string.IsNullOrWhiteSpace(typeId)) return;
+        // 2) 工具箱 typeId 拖入：原逻辑
+        if (e.Data.GetDataPresent(DataFormats.StringFormat))
+        {
+            var typeId = e.Data.GetData(DataFormats.StringFormat)?.ToString();
+            if (string.IsNullOrWhiteSpace(typeId)) return;
+            var position = e.GetPosition(canvas);
+            vm.AddWidgetAtDropCommand.Execute($"{typeId}|{position.X}|{position.Y}");
+        }
+    }
 
-        var position = e.GetPosition(canvas);
-        vm.AddWidgetAtDropCommand.Execute($"{typeId}|{position.X}|{position.Y}");
+    // ===== PLC 变量列表拖源 =====
+    private bool _tagDragging;
+    private Point _tagPressPoint;
+    private TagItem? _tagPressItem;
+
+    private void PlcVariableItem_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        _tagDragging = false;
+        _tagPressPoint = e.GetPosition(null);
+        if (e.OriginalSource is FrameworkElement fe)
+        {
+            var item = ItemsControl.ContainerFromElement(sender as ListBox, fe) as ListBoxItem;
+            _tagPressItem = item?.DataContext as TagItem
+                            ?? fe.DataContext as TagItem;
+        }
+    }
+
+    private void PlcVariableItem_PreviewMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_tagDragging || _tagPressItem is null) return;
+        if (e.LeftButton != MouseButtonState.Pressed) return;
+        var pos = e.GetPosition(null);
+        if (Math.Abs(pos.X - _tagPressPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(pos.Y - _tagPressPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+            return;
+        _tagDragging = true;
+        var data = new DataObject(typeof(TagItem), _tagPressItem);
+        DragDrop.DoDragDrop(sender as DependencyObject ?? this, data, DragDropEffects.Copy);
+        _tagDragging = false;
+        _tagPressItem = null;
+    }
+
+    /// <summary>根据数据类型弹出候选控件菜单（变量拖放生成控件）。</summary>
+    private void ShowVariableCandidateMenu(TagItem tag, Point dropPos)
+    {
+        var vm = GetViewModel();
+        if (vm is null) return;
+
+        var dt = (tag.DataType ?? string.Empty).ToUpperInvariant();
+        var candidates = GetCandidates(dt);
+
+        var menu = new ContextMenu();
+        var header = new MenuItem
+        {
+            Header = $"创建控件并绑定变量：{tag.Name}  [{tag.DataType}]",
+            IsEnabled = false,
+            FontWeight = FontWeights.SemiBold
+        };
+        menu.Items.Add(header);
+        menu.Items.Add(new Separator());
+
+        foreach (var (typeId, label) in candidates)
+        {
+            var localTypeId = typeId;
+            var mi = new MenuItem { Header = label };
+            mi.Click += (_, _) => vm.AddWidgetWithVariable(localTypeId, tag.Name, dropPos.X, dropPos.Y);
+            menu.Items.Add(mi);
+        }
+        menu.PlacementTarget = DesignerCanvas;
+        menu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+        menu.IsOpen = true;
+    }
+
+    private static IReadOnlyList<(string TypeId, string Label)> GetCandidates(string upperDataType)
+    {
+        // BOOL 类型
+        if (upperDataType.Contains("BOOL"))
+        {
+            return new[]
+            {
+                ("button",   "按钮"),
+                ("ellipse",  "指示灯 (椭圆 + 状态动画)"),
+                ("switch",   "开关"),
+                ("checkbox", "复选框"),
+            };
+        }
+        // 数值类型：INT / DINT / REAL / WORD / BYTE / SINT / USINT 等
+        if (upperDataType.Contains("INT") || upperDataType.Contains("REAL")
+            || upperDataType.Contains("WORD") || upperDataType.Contains("BYTE")
+            || upperDataType.Contains("FLOAT") || upperDataType.Contains("LREAL")
+            || upperDataType.Contains("DOUBLE") || upperDataType.Contains("NUMBER"))
+        {
+            return new[]
+            {
+                ("io-numeric", "数字 I/O 域"),
+                ("bar",        "棒图"),
+                ("gauge",      "量规"),
+                ("slider",     "滑块"),
+                ("text",       "数值显示 (文本)"),
+            };
+        }
+        // STRING / WSTRING
+        if (upperDataType.Contains("STRING"))
+        {
+            return new[]
+            {
+                ("text",        "文本域"),
+                ("io-symbolic", "符号 I/O 域"),
+            };
+        }
+        // 其他：默认给数字 I/O
+        return new[]
+        {
+            ("io-numeric", "数字 I/O 域"),
+            ("text",       "文本"),
+        };
     }
 
     // -- 画布控件：选中 + 拖拽移位 --
