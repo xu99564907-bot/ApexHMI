@@ -478,7 +478,23 @@ class FaceplateInstance : WidgetInstance {
 
 ---
 
-## P10 — 运行时与质量（7-10 天）
+## P10 — 运行时与质量（7-10 天）✅ 已完成 2026-05-13
+
+> **实际完成情况（ROI 排序，8 阶段 A–H + 文档 I）**
+>
+> | 阶段 | 标题 | 状态 |
+> |---|---|---|
+> | A | 中频 17 widget schema 补全 + 移除 DefaultProperties | ✅ |
+> | B | IUserService 扩展（增删改角色） | ✅ |
+> | C | OPC UA write-string 支持 | ✅ |
+> | D | 项目导出 / 导入（zip 打包） | ✅ |
+> | E | 属性面板多选编辑（交集 + 批量改） | ✅ |
+> | F | 离线模拟（SimTag1..5 / SimBool1..3 / SimText1 假数据） | ✅ |
+> | G | 撤销 / 重做覆盖动画 / 事件链 / 多选 | ✅ |
+> | H | 历史归档 SQLite + 趋势历史模式接通（7 天滚动） | ✅ |
+> | I | 文档收尾 + Roadmap + v3.0 待办 | ✅ |
+>
+> 未做项延期至 v3.0：采集周期分级、数组/UDT 路径绑定增强、性能优化（虚拟化）、报表模板编辑器。
 
 ### 任务
 
@@ -571,14 +587,42 @@ class FaceplateInstance : WidgetInstance {
 ### M1（4-5 周）— "可用专业 HMI 设计器"
 完成 P0-P5。能做大部分常规 HMI 项目（按钮、I/O 域、棒图、报警、趋势），属性面板和事件模型已对标 WinCC。
 
-### M2（4-7 周）— "对标 WinCC 的完整设计器"
-完成 P6-P10。多语言、Faceplate、配方、媒体、运行时性能、打包导出。
+### M2（4-7 周）— "对标 WinCC 的完整设计器"  ✅ 收官 2026-05-13
+
+完成 P6-P10。M2 交付内容（实测）：
+
+- **26+ 控件**：基础 10（text/rectangle/ellipse/line/polyline/polygon/button/round-button/graphic-view/clock）
+  + 数据 6（io-numeric/io-symbolic/io-graphic/datetime/combobox/listbox）
+  + 控制 5（switch/checkbox/optiongroup/slider/scrollbar）
+  + 可视化 3（bar/gauge/trend-view）
+  + 业务 5（recipe-view/user-view/diagnostic-view/alarm-indicator/status-force/alarm-view/table-view/screen-window）
+  + 媒体/分析 5（html-browser/pdf-view/media-player/xy-trend/report-view）
+- **数据模型**：事件多动作链 + 系统函数目录 + 4 类移动动画 + 外观/可见性动画
+- **Faceplate**：复合控件模板 + 接口属性 + 版本号 + 内置 4 个示例
+- **样式 / 多语言**：StyleDefinitions（色板/字体）+ TextResources + StyleResolver
+- **库**：项目库 + 全局库 + Symbol 库 + 工程级 ListResources
+- **配方 / 报表**：RecipeService + ReportTemplate
+- **运行时**：RoleBasedAccessGuard + RuntimeDataBindingService + 撤销/重做
+- **质量**：27 widget schema 覆盖 + 多选编辑 + zip 打包 + 离线模拟 + SQLite 历史归档（7 天滚动）
 
 ### 远期（v3.0）— 超越 WinCC 的差异化
-- 接入 AI 辅助：自然语言生成控件 / 自动布局
-- 云端协作：多人同时编辑工程
-- Web 运行时：浏览器中跑 HMI 画面
-- 移动端：手机/平板查看与简易操作
+
+#### M2 延期到 v3.0 的项
+
+- **采集周期分级**：变量级别 连续 / 显示时 / 按需 / 变化时；OPC UA Subscription 共享 Session 优化
+- **数组 / UDT 路径绑定增强**：`Tag[i].Member` 自动补全 + 类型推断
+- **性能优化**：1000+ widget 画布虚拟化、按视口剔除；属性面板 O(n²) 通知规避
+- **报表模板编辑器**：可视化编辑（当前仅 widget 通过 templateId 引用）
+- **区域指针**：S7 用户群可选
+
+#### 全新方向
+
+- 接入 AI 辅助：自然语言生成控件 / 自动布局 / 自动绑定 Tag
+- 云端协作：多人同时编辑工程，OT 冲突合并
+- Web 运行时：浏览器中跑 HMI 画面（Blazor / WebGL）
+- 移动端：手机/平板查看与简易操作（MAUI / RN）
+- 真实历史报表：从 SQLite 后端导出 Excel/PDF
+- 大屏可视化：多屏拼接 + 数据驾驶舱模板
 
 ---
 
