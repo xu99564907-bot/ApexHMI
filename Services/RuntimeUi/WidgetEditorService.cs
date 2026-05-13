@@ -109,6 +109,106 @@ public sealed class WidgetEditorService : IWidgetEditorService
 
         // 元素
         ["button"] = new() { ["text"] = "按钮", ["background"] = "#2563EB", ["foreground"] = "#FFFFFF" },
+        ["round-button"] = new() { ["text"] = "按钮", ["background"] = "#2563EB", ["foreground"] = "#FFFFFF" },
+        ["switch"] = new()
+        {
+            ["mode"] = "bistable",
+            ["variable"] = "",
+            ["onText"] = "ON",
+            ["offText"] = "OFF",
+            ["onColor"] = "#10B981",
+            ["offColor"] = "#94A3B8",
+            ["orientation"] = "horizontal",
+        },
+        ["bar"] = new()
+        {
+            ["variable"] = "",
+            ["minValue"] = "0",
+            ["maxValue"] = "100",
+            ["orientation"] = "vertical",
+            ["fillColor"] = "#3B82F6",
+            ["backgroundColor"] = "#E5E7EB",
+            ["warnThreshold"] = "",
+            ["warnColor"] = "#F59E0B",
+            ["alarmThreshold"] = "",
+            ["alarmColor"] = "#EF4444",
+            ["showLabel"] = "true",
+            ["showScale"] = "false",
+            ["scaleDivisions"] = "5",
+        },
+        ["gauge"] = new()
+        {
+            ["variable"] = "",
+            ["minValue"] = "0",
+            ["maxValue"] = "100",
+            ["unit"] = "",
+            ["warnThreshold"] = "",
+            ["warnColor"] = "#F59E0B",
+            ["alarmThreshold"] = "",
+            ["alarmColor"] = "#EF4444",
+            ["startAngle"] = "-135",
+            ["endAngle"] = "135",
+            ["majorTicks"] = "10",
+            ["minorTicks"] = "5",
+            ["foreground"] = "#2563EB",
+        },
+        ["slider"] = new()
+        {
+            ["variable"] = "",
+            ["minValue"] = "0",
+            ["maxValue"] = "100",
+            ["step"] = "1",
+            ["orientation"] = "horizontal",
+            ["showLabel"] = "false",
+            ["showValue"] = "true",
+            ["snapToStep"] = "true",
+            ["writeOnChange"] = "false",
+        },
+        ["scrollbar"] = new()
+        {
+            ["variable"] = "",
+            ["minValue"] = "0",
+            ["maxValue"] = "100",
+            ["step"] = "1",
+            ["orientation"] = "horizontal",
+            ["showLabel"] = "false",
+            ["showValue"] = "false",
+            ["snapToStep"] = "true",
+            ["writeOnChange"] = "false",
+        },
+        ["clock"] = new()
+        {
+            ["mode"] = "digital",
+            ["format"] = "yyyy-MM-dd HH:mm:ss",
+            ["foreground"] = "#0F172A",
+            ["background"] = "#FFFFFF",
+            ["fontSize"] = "14",
+            ["analogShowSeconds"] = "true",
+        },
+        ["combobox"] = new()
+        {
+            ["variable"] = "",
+            ["items"] = "0=选项1;1=选项2;2=选项3",
+        },
+        ["listbox"] = new()
+        {
+            ["variable"] = "",
+            ["items"] = "0=选项1;1=选项2;2=选项3",
+        },
+        ["checkbox"] = new()
+        {
+            ["variable"] = "",
+            ["text"] = "选项",
+            ["checkedColor"] = "#10B981",
+            ["uncheckedColor"] = "#94A3B8",
+            ["foreground"] = "#0F172A",
+        },
+        ["optiongroup"] = new()
+        {
+            ["variable"] = "",
+            ["items"] = "0=选项A;1=选项B;2=选项C",
+            ["orientation"] = "vertical",
+        },
     };
 
     public WidgetInstance AddWidget(PageDefinition page, string typeId, double x, double y)
@@ -184,6 +284,7 @@ public sealed class WidgetEditorService : IWidgetEditorService
     {
         "text"         => 160,
         "button"       => 120,
+        "round-button" => 80,
         "rectangle"    => 120,
         "ellipse"      => 80,
         "line"         => 120,
@@ -194,6 +295,16 @@ public sealed class WidgetEditorService : IWidgetEditorService
         "io-symbolic"  => 120,
         "io-graphic"   => 80,
         "datetime"     => 160,
+        "switch"       => 100,
+        "bar"          => 60,
+        "gauge"        => 160,
+        "slider"       => 200,
+        "scrollbar"    => 200,
+        "clock"        => 180,
+        "combobox"     => 160,
+        "listbox"      => 160,
+        "checkbox"     => 120,
+        "optiongroup"  => 160,
         _ => 120,
     };
 
@@ -204,6 +315,12 @@ public sealed class WidgetEditorService : IWidgetEditorService
         "polygon"      => 120,
         "graphic-view" => 80,
         "io-graphic"   => 80,
+        "round-button" => 80,
+        "bar"          => 160,
+        "gauge"        => 140,
+        "listbox"      => 120,
+        "optiongroup"  => 120,
+        "clock"        => 36,
         _ => 40,
     };
 }

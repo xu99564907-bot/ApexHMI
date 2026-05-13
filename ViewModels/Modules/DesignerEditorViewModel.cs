@@ -376,7 +376,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }),
         new ToolboxGroup("元素", new[]
         {
-            new ToolboxItem("button",       "按钮",       "GestureTap"),
+            new ToolboxItem("button",        "按钮",       "GestureTap"),
+            new ToolboxItem("switch",        "开关",       "ToggleSwitch"),
+            new ToolboxItem("round-button",  "圆形按钮",   "CircleSlice8"),
+            new ToolboxItem("bar",           "棒图",       "ChartBar"),
+            new ToolboxItem("gauge",         "量规",       "GaugeFull"),
+            new ToolboxItem("slider",        "滑块",       "SlideVariant"),
+            new ToolboxItem("scrollbar",     "滚动条",     "ArrowExpandVertical"),
+            new ToolboxItem("clock",         "时钟",       "ClockOutline"),
+            new ToolboxItem("combobox",      "组合框",     "FormDropdown"),
+            new ToolboxItem("listbox",       "列表框",     "ViewList"),
+            new ToolboxItem("checkbox",      "复选框",     "CheckboxOutline"),
+            new ToolboxItem("optiongroup",   "单选",       "RadioboxMarked"),
         }),
     };
 

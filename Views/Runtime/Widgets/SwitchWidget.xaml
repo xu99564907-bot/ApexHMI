@@ -1,0 +1,18 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.SwitchWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ApexHMI.Converters"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <UserControl.Resources>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+    </UserControl.Resources>
+    <Button Command="{Binding ClickCommand}"
+            PreviewMouseLeftButtonDown="Switch_PreviewMouseLeftButtonDown"
+            PreviewMouseLeftButtonUp="Switch_PreviewMouseLeftButtonUp"
+            Background="{Binding CurrentColor, Converter={StaticResource StringToBrushConverter}}"
+            BorderBrush="{Binding CurrentColor, Converter={StaticResource StringToBrushConverter}}"
+            BorderThickness="1" Padding="4" Cursor="Hand">
+        <TextBlock Text="{Binding CurrentText}" Foreground="White"
+                   VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+    </Button>
+</UserControl>

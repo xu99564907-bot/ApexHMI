@@ -1,0 +1,21 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.SliderWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Right" Text="{Binding DisplayText}"
+                   VerticalAlignment="Center" Margin="6,0,0,0" FontSize="12" MinWidth="32"
+                   Visibility="{Binding ShowValue, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <Slider x:Name="ValueSlider"
+                Minimum="{Binding MinValue}"
+                Maximum="{Binding MaxValue}"
+                SmallChange="{Binding Step}"
+                LargeChange="{Binding Step}"
+                IsSnapToTickEnabled="{Binding SnapToStep}"
+                TickFrequency="{Binding Step}"
+                Orientation="{Binding Orientation}"
+                Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Thumb.DragCompleted="ValueSlider_DragCompleted"
+                VerticalAlignment="Center"/>
+    </DockPanel>
+</UserControl>

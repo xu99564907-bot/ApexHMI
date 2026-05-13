@@ -33,6 +33,17 @@ public class WidgetRegistry : IWidgetViewFactory
 
         // 元素
         Register("button",       (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),       new ButtonWidget()));
+        Register("round-button", (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),       new RoundButtonWidget()));
+        Register("switch",       (m, ctx) => CreateView(new SwitchWidgetViewModel(m, ctx),       new SwitchWidget()));
+        Register("bar",          (m, ctx) => CreateView(new BarWidgetViewModel(m, ctx),          new BarWidget()));
+        Register("gauge",        (m, ctx) => CreateView(new GaugeWidgetViewModel(m, ctx),        new GaugeWidget()));
+        Register("slider",       (m, ctx) => CreateView(new SliderWidgetViewModel(m, ctx),       new SliderWidget()));
+        Register("scrollbar",    (m, ctx) => CreateView(new SliderWidgetViewModel(m, ctx),       new ScrollBarWidget()));
+        Register("clock",        (m, ctx) => CreateView(new ClockWidgetViewModel(m, ctx),        new ClockWidget()));
+        Register("combobox",     (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new ComboBoxWidget()));
+        Register("listbox",      (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new ListBoxWidget()));
+        Register("checkbox",     (m, ctx) => CreateView(new CheckBoxWidgetViewModel(m, ctx),     new CheckBoxWidget()));
+        Register("optiongroup",  (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new OptionGroupWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)
