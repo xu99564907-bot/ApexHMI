@@ -6,6 +6,10 @@
     xmlns:vm="clr-namespace:ApexHMI.ViewModels.Modules"
     xmlns:converters="clr-namespace:ApexHMI.Converters">
 
+    <!-- 本字典内部使用的 converter（App.xaml 父级也有同名，但 MergedDictionary 子作用域看不到，
+         故本地再声明一份）-->
+    <converters:StringToBrushConverter x:Key="StringToBrushConverter"/>
+
     <!-- P7.5: 9 类属性编辑器 DataTemplate 集合。
          约定：DataContext = PropertyEditorVM，外层 ItemsControl 已渲染 DisplayName 列；
          模板只负责右侧编辑控件本身。 -->
