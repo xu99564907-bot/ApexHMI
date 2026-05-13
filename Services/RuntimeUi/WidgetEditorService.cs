@@ -70,6 +70,43 @@ public sealed class WidgetEditorService : IWidgetEditorService
             ["stretch"] = "Uniform",
             ["opacity"] = "1",
         },
+        ["io-numeric"] = new()
+        {
+            ["mode"] = "Output",
+            ["variable"] = "",
+            ["format"] = "0.##",
+            ["decimals"] = "2",
+            ["unit"] = "",
+            ["minValue"] = "",
+            ["maxValue"] = "",
+            ["textAlign"] = "Right",
+            ["background"] = "#FFFFFF",
+            ["foreground"] = "#0F172A",
+        },
+        ["io-symbolic"] = new()
+        {
+            ["mode"] = "Output",
+            ["variable"] = "",
+            ["entries"] = "0=停止;1=运行",
+            ["background"] = "#FFFFFF",
+            ["foreground"] = "#0F172A",
+        },
+        ["io-graphic"] = new()
+        {
+            ["mode"] = "Output",
+            ["variable"] = "",
+            ["entries"] = "",
+            ["stretch"] = "Uniform",
+        },
+        ["datetime"] = new()
+        {
+            ["mode"] = "SystemTime",
+            ["variable"] = "",
+            ["format"] = "yyyy-MM-dd HH:mm:ss",
+            ["background"] = "#FFFFFF",
+            ["foreground"] = "#0F172A",
+        },
+
         // 元素
         ["button"] = new() { ["text"] = "按钮", ["background"] = "#2563EB", ["foreground"] = "#FFFFFF" },
     };
@@ -153,6 +190,10 @@ public sealed class WidgetEditorService : IWidgetEditorService
         "polyline"     => 120,
         "polygon"      => 120,
         "graphic-view" => 120,
+        "io-numeric"   => 120,
+        "io-symbolic"  => 120,
+        "io-graphic"   => 80,
+        "datetime"     => 160,
         _ => 120,
     };
 
@@ -162,6 +203,7 @@ public sealed class WidgetEditorService : IWidgetEditorService
         "polyline"     => 80,
         "polygon"      => 120,
         "graphic-view" => 80,
+        "io-graphic"   => 80,
         _ => 40,
     };
 }

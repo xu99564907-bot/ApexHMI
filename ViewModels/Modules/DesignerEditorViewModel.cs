@@ -369,6 +369,10 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("polyline",     "折线",       "VectorPolyline"),
             new ToolboxItem("polygon",      "多边形",     "VectorPolygon"),
             new ToolboxItem("graphic-view", "图形视图",   "ImageOutline"),
+            new ToolboxItem("io-numeric",   "数字 I/O",   "Numeric"),
+            new ToolboxItem("io-symbolic",  "符号 I/O",   "FormatListBulleted"),
+            new ToolboxItem("io-graphic",   "图形 I/O",   "ImageMultiple"),
+            new ToolboxItem("datetime",     "日期时间",   "Clock"),
         }),
         new ToolboxGroup("元素", new[]
         {

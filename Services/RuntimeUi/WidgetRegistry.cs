@@ -26,6 +26,10 @@ public class WidgetRegistry : IWidgetViewFactory
         Register("polyline",     (m, ctx) => CreateView(new PolylineWidgetViewModel(m, ctx),     new PolylineWidget()));
         Register("polygon",      (m, ctx) => CreateView(new PolygonWidgetViewModel(m, ctx),      new PolygonWidget()));
         Register("graphic-view", (m, ctx) => CreateView(new GraphicViewWidgetViewModel(m, ctx),  new GraphicViewWidget()));
+        Register("io-numeric",   (m, ctx) => CreateView(new IoNumericWidgetViewModel(m, ctx),    new IoNumericWidget()));
+        Register("io-symbolic",  (m, ctx) => CreateView(new IoSymbolicWidgetViewModel(m, ctx),   new IoSymbolicWidget()));
+        Register("io-graphic",   (m, ctx) => CreateView(new IoGraphicWidgetViewModel(m, ctx),    new IoGraphicWidget()));
+        Register("datetime",     (m, ctx) => CreateView(new DateTimeWidgetViewModel(m, ctx),     new DateTimeWidget()));
 
         // 元素
         Register("button",       (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),       new ButtonWidget()));

@@ -183,7 +183,7 @@ class WidgetInstance {
 
 ---
 
-## P3 — 基础对象控件（5-7 天）
+## P3 — 基础对象控件（5-7 天） ✅ 已完成 2026-05-13
 
 ### 目标
 重做 WinCC 「Basic Objects」组所有基础原子控件。
