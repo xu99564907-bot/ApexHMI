@@ -6,10 +6,33 @@ namespace ApexHMI.Services.RuntimeUi;
 
 /// <summary>
 /// P7.5C: 10 个高频 widget 的 Schema 种子数据。
-/// <para>剩余 17 个中频 widget 待补：line, polyline, polygon, graphic-view, io-graphic, datetime,
-/// slider, scrollbar, clock, combobox, listbox, checkbox, optiongroup, round-button,
-/// alarm-view, table-view, screen-window。</para>
 /// </summary>
+/// <remarks>
+/// <para>已覆盖（10 个）：text / rectangle / ellipse / button / io-numeric / io-symbolic /
+/// switch / bar / gauge / trend-view。</para>
+///
+/// <para><b>TODO P7.5C-续 — 中频 17 个 widget schema 待补：</b></para>
+/// <list type="number">
+///   <item>line — stroke/strokeThickness/strokeDashArray/x1,y1,x2,y2</item>
+///   <item>polyline — points/stroke/strokeThickness/strokeDashArray/opacity</item>
+///   <item>polygon — points/fill/stroke/strokeThickness/strokeDashArray/opacity</item>
+///   <item>graphic-view — source(图片路径)/stretch(Enum)/opacity</item>
+///   <item>io-graphic — variable/mode/entries(GraphicListRef)/stretch</item>
+///   <item>datetime — mode(SystemTime/Tag)/variable/format/background/foreground</item>
+///   <item>slider — variable/min/max/step/orientation/showLabel/showValue/snapToStep/writeOnChange</item>
+///   <item>scrollbar — 同 slider</item>
+///   <item>clock — mode(digital/analog)/format/foreground/background/fontSize/analogShowSeconds</item>
+///   <item>combobox — variable/items(TextListRef 或字符串)</item>
+///   <item>listbox — 同 combobox</item>
+///   <item>checkbox — variable/text/checkedColor/uncheckedColor/foreground</item>
+///   <item>optiongroup — variable/items/orientation</item>
+///   <item>round-button — text/background/foreground/cornerRadius(由 width/2 接管)</item>
+///   <item>alarm-view — filterCategory/columns(Json)/maxRows/showAck</item>
+///   <item>table-view — columns(Json)/dataSource/showHeader/alternateRowColor</item>
+///   <item>screen-window — pageRoute(PageRoute)/showHeader/zoomToFit</item>
+/// </list>
+/// 补全方式：在本类中追加 BuildXxx() 方法并在 Seed 里 Add；类型不确定时回退到 String。
+/// </remarks>
 internal static class WidgetSchemaCatalogSeed
 {
     public static void Seed(Dictionary<string, WidgetSchema> map)

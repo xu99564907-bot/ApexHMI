@@ -939,7 +939,9 @@
                             </Expander>
 
                             <!-- 数据绑定 -->
-                            <Expander Header="数据绑定" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- P7.5E: 旧'数据绑定'Expander 隐藏，绑定能力已迁移到 schema 中的 TagAddress 字段 / 顶部「事件」Tab -->
+                            <Expander Header="数据绑定" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="Collapsed">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                                     <TextBlock Text="读取地址（订阅）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" FontWeight="SemiBold"/>
                                     <TextBlock Foreground="{DynamicResource Brush.TextMuted}" FontSize="10" TextWrapping="Wrap" Margin="0,2,0,2"
@@ -957,8 +959,9 @@
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 事件 / 动作（单动作快捷编辑；多动作链请用顶部「事件」Tab） -->
-                            <Expander Header="事件 / 动作（单动作快捷）" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- P7.5E: 旧'事件/动作单动作'Expander 隐藏，已被顶部「事件」Tab 多动作链取代 -->
+                            <Expander Header="事件 / 动作（单动作快捷）" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="Collapsed">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                                     <TextBlock Text="提示：高级编辑请见顶部「事件」Tab 多动作链"
                                                Foreground="#0EA5E9" FontSize="10" FontStyle="Italic" Margin="0,0,0,4"/>
@@ -1062,8 +1065,9 @@
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 状态动画（旧版） -->
-                            <Expander Header="状态动画（旧版）" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- P7.5E: 旧'状态动画'Expander 隐藏，已被顶部「动画」Tab 取代 -->
+                            <Expander Header="状态动画（旧版）" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="Collapsed">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                                     <TextBlock Text="提示：推荐使用顶部「动画」Tab 配置外观/可见性/移动动画（结构化模型，运行更顺滑）；本区域为旧版兼容入口"
                                                Foreground="#94A3B8" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>

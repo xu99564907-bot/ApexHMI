@@ -398,6 +398,28 @@ class FaceplateInstance : WidgetInstance {
 
 ---
 
+## P7.5 — 属性面板 Schema 化（穿插）  ✅ 2026-05-13
+
+### 目标
+把"控件类型 → 属性键 → 编辑器"的散落逻辑收敛为 Schema，提升新增控件 / 维护属性面板的效率。
+
+### 内容
+1. **Schema 模型**：`PropertyEditorType`（9 类） + `PropertyDescriptor`（Key/DisplayName/EditorType/DefaultValue/Category/EnumOptions）+ `WidgetSchema`
+2. **类型编辑器骨架**：9 个 DataTemplate（String/MultilineString/Number/Integer/Boolean/Color/TagAddress/Enum/PageRoute/Json + TextListRef/GraphicListRef/Font 占位），由 `PropertyEditorTemplateSelector` 按枚举选模板
+3. **颜色编辑器**：色块预览 + hex 输入 + Popup（8 常用工业色 + 6 样式引用 `{style:colors/*}` + 自定义 hex 输入）
+4. **Schema-driven 属性面板**：DesignerEditorViewModel 加 `GroupedPropertyEditors`，按 Category 分组到 Expander；Schema 找不到时回退旧 generic 面板
+5. **创建时默认值初始化**：`WidgetEditorService.AddWidget` 用 schema.DefaultValue 补齐 Properties
+6. **10 个高频 widget schema 覆盖**：text / rectangle / ellipse / button / io-numeric / io-symbolic / switch / bar / gauge / trend-view
+7. **Faceplate 接口属性接入**：`FaceplatePropertyType → PropertyEditorType` 映射，"接口属性" Expander 走同一套 schema 编辑器
+8. **旧 UI 清理**：外观/属性 Expander 删除；数据绑定 / 事件 / 状态动画 三个旧 Expander Visibility=Collapsed
+
+### 未完
+- 中频 17 个 widget schema（line/polyline/polygon/graphic-view/io-graphic/datetime/slider/scrollbar/clock/combobox/listbox/checkbox/optiongroup/round-button/alarm-view/table-view/screen-window）— 走 fallback 通用编辑器
+- TextListRef / GraphicListRef / Font 编辑器目前回退到 String —— v2.0 升级专用选择器
+- JSON 编辑器目前是多行 TextBox —— v2.0 升级语法高亮
+
+---
+
 ## P8 — 高级控件 业务类（5-7 天）
 
 ### 控件清单
