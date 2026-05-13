@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ApexHMI.Services.RuntimeUi;
 
@@ -17,6 +18,9 @@ public sealed class DesignModeWidgetDataContext : IWidgetDataContext
     }
 
     public object? Shell { get; }
+
+    /// <summary>P7B: 顶层设计画布无 Faceplate 上下文。</summary>
+    public IReadOnlyDictionary<string, string>? CurrentFaceplateProperties => null;
 
     public void RegisterValueCallback(string tagId, Action<string> callback)
     {

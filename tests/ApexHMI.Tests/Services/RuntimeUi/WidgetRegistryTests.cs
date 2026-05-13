@@ -96,5 +96,6 @@ public class WidgetRegistryTests
         public void RegisterValueCallback(string tagId, System.Action<string> callback) { }
         public void ExecuteAction(string actionType, string actionParam) { }
         public object? Shell => null;
+        public System.Collections.Generic.IReadOnlyDictionary<string, string>? CurrentFaceplateProperties => null;
     }
 }

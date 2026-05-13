@@ -83,6 +83,8 @@ public abstract partial class WidgetViewModelBase : ObservableObject
     {
         var raw = Model.Properties.TryGetValue(key, out var v) ? v : fallback;
         raw = ResolveLocalized(raw);
+        // P7B: 若处于 Faceplate 实例的 InnerScreen 上下文，先解析 {prop:keyName} 引用为实例属性值
+        raw = FaceplateResolver.Resolve(raw, _dataContext.CurrentFaceplateProperties);
         raw = StyleResolver.Resolve(raw, DesignerContext.Document?.Styles);
         raw = TextResolver.Resolve(raw, DesignerContext.Document?.Texts, DesignerContext.CurrentLanguage);
         return raw;

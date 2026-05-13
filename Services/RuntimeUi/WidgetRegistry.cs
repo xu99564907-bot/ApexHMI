@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using ApexHMI.Models.RuntimeUi;
 using ApexHMI.ViewModels.Runtime;
 using ApexHMI.Views.Runtime.Widgets;
@@ -57,12 +59,112 @@ public class WidgetRegistry : IWidgetViewFactory
 
     public FrameworkElement Create(WidgetInstance model, IWidgetDataContext dataContext)
     {
+        // P7B: faceplate:<id> 前缀 → 渲染 Faceplate 实例
+        if (model.TypeId is { Length: > 10 } tid && tid.StartsWith("faceplate:", StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateFaceplateInstance(model, dataContext, tid.Substring("faceplate:".Length));
+        }
+
         if (_factories.TryGetValue(model.TypeId, out var factory))
         {
             return factory(model, dataContext);
         }
 
         return CreateFallback(model);
+    }
+
+    // ===== P7B: Faceplate 渲染 =====
+
+    [ThreadStatic] private static HashSet<string>? _renderStack;
+
+    private FrameworkElement CreateFaceplateInstance(WidgetInstance model, IWidgetDataContext dataContext, string faceplateId)
+    {
+        var lib = DesignerContext.Document?.Faceplates;
+        var fp = lib?.Faceplates.FirstOrDefault(f => string.Equals(f.Id, faceplateId, StringComparison.Ordinal));
+        if (fp is null)
+        {
+            return CreatePlaceholder(model, $"[未知 Faceplate: {faceplateId}]", Brushes.Crimson);
+        }
+
+        // 嵌套深度 / 循环检测
+        _renderStack ??= new HashSet<string>(StringComparer.Ordinal);
+        if (_renderStack.Count >= 5 || _renderStack.Contains(faceplateId))
+        {
+            return CreatePlaceholder(model, "[Faceplate 嵌套过深或循环]", Brushes.OrangeRed);
+        }
+
+        _renderStack.Add(faceplateId);
+        try
+        {
+            // 合并接口属性默认值与实例覆盖值
+            var propValues = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var def in fp.InterfaceProperties)
+            {
+                propValues[def.Key] = def.DefaultValue ?? string.Empty;
+            }
+            foreach (var kv in model.Properties)
+            {
+                propValues[kv.Key] = kv.Value;
+            }
+
+            var childCtx = new FaceplateChildDataContext(dataContext, propValues);
+            var canvas = new Canvas
+            {
+                Width = model.Width,
+                Height = model.Height,
+                Background = Brushes.Transparent,
+                ClipToBounds = true,
+            };
+
+            // 根据 Faceplate.DefaultWidth/Height 与实例 Width/Height 之比缩放内部坐标
+            double sx = fp.DefaultWidth > 0 ? model.Width / fp.DefaultWidth : 1.0;
+            double sy = fp.DefaultHeight > 0 ? model.Height / fp.DefaultHeight : 1.0;
+            if (Math.Abs(sx - 1.0) > 0.001 || Math.Abs(sy - 1.0) > 0.001)
+            {
+                canvas.LayoutTransform = new ScaleTransform(sx, sy);
+                canvas.Width = fp.DefaultWidth;
+                canvas.Height = fp.DefaultHeight;
+            }
+
+            foreach (var inner in fp.InnerScreen.Widgets)
+            {
+                var innerView = Create(inner, childCtx);
+                innerView.Width = inner.Width;
+                innerView.Height = inner.Height;
+                Canvas.SetLeft(innerView, inner.X);
+                Canvas.SetTop(innerView, inner.Y);
+                canvas.Children.Add(innerView);
+            }
+
+            return canvas;
+        }
+        finally
+        {
+            _renderStack.Remove(faceplateId);
+        }
+    }
+
+    private static FrameworkElement CreatePlaceholder(WidgetInstance model, string text, Brush border)
+    {
+        return new Border
+        {
+            Width = model.Width,
+            Height = model.Height,
+            BorderBrush = border,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(4),
+            Background = new SolidColorBrush(Color.FromArgb(20, 200, 50, 50)),
+            Child = new TextBlock
+            {
+                Text = text,
+                Foreground = border,
+                FontSize = 11,
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            }
+        };
     }
 
     private static FrameworkElement CreateView<TViewModel>(TViewModel vm, FrameworkElement view) where TViewModel : class

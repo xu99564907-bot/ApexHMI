@@ -35,6 +35,9 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
     /// <summary>暴露 Shell 给业务 widget（如 manual-cylinder-block 需要查 ManualCylinderBlockCards）。</summary>
     public object? Shell { get; }
 
+    /// <summary>P7B: 顶层运行时无 Faceplate 上下文（faceplate 内部 widget 走 FaceplateChildDataContext）。</summary>
+    public IReadOnlyDictionary<string, string>? CurrentFaceplateProperties => null;
+
     /// <summary>顶部页面标签栏数据源；调用 SetAvailablePages 同步。</summary>
     public ObservableCollection<PageDefinition> AvailablePages { get; } = new();
 
