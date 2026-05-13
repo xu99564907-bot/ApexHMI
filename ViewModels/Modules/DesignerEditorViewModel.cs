@@ -357,8 +357,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>设计模式数据上下文（无 OPC UA 推送，但暴露 Shell 供业务 widget 取真实数据）。</summary>
     public IWidgetDataContext DesignModeContext { get; }
 
-    /// <summary>工具箱分组定义（绑到 DesignerEditorView 的折叠分组列表）。</summary>
-    public static readonly IReadOnlyList<ToolboxGroup> ToolboxGroups = new[]
+    /// <summary>工具箱固定分组（基本对象 / 元素 / 控件），不随工程变化。</summary>
+    private static readonly IReadOnlyList<ToolboxGroup> _staticToolboxGroups = new[]
     {
         new ToolboxGroup("基本对象", new[]
         {
@@ -398,6 +398,30 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("screen-window",  "画面窗口",   "WindowMaximize"),
         }),
     };
+
+    /// <summary>P7D: 工具箱分组定义，动态拼接基础分组 + "我的 Faceplate"。</summary>
+    public IReadOnlyList<ToolboxGroup> ToolboxGroups
+    {
+        get
+        {
+            var groups = new List<ToolboxGroup>(_staticToolboxGroups);
+            var fpLib = Document?.Faceplates;
+            if (fpLib is not null && fpLib.Faceplates.Count > 0)
+            {
+                var items = new List<ToolboxItem>();
+                foreach (var fp in fpLib.Faceplates)
+                {
+                    var name = fp.IsBuiltIn ? $"[内置] {fp.Name}" : fp.Name;
+                    items.Add(new ToolboxItem($"faceplate:{fp.Id}", name, fp.IconKind));
+                }
+                groups.Add(new ToolboxGroup("我的 Faceplate", items));
+            }
+            return groups;
+        }
+    }
+
+    /// <summary>P7D: Document 切换或 Faceplate 库变化时调用，刷新工具箱。</summary>
+    public void RefreshFaceplateToolbox() => OnPropertyChanged(nameof(ToolboxGroups));
 
     public sealed class ToolboxGroup
     {
@@ -793,6 +817,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         RefreshAnimationsList();
         RefreshCurrentEventSteps();
         NotifyAnimationSelectionChanged();
+        // P7D: 刷新 Faceplate 接口属性面板
+        RefreshFaceplateInterfaceArgs();
     }
 
     private void OnWidgetPropertyItemChanged(object? sender, PropertyChangedEventArgs e)
@@ -882,6 +908,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (SelectedPage is null || string.IsNullOrWhiteSpace(typeId)) return;
 
         var widget = _widgetEditor.AddWidget(SelectedPage, typeId, 40, 40);
+        ApplyFaceplateDefaultsIfNeeded(widget);
         CurrentWidgets.Add(widget);
         AddWidgetItem(widget);
         SelectedWidget = widget;
@@ -890,6 +917,25 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         _editStack.Execute(new AddWidgetEdit(_widgetEditor, SelectedPage, widget));
         OnPropertyChanged(nameof(CanUndo));
         Log.Information("DesignerEditor: 已添加控件 typeId={TypeId} id={Id}", typeId, widget.Id);
+    }
+
+    /// <summary>P7D: 若新建的控件是 faceplate:<id>，应用 Faceplate 默认尺寸 + 接口属性默认值 + 版本号。</summary>
+    private void ApplyFaceplateDefaultsIfNeeded(WidgetInstance widget)
+    {
+        if (widget.TypeId is not { Length: > 10 } tid) return;
+        if (!tid.StartsWith("faceplate:", StringComparison.OrdinalIgnoreCase)) return;
+        var fpId = tid.Substring("faceplate:".Length);
+        var fp = Document?.Faceplates?.Faceplates.FirstOrDefault(f => string.Equals(f.Id, fpId, StringComparison.Ordinal));
+        if (fp is null) return;
+        widget.Width = fp.DefaultWidth;
+        widget.Height = fp.DefaultHeight;
+        foreach (var def in fp.InterfaceProperties)
+        {
+            if (!widget.Properties.ContainsKey(def.Key))
+                widget.Properties[def.Key] = def.DefaultValue ?? string.Empty;
+        }
+        widget.FaceplateVersion = fp.Version;
+        widget.NotifyPropertiesChanged();
     }
 
     /// <summary>变量拖放生成控件：在指定坐标添加 typeId 控件，并预填 variable 属性 = tagName。</summary>
@@ -929,6 +975,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (!double.TryParse(parts[2], out var y)) y = 40;
 
         var widget = _widgetEditor.AddWidget(SelectedPage, typeId, x, y);
+        ApplyFaceplateDefaultsIfNeeded(widget);
         CurrentWidgets.Add(widget);
         AddWidgetItem(widget);
         SelectedWidget = widget;
@@ -1516,8 +1563,12 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         Document.Texts.EnsureDefaults();
         Document.Library ??= new ProjectLibrary();
         Document.Lists ??= new ListResources();
+        // P7: Faceplate 库默认空集合
+        Document.Faceplates ??= new FaceplateLibrary();
         DesignerContext.Document = Document;
         SelectedPage = Document.Pages.FirstOrDefault();
+        // P7D: 通知工具箱刷新（"我的 Faceplate"分组）
+        RefreshFaceplateToolbox();
     }
 
     // ========== P6 资源编辑入口 ==========

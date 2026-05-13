@@ -20,7 +20,10 @@ public partial class DesignerEditorView : UserControl
     public DesignerEditorView()
     {
         InitializeComponent();
-        ToolboxItemsControl.ItemsSource = DesignerEditorViewModel.ToolboxGroups;
+        // P7D: ToolboxGroups 改为实例属性（动态包含"我的 Faceplate"），绑到 DataContext 而非静态字段
+        ToolboxItemsControl.SetBinding(
+            ItemsControl.ItemsSourceProperty,
+            new System.Windows.Data.Binding(nameof(DesignerEditorViewModel.ToolboxGroups)));
         Focusable = true;
         Loaded += (_, _) => Focus();
         PreviewKeyDown += DesignerEditorView_PreviewKeyDown;

@@ -667,6 +667,75 @@
                                            VerticalAlignment="Center" FontSize="11"/>
                             </WrapPanel>
 
+                            <!-- P7E: 版本升级提示条（仅 Faceplate 实例 + 版本落后时显示） -->
+                            <Border Background="#FFEDD5" BorderBrush="#F97316" BorderThickness="1"
+                                    CornerRadius="4" Padding="8,6" Margin="0,0,0,8">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsSelectedWidgetFaceplateInstance}" Value="True"/>
+                                                    <Condition Binding="{Binding IsFaceplateVersionOutdated}" Value="True"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="升级"
+                                            Command="{Binding UpgradeFaceplateInstanceCommand}"
+                                            Background="#F97316" Foreground="White" BorderBrush="#F97316"
+                                            Padding="8,2" FontSize="11"/>
+                                    <TextBlock Text="{Binding FaceplateVersionUpgradeText}" Foreground="#9A3412"
+                                               FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,8,0"/>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- P7D: 接口属性（仅 Faceplate 实例时显示） -->
+                            <Expander Header="接口属性" IsExpanded="True" FontWeight="SemiBold"
+                                      Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4"
+                                      Visibility="{Binding IsSelectedWidgetFaceplateInstance, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <ItemsControl ItemsSource="{Binding FaceplateInterfaceArgs}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="92"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding DisplayName}"
+                                                               Foreground="{DynamicResource Brush.TextSecondary}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"
+                                                               ToolTip="{Binding Key}"/>
+                                                    <TextBox Grid.Column="1"
+                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                             VerticalAlignment="Center">
+                                                        <TextBox.Style>
+                                                            <Style TargetType="TextBox">
+                                                                <Setter Property="b:TagAutoComplete.IsEnabled" Value="False"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsTagAddress}" Value="True">
+                                                                        <Setter Property="b:TagAutoComplete.IsEnabled" Value="True"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBox.Style>
+                                                    </TextBox>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <TextBlock Text="TODO: 颜色/布尔/页面路由 类型化编辑器待 v2.0"
+                                               Foreground="{DynamicResource Brush.TextMuted}" FontSize="10" Margin="0,4,0,0" FontStyle="Italic"/>
+                                </StackPanel>
+                            </Expander>
+
                             <!-- 几何 -->
                             <Expander Header="几何" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
