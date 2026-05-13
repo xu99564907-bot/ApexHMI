@@ -64,6 +64,9 @@ public class WidgetRegistry : IWidgetViewFactory
 
         // P8D 报警指示器
         Register("alarm-indicator", (m, ctx) => CreateView(new AlarmIndicatorWidgetViewModel(m, ctx), new AlarmIndicatorWidget()));
+
+        // P8E 状态强制（调试）
+        Register("status-force",  (m, ctx) => CreateView(new StatusForceWidgetViewModel(m, ctx),  new StatusForceWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)

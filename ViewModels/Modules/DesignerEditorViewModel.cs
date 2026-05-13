@@ -404,6 +404,8 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             new ToolboxItem("diagnostic-view","系统诊断",   "Stethoscope"),
             // P8D 报警指示器
             new ToolboxItem("alarm-indicator","报警指示器", "AlertCircle"),
+            // P8E 状态强制（调试）
+            new ToolboxItem("status-force",   "状态强制",   "Pencil"),
         }),
     };
 

@@ -59,7 +59,23 @@ internal static class WidgetSchemaCatalogSeed
 
         // P8D 报警指示器
         Add(map, BuildAlarmIndicator());
+
+        // P8E 状态强制
+        Add(map, BuildStatusForce());
     }
+
+    // ---------------- status-force (P8E) ----------------
+    private static WidgetSchema BuildStatusForce() => new()
+    {
+        TypeId = "status-force",
+        Properties = new[]
+        {
+            new PropertyDescriptor { Key = "tags", DisplayName = "Tag 列表", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "用逗号或分号分隔的 Tag 地址列表" },
+            new PropertyDescriptor { Key = "readonly", DisplayName = "只读", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+        }
+    };
 
     // ---------------- alarm-indicator (P8D) ----------------
     private static WidgetSchema BuildAlarmIndicator() => new()
