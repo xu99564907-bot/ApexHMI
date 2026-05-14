@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Linq;
 using ApexHMI.Models.RuntimeUi;
 
 namespace ApexHMI.Services.RuntimeUi;
@@ -480,8 +481,170 @@ internal static class WidgetSchemaCatalogSeed
         }
     };
 
+    /// <summary>
+    /// B1B: 注册 schema 时按 TypeId 自动追加 5 类通用字段（安全/闪烁/字体/边框/内边距）。
+    /// 已存在同 Key 的字段不覆盖（widget 自有字段优先），保证向后兼容。
+    /// </summary>
     private static void Add(Dictionary<string, WidgetSchema> map, WidgetSchema schema)
-        => map[schema.TypeId] = schema;
+    {
+        var existingKeys = new HashSet<string>(schema.Properties.Select(p => p.Key), System.StringComparer.OrdinalIgnoreCase);
+        var extras = GetCommonForTypeId(schema.TypeId).Where(p => !existingKeys.Contains(p.Key));
+        var merged = schema.Properties.Concat(extras).ToList();
+        map[schema.TypeId] = schema with { Properties = merged };
+    }
+
+    /// <summary>
+    /// B1B: 按 TypeId 决定该 widget 适用哪几类通用字段。
+    /// 矩阵参考：docs/widget-properties/_remaining.md 与任务文档矩阵表。
+    /// </summary>
+    private static IEnumerable<PropertyDescriptor> GetCommonForTypeId(string typeId) => typeId switch
+    {
+        // 含文本+矩形外观+内边距：5 类全上
+        "text" or "io-numeric" or "io-symbolic" or "datetime" or "button" or "round-button"
+            or "switch" or "clock" or "combobox" or "listbox" or "checkbox" or "optiongroup"
+            or "table-view"
+            => AllCommon(),
+
+        // 含文本但内边距不适用：字体 + 边框 + 闪烁 + 安全
+        "gauge" => TextRectNoMarginCommon(),
+
+        // 矩形外观（无文本）：边框 + 闪烁 + 安全
+        "rectangle" or "ellipse" or "polygon" or "graphic-view" or "io-graphic"
+            or "bar" or "slider" or "scrollbar" or "trend-view" or "alarm-view"
+            or "alarm-indicator" or "status-force" or "recipe-view" or "user-view"
+            or "diagnostic-view"
+            => RectVisualCommon(),
+
+        // 线性：只加安全
+        "line" or "polyline" => LineOnlyCommon(),
+
+        // 媒体/容器：边框 + 安全
+        "html-browser" or "pdf-view" or "media-player" or "xy-trend" or "report-view"
+        or "screen-window"
+            => MediaCommon(),
+
+        // 兜底：未识别 → 仅安全
+        _ => CommonSecurityFields(),
+    };
+
+    // =========================================================================
+    // B1B: 5 类通用字段（按 WinCC IOField Table 1-50 / Button Table 1-7 等通用属性）
+    // 依据：WinCC ProgRef V18 PDF — Authorization / LogOperation / AskOperationMotive /
+    //       OperatorEnable / Flashing / FlashingRate / Flashing*ColorOn/Off / Font* /
+    //       BorderColor / BorderStyle / BorderWidth / BorderBackColor / *Margin
+    // =========================================================================
+
+    /// <summary>安全/审计：4 字段 × 适用 27 widget。</summary>
+    private static IEnumerable<PropertyDescriptor> CommonSecurityFields() => new[]
+    {
+        new PropertyDescriptor { Key = "authorization", DisplayName = "操作授权", EditorType = PropertyEditorType.String,
+            DefaultValue = "", Category = "安全", Description = "需要的权限组名（留空 = 无限制）。WinCC Authorization。" },
+        new PropertyDescriptor { Key = "logOperation", DisplayName = "记录操作", EditorType = PropertyEditorType.Boolean,
+            DefaultValue = "false", Category = "安全", Description = "操作时写审计 trail。WinCC LogOperation, PDF Page 794。" },
+        new PropertyDescriptor { Key = "askOperationMotive", DisplayName = "操作前询问原因", EditorType = PropertyEditorType.Boolean,
+            DefaultValue = "false", Category = "安全", Description = "弹框要求输入操作原因（GMP 合规）。WinCC AskOperationMotive。" },
+        new PropertyDescriptor { Key = "operatorEnable", DisplayName = "允许操作员操作", EditorType = PropertyEditorType.Boolean,
+            DefaultValue = "true", Category = "安全", Description = "WinCC OperatorEnable / Enabled。" },
+    };
+
+    /// <summary>闪烁：6 字段 × 适用 25 widget（line/polyline 除外）。</summary>
+    private static IEnumerable<PropertyDescriptor> CommonFlashingFields() => new[]
+    {
+        new PropertyDescriptor { Key = "flashing", DisplayName = "闪烁模式", EditorType = PropertyEditorType.Enum,
+            DefaultValue = "None", Category = "闪烁",
+            EnumOptions = new[] { "None|无", "Standard|标准", "Strong|强烈" },
+            Description = "WinCC Flashing / FlashingEnabled (PDF Page 699 附近)" },
+        new PropertyDescriptor { Key = "flashingRate", DisplayName = "闪烁频率", EditorType = PropertyEditorType.Enum,
+            DefaultValue = "Medium", Category = "闪烁",
+            EnumOptions = new[] { "Slow|慢", "Medium|中", "Fast|快" },
+            Description = "WinCC FlashingRate, PDF Page 699" },
+        new PropertyDescriptor { Key = "flashingBackgroundColorOn", DisplayName = "闪烁开背景色", EditorType = PropertyEditorType.Color,
+            DefaultValue = "#FFFF00", Category = "闪烁", Description = "WinCC BackFlashingColorOn" },
+        new PropertyDescriptor { Key = "flashingBackgroundColorOff", DisplayName = "闪烁关背景色", EditorType = PropertyEditorType.Color,
+            DefaultValue = "#FFFFFF", Category = "闪烁", Description = "WinCC BackFlashingColorOff" },
+        new PropertyDescriptor { Key = "flashingForegroundColorOn", DisplayName = "闪烁开前景色", EditorType = PropertyEditorType.Color,
+            DefaultValue = "#000000", Category = "闪烁", Description = "WinCC ForeFlashingColorOn" },
+        new PropertyDescriptor { Key = "flashingForegroundColorOff", DisplayName = "闪烁关前景色", EditorType = PropertyEditorType.Color,
+            DefaultValue = "#000000", Category = "闪烁", Description = "WinCC ForeFlashingColorOff" },
+    };
+
+    /// <summary>字体细节：5 字段 × 适用 18 含文本 widget。</summary>
+    private static IEnumerable<PropertyDescriptor> CommonFontDetailFields() => new[]
+    {
+        new PropertyDescriptor { Key = "fontFamily", DisplayName = "字体", EditorType = PropertyEditorType.String,
+            DefaultValue = "Microsoft YaHei UI", Category = "文本格式",
+            Description = "WinCC FontName, PDF Page 709" },
+        new PropertyDescriptor { Key = "fontBold", DisplayName = "粗体", EditorType = PropertyEditorType.Boolean,
+            DefaultValue = "false", Category = "文本格式",
+            Description = "WinCC FontBold, PDF Page 708。fontWeight 字段优先于此。" },
+        new PropertyDescriptor { Key = "fontItalic", DisplayName = "斜体", EditorType = PropertyEditorType.Boolean,
+            DefaultValue = "false", Category = "文本格式",
+            Description = "WinCC FontItalic, PDF Page 708" },
+        new PropertyDescriptor { Key = "fontUnderline", DisplayName = "下划线", EditorType = PropertyEditorType.Boolean,
+            DefaultValue = "false", Category = "文本格式", Description = "WinCC FontUnderline" },
+        new PropertyDescriptor { Key = "fontStrikeThrough", DisplayName = "删除线", EditorType = PropertyEditorType.Boolean,
+            DefaultValue = "false", Category = "文本格式", Description = "WinCC 扩展（ApexHMI 增项）" },
+    };
+
+    /// <summary>边框精细化：4 字段 × 适用 22 矩形外观 widget。</summary>
+    private static IEnumerable<PropertyDescriptor> CommonBorderFields() => new[]
+    {
+        new PropertyDescriptor { Key = "borderColor", DisplayName = "边框颜色", EditorType = PropertyEditorType.Color,
+            DefaultValue = "#CBD5E1", Category = "边框", Description = "WinCC BorderColor" },
+        new PropertyDescriptor { Key = "borderStyle", DisplayName = "边框样式", EditorType = PropertyEditorType.Enum,
+            DefaultValue = "Solid", Category = "边框",
+            EnumOptions = new[] { "None|无", "Solid|实心", "Dashed|虚线", "Dotted|点线", "Double|双线" },
+            Description = "WinCC BorderStyle, PDF Page 576" },
+        new PropertyDescriptor { Key = "borderWidth", DisplayName = "边框宽度", EditorType = PropertyEditorType.Integer,
+            DefaultValue = "1", Category = "边框", Description = "WinCC BorderWidth, PDF Page 577" },
+        new PropertyDescriptor { Key = "borderBackColor", DisplayName = "边框背景色", EditorType = PropertyEditorType.Color,
+            DefaultValue = "#FFFFFF", Category = "边框", Description = "虚线/点线模式的间隙色。WinCC BorderBackColor。" },
+    };
+
+    /// <summary>内边距：4 字段 × 适用 18 含文本 widget。</summary>
+    private static IEnumerable<PropertyDescriptor> CommonMarginFields() => new[]
+    {
+        new PropertyDescriptor { Key = "topMargin",    DisplayName = "上内边距", EditorType = PropertyEditorType.Integer,
+            DefaultValue = "4", Category = "布局", Description = "WinCC TopMargin" },
+        new PropertyDescriptor { Key = "bottomMargin", DisplayName = "下内边距", EditorType = PropertyEditorType.Integer,
+            DefaultValue = "4", Category = "布局", Description = "WinCC BottomMargin" },
+        new PropertyDescriptor { Key = "leftMargin",   DisplayName = "左内边距", EditorType = PropertyEditorType.Integer,
+            DefaultValue = "6", Category = "布局", Description = "WinCC LeftMargin" },
+        new PropertyDescriptor { Key = "rightMargin",  DisplayName = "右内边距", EditorType = PropertyEditorType.Integer,
+            DefaultValue = "6", Category = "布局", Description = "WinCC RightMargin" },
+    };
+
+    /// <summary>组合所有 5 类（最全配置，主要用于含文本+矩形外观的 widget）。</summary>
+    private static IEnumerable<PropertyDescriptor> AllCommon() =>
+        CommonFontDetailFields()
+            .Concat(CommonBorderFields())
+            .Concat(CommonMarginFields())
+            .Concat(CommonFlashingFields())
+            .Concat(CommonSecurityFields());
+
+    /// <summary>仅边框+闪烁+安全（适用矩形但无文本的 widget，如 rectangle/ellipse/io-graphic/bar/slider/scrollbar/trend-view/alarm-view/graphic-view/polygon）。</summary>
+    private static IEnumerable<PropertyDescriptor> RectVisualCommon() =>
+        CommonBorderFields()
+            .Concat(CommonFlashingFields())
+            .Concat(CommonSecurityFields());
+
+    /// <summary>含文本+矩形外观（gauge — 有刻度字体但内边距不太合适；为保守只去掉 margin）。</summary>
+    private static IEnumerable<PropertyDescriptor> TextRectNoMarginCommon() =>
+        CommonFontDetailFields()
+            .Concat(CommonBorderFields())
+            .Concat(CommonFlashingFields())
+            .Concat(CommonSecurityFields());
+
+    /// <summary>line / polyline — 不支持边框/闪烁/字体/内边距，只加安全字段。</summary>
+    private static IEnumerable<PropertyDescriptor> LineOnlyCommon() => CommonSecurityFields();
+
+    /// <summary>screen-window — 仅安全 + 边框（无闪烁、无字体、无内边距）。</summary>
+    private static IEnumerable<PropertyDescriptor> ScreenWindowCommon() =>
+        CommonBorderFields().Concat(CommonSecurityFields());
+
+    /// <summary>html-browser / pdf-view / media-player / xy-trend / report-view — 仅安全+边框。</summary>
+    private static IEnumerable<PropertyDescriptor> MediaCommon() =>
+        CommonBorderFields().Concat(CommonSecurityFields());
 
     // ---------------- text ----------------
     private static WidgetSchema BuildText() => new()
