@@ -7,7 +7,7 @@
              Opacity="{Binding Opacity}">
     <Grid>
         <!-- P3 原 Image 路径渲染（仅当未设置 IconKind 时） -->
-        <Image Source="{Binding Source}"
+        <Image Source="{Binding EffectiveSource}"
                Stretch="{Binding Stretch}"
                Visibility="{Binding ShowImage, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         <!-- P6D: 工业符号渲染（IconKind 非空时显示，覆盖 Image） -->

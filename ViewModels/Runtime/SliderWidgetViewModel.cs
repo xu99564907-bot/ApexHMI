@@ -40,6 +40,24 @@ public partial class SliderWidgetViewModel : WidgetViewModelBase
     public bool SnapToStep    => string.Equals(SnapToStepRaw,   "true", System.StringComparison.OrdinalIgnoreCase);
     public bool WriteOnChange => string.Equals(WriteOnChangeRaw,"true", System.StringComparison.OrdinalIgnoreCase);
 
+    // B3.2: WinCC Slider 扩展
+    public double SmallChange => ParseD(Prop("smallChange", StepRaw), 1);
+    public double LargeChange => ParseD(Prop("largeChange", "10"), 10);
+    public bool ShowTicks     => string.Equals(Prop("showTicks", "false"), "true", System.StringComparison.OrdinalIgnoreCase);
+    public double TickFrequency => ParseD(Prop("tickFrequency", "10"), 10);
+    public bool IsDirectionReversed =>
+        string.Equals(Prop("direction", "Normal"), "Reversed", System.StringComparison.OrdinalIgnoreCase);
+
+    public System.Windows.Controls.Primitives.TickPlacement TickPlacementEnum =>
+        Prop("tickPlacement", ShowTicks ? "BottomRight" : "None").ToLowerInvariant() switch
+        {
+            "none" => System.Windows.Controls.Primitives.TickPlacement.None,
+            "topleft" => System.Windows.Controls.Primitives.TickPlacement.TopLeft,
+            "both" => System.Windows.Controls.Primitives.TickPlacement.Both,
+            _ => ShowTicks ? System.Windows.Controls.Primitives.TickPlacement.BottomRight
+                           : System.Windows.Controls.Primitives.TickPlacement.None,
+        };
+
     public System.Windows.Controls.Orientation Orientation =>
         string.Equals(OrientationProp, "vertical", System.StringComparison.OrdinalIgnoreCase)
             ? System.Windows.Controls.Orientation.Vertical

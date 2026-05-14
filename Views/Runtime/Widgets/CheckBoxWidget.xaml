@@ -10,8 +10,9 @@
         <conv:BoolToFontStyleConverter x:Key="BoolToFontStyle"/>
         <conv:BoolToTextDecorationsConverter x:Key="BoolToTextDecorations"/>
     </UserControl.Resources>
-    <CheckBox Content="{Binding Text}"
-              IsChecked="{Binding IsChecked, Mode=TwoWay}"
+    <CheckBox Content="{Binding DisplayText}"
+              IsChecked="{Binding IsCheckedState, Mode=TwoWay}"
+              IsThreeState="{Binding IsThreeStateEnabled}"
               Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}"
               FontFamily="{Binding FontFamilyName}"
               FontWeight="{Binding FontBold, Converter={StaticResource BoolToFontWeight}}"

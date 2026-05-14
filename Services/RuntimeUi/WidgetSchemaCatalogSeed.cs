@@ -129,6 +129,24 @@ internal static class WidgetSchemaCatalogSeed
                 EnumOptions = new[] { "None|原始", "Fill|填充", "Uniform|等比", "UniformToFill|等比填充" }
             },
             new PropertyDescriptor { Key = "opacity", DisplayName = "不透明度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
+
+            // ============ B3.2: GraphicView WinCC 扩展（PDF GraphicView Picture/ErrorPicture）============
+            new PropertyDescriptor { Key = "sourceErrorImage", DisplayName = "加载失败图", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据",
+                Description = "B3.2: source 加载失败时回退该图。WinCC ErrorPicture。" },
+            new PropertyDescriptor { Key = "fitToObject", DisplayName = "适应控件大小", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观",
+                Description = "B3.2: false 时按图片原始尺寸渲染。WinCC FitToObject。" },
+            new PropertyDescriptor { Key = "animationFps", DisplayName = "动画帧率(GIF)", EditorType = PropertyEditorType.Integer, DefaultValue = "0", Category = "外观",
+                Description = "B3.2: GIF 帧率覆盖；0 = 使用 GIF 原始帧率。" },
+            new PropertyDescriptor
+            {
+                Key = "horizontalAlignment", DisplayName = "水平对齐", EditorType = PropertyEditorType.Enum, DefaultValue = "Center", Category = "外观",
+                EnumOptions = new[] { "Left|左", "Center|中", "Right|右", "Stretch|拉伸" }
+            },
+            new PropertyDescriptor
+            {
+                Key = "verticalAlignment", DisplayName = "垂直对齐", EditorType = PropertyEditorType.Enum, DefaultValue = "Center", Category = "外观",
+                EnumOptions = new[] { "Top|上", "Center|中", "Bottom|下", "Stretch|拉伸" }
+            },
         }
     };
 
@@ -150,6 +168,15 @@ internal static class WidgetSchemaCatalogSeed
                 Key = "stretch", DisplayName = "拉伸", EditorType = PropertyEditorType.Enum, DefaultValue = "Uniform", Category = "外观",
                 EnumOptions = new[] { "None|原始", "Fill|填充", "Uniform|等比", "UniformToFill|等比填充" }
             },
+
+            // ============ B3.2: GraphicIOField WinCC 扩展（PDF GraphicIOField）============
+            new PropertyDescriptor { Key = "defaultPicture", DisplayName = "默认图(无匹配)", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据",
+                Description = "B3.2: variable 值无对应 entries 项时显示。WinCC DefaultGraphic。" },
+            new PropertyDescriptor { Key = "pictureOnError", DisplayName = "错误时图片", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据",
+                Description = "B3.2: 加载失败或变量未知时显示。WinCC ErrorGraphic。" },
+            new PropertyDescriptor { Key = "fitToObject", DisplayName = "适应控件大小", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showText", DisplayName = "下方显示值文本", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观",
+                Description = "B3.2: true 时在图形下方显示 variable 当前值。" },
         }
     };
 
@@ -167,6 +194,20 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "format", DisplayName = "格式", EditorType = PropertyEditorType.String, DefaultValue = "yyyy-MM-dd HH:mm:ss", Category = "格式" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
             new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+
+            // ============ B3.2: DateTimeField WinCC 扩展（PDF DateTimeField）============
+            new PropertyDescriptor
+            {
+                Key = "dataFormat", DisplayName = "数据格式", EditorType = PropertyEditorType.Enum, DefaultValue = "DateTime", Category = "格式",
+                EnumOptions = new[] { "DateOnly|仅日期", "TimeOnly|仅时间", "DateTime|日期时间" },
+                Description = "B3.2: WinCC DataFormat — 选择 DateOnly/TimeOnly 时自动用对应缩短格式。",
+            },
+            new PropertyDescriptor { Key = "showCalendarButton", DisplayName = "显示日历按钮", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观",
+                Description = "B3.2: 输入模式下显示日期选择器按钮。WinCC ShowCalendarButton。" },
+            new PropertyDescriptor { Key = "showUpDownButton", DisplayName = "显示步进按钮", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观",
+                Description = "B3.2: 输入模式下显示 ▲▼ 调整年月日。WinCC ShowUpDown。" },
+            new PropertyDescriptor { Key = "useLocalTime", DisplayName = "使用本地时间", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "数据",
+                Description = "B3.2: false = UTC。WinCC UseLocalTime。" },
         }
     };
 
@@ -188,6 +229,26 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showValue", DisplayName = "显示数值", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "snapToStep", DisplayName = "对齐步长", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
             new PropertyDescriptor { Key = "writeOnChange", DisplayName = "拖动写入", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为", Description = "false=松手再写；true=拖动即写" },
+
+            // ============ B3.2: Slider WinCC 扩展（PDF Slider Table）============
+            new PropertyDescriptor { Key = "smallChange", DisplayName = "微调步长", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "行为",
+                Description = "B3.2: 方向键 / 单击轨道时的步长。WinCC SmallChange。" },
+            new PropertyDescriptor { Key = "largeChange", DisplayName = "翻页步长", EditorType = PropertyEditorType.Number, DefaultValue = "10", Category = "行为",
+                Description = "B3.2: PageUp/PageDown 步长。WinCC LargeChange。" },
+            new PropertyDescriptor { Key = "showTicks", DisplayName = "显示刻度", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观",
+                Description = "B3.2: WinCC TickPlacement。" },
+            new PropertyDescriptor { Key = "tickFrequency", DisplayName = "刻度间隔", EditorType = PropertyEditorType.Number, DefaultValue = "10", Category = "外观" },
+            new PropertyDescriptor
+            {
+                Key = "tickPlacement", DisplayName = "刻度位置", EditorType = PropertyEditorType.Enum, DefaultValue = "BottomRight", Category = "外观",
+                EnumOptions = new[] { "None|无", "TopLeft|上/左", "BottomRight|下/右", "Both|两侧" }
+            },
+            new PropertyDescriptor
+            {
+                Key = "direction", DisplayName = "方向反转", EditorType = PropertyEditorType.Enum, DefaultValue = "Normal", Category = "布局",
+                EnumOptions = new[] { "Normal|正常", "Reversed|反向" },
+                Description = "B3.2: Reversed = 大值在左/下。WinCC IsDirectionReversed。"
+            },
         }
     };
 
@@ -209,6 +270,19 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showValue", DisplayName = "显示数值", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
             new PropertyDescriptor { Key = "snapToStep", DisplayName = "对齐步长", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
             new PropertyDescriptor { Key = "writeOnChange", DisplayName = "拖动写入", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+
+            // ============ B3.2: ScrollBar WinCC 扩展（PDF ScrollBar Table）============
+            new PropertyDescriptor { Key = "smallChange", DisplayName = "微调步长", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "行为" },
+            new PropertyDescriptor { Key = "largeChange", DisplayName = "翻页步长", EditorType = PropertyEditorType.Number, DefaultValue = "10", Category = "行为" },
+            new PropertyDescriptor { Key = "showButtons", DisplayName = "显示端按钮", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观",
+                Description = "B3.2: 两端的 ▲▼ 步进按钮。WinCC ShowLineButtons。" },
+            new PropertyDescriptor
+            {
+                Key = "direction", DisplayName = "方向反转", EditorType = PropertyEditorType.Enum, DefaultValue = "Normal", Category = "布局",
+                EnumOptions = new[] { "Normal|正常", "Reversed|反向" }
+            },
+            new PropertyDescriptor { Key = "thumbSize", DisplayName = "滑块大小(viewport)", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "外观",
+                Description = "B3.2: WPF ViewportSize；0 = 默认。" },
         }
     };
 
@@ -227,6 +301,20 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
             new PropertyDescriptor { Key = "fontSize", DisplayName = "字号", EditorType = PropertyEditorType.Number, DefaultValue = "14", Category = "外观" },
             new PropertyDescriptor { Key = "analogShowSeconds", DisplayName = "指针显示秒针", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+
+            // ============ B3.2: Clock WinCC 扩展（PDF Clock 章节）============
+            new PropertyDescriptor { Key = "showSeconds", DisplayName = "数字显示秒", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观",
+                Description = "B3.2: false 时数字模式不显示秒（自动剥离 'ss' 格式）。WinCC ShowSeconds。" },
+            new PropertyDescriptor { Key = "timeZone", DisplayName = "时区", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据",
+                Description = "B3.2: TimeZoneInfo Id（如 'China Standard Time'）。留空 = 本地时区。WinCC TimeZone。" },
+            new PropertyDescriptor
+            {
+                Key = "synchronizationMode", DisplayName = "同步模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Local", Category = "数据",
+                EnumOptions = new[] { "Local|本地", "Server|服务器", "NTP|NTP" },
+                Description = "B3.2: 时间源。WinCC SynchronizationMode。",
+            },
+            new PropertyDescriptor { Key = "use24Hour", DisplayName = "24 小时制", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "格式" },
+            new PropertyDescriptor { Key = "showDate", DisplayName = "数字显示日期", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
         }
     };
 
@@ -260,6 +348,17 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "checkedColor", DisplayName = "选中颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#10B981", Category = "外观" },
             new PropertyDescriptor { Key = "uncheckedColor", DisplayName = "未选颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#94A3B8", Category = "外观" },
             new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+
+            // ============ B3.2: CheckBox WinCC 扩展（PDF CheckBox 章节）============
+            new PropertyDescriptor { Key = "checkedText", DisplayName = "选中文本", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "文本",
+                Description = "B3.2: 选中状态下覆盖 text。留空 = 沿用 text。WinCC CheckedText。" },
+            new PropertyDescriptor { Key = "uncheckedText", DisplayName = "未选文本", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "文本",
+                Description = "B3.2: 未选状态下覆盖 text。" },
+            new PropertyDescriptor { Key = "threeState", DisplayName = "三态模式", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为",
+                Description = "B3.2: 启用时支持 Null/Indeterminate 中间态。WinCC ThreeState。" },
+            new PropertyDescriptor { Key = "indeterminateText", DisplayName = "中间态文本", EditorType = PropertyEditorType.String, DefaultValue = "未定", Category = "文本",
+                Description = "B3.2: threeState=true 且值为 null/-1 时显示。" },
+            new PropertyDescriptor { Key = "indeterminateColor", DisplayName = "中间态颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#FBBF24", Category = "外观" },
         }
     };
 
@@ -893,6 +992,16 @@ internal static class WidgetSchemaCatalogSeed
                 Key = "orientation", DisplayName = "方向", EditorType = PropertyEditorType.Enum, DefaultValue = "horizontal", Category = "布局",
                 EnumOptions = new[] { "horizontal|水平", "vertical|垂直" }
             },
+
+            // ============ B3.2: SwitchControl WinCC 扩展（PDF SwitchControl 章节）============
+            new PropertyDescriptor { Key = "stateOnText", DisplayName = "ON 显示文本", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "文本",
+                Description = "B3.2: 覆盖 onText（仅在显示时使用，可写本地化 ${KEY}）。WinCC StateOnText。" },
+            new PropertyDescriptor { Key = "stateOffText", DisplayName = "OFF 显示文本", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "文本" },
+            new PropertyDescriptor { Key = "stateOnPicture", DisplayName = "ON 图片", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "外观",
+                Description = "B3.2: ON 状态背景图片路径。WinCC StateOnPicture。" },
+            new PropertyDescriptor { Key = "stateOffPicture", DisplayName = "OFF 图片", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "外观" },
+            new PropertyDescriptor { Key = "stateOnForeground", DisplayName = "ON 文字颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+            new PropertyDescriptor { Key = "stateOffForeground", DisplayName = "OFF 文字颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
         }
     };
 

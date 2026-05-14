@@ -10,7 +10,7 @@ namespace ApexHMI.ViewModels.Runtime;
 /// </summary>
 public partial class CheckBoxWidgetViewModel : WidgetViewModelBase
 {
-    [ObservableProperty] private bool _isChecked;
+    [ObservableProperty] private bool? _isCheckedState;
     private bool _initializingFromTag;
 
     public CheckBoxWidgetViewModel(WidgetInstance model, IWidgetDataContext dataContext)
@@ -21,7 +21,7 @@ public partial class CheckBoxWidgetViewModel : WidgetViewModelBase
             dataContext.RegisterValueCallback(tag!, v =>
             {
                 _initializingFromTag = true;
-                try { IsChecked = ParseBool(v); }
+                try { IsCheckedState = ParseTriState(v, ThreeState); }
                 finally { _initializingFromTag = false; }
             });
     }
@@ -31,6 +31,25 @@ public partial class CheckBoxWidgetViewModel : WidgetViewModelBase
     public string UncheckedColor   => Prop("uncheckedColor",   "#94A3B8");
     public string Foreground       => Prop("foreground",       "#0F172A");
 
+    // B3.2: WinCC CheckBox 扩展
+    public bool ThreeState =>
+        string.Equals(Prop("threeState", "false"), "true", System.StringComparison.OrdinalIgnoreCase);
+    public string CheckedText      => Prop("checkedText", "");
+    public string UncheckedText    => Prop("uncheckedText", "");
+    public string IndeterminateText => Prop("indeterminateText", "未定");
+    public string IndeterminateColor => Prop("indeterminateColor", "#FBBF24");
+
+    /// <summary>B3.2: 按当前状态选择文本，留空时回退到 Text。</summary>
+    public string DisplayText => IsCheckedState switch
+    {
+        true => string.IsNullOrEmpty(CheckedText) ? Text : CheckedText,
+        false => string.IsNullOrEmpty(UncheckedText) ? Text : UncheckedText,
+        null => IndeterminateText,
+    };
+
+    /// <summary>B3.2: View 用 IsThreeState 绑定。</summary>
+    public bool IsThreeStateEnabled => ThreeState;
+
     private string? ResolveTag()
     {
         var v = Prop("variable", "");
@@ -38,14 +57,30 @@ public partial class CheckBoxWidgetViewModel : WidgetViewModelBase
         return Model.Binding?.TagId;
     }
 
-    private static bool ParseBool(string s) =>
-        !string.IsNullOrEmpty(s) && (string.Equals(s, "True", System.StringComparison.OrdinalIgnoreCase) || s == "1");
-
-    partial void OnIsCheckedChanged(bool value)
+    private static bool? ParseTriState(string s, bool threeState)
     {
+        if (string.IsNullOrEmpty(s)) return threeState ? (bool?)null : false;
+        if (string.Equals(s, "True", System.StringComparison.OrdinalIgnoreCase) || s == "1") return true;
+        if (string.Equals(s, "False", System.StringComparison.OrdinalIgnoreCase) || s == "0") return false;
+        // -1 / null / "indeterminate" 等
+        if (threeState && (s == "-1" || string.Equals(s, "null", System.StringComparison.OrdinalIgnoreCase)
+            || string.Equals(s, "indeterminate", System.StringComparison.OrdinalIgnoreCase))) return null;
+        return false;
+    }
+
+    partial void OnIsCheckedStateChanged(bool? value)
+    {
+        OnPropertyChanged(nameof(DisplayText));
         if (_initializingFromTag) return;
         var tag = ResolveTag();
         if (string.IsNullOrWhiteSpace(tag)) return;
-        _dataContext.ExecuteAction("write-bool", $"{tag}|{value}");
+        // 三态写回：true→1，false→0，null→-1（WinCC 兼容惯例）
+        var w = value switch
+        {
+            true => "True",
+            false => "False",
+            null => "-1",
+        };
+        _dataContext.ExecuteAction("write-bool", $"{tag}|{w}");
     }
 }
