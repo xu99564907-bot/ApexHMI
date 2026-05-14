@@ -1,0 +1,250 @@
+Table 1-42 Properties
+
+Properties             RT Profes-  RT Ad-      Panel RT  Description
+                       sional      vanced
+AllTagTypesAllowed                             -         -
+AngleMax (Page 511)    -           -           RW        Specifies the angle of the scale end of the "Gauge"
+                                                         object.
+                       RW          RW          RW        Specifies the angle of the scale start of the "Gauge"
+                                                         object.
+AngleMin (Page 512) RW             RW          RW        Specifies the background color.
+                                               -         Specifies the fill pattern.
+BackColor (Page 526) RW            RW          -         Specifies the background graphic.
+                                               -         Specifies the background style.
+BackFillStyle (Page 531) RW        -           -         -
+                                               -         -
+BackPicture (Page 538) RW          -           -         Specifies the appearance of the inner part of the ob-
+                                                         ject border.
+BackStyle (Page 538) RW            -           -         Specifies the appearance of the outer part of the ob-
+                                                         ject border.
+BorderBackColor        -           -           -         Specifies the line thickness.
+                                               -         Specifies the width of the inner border for 3D display.
+BorderColor            -           -
+                                               -         -
+BorderInnerStyle3D     RW          -           -         -
+                                               RW        Specifies the color of the text to be displayed in the
+(Page 572)                                               title bar.
+                                               -         Specifies the character set for the caption.
+BorderOuterStyle3D     RW          -           RW        Specifies the text to be displayed in the header.
+                                               -         Specifies the distance between the instrument labels
+(Page 573)                                               and the upper edge of the object.
+                                               RW        Specifies the color of the center point.
+BorderWidth (Page 577) RW          -           -         Specifies the diameter of the scale center point.
+                                               -         -
+BorderWidth3D          RW          -           -         -
+                                               RW        Specifies the color of the danger range on the scale of
+(Page 580)                                               the "Gauge" object.
+                                               RW        Specifies at which scale value the danger range of the
+Bounds                 -           -                     "Gauge" object will start.
+                                               RW        Specifies whether the danger range in the scale of the
+CanBeGrouped           -           -                     "Gauge" object is to be displayed.
+                                               -         -
+CaptionColor (Page 589) -          RW          RW        Specifies the color of the dial for the selected object.
+                                               -         Specifies the type of background.
+CaptionFont (Page 589) RW          -           -         Specifies a graphic for the dial.
+
+CaptionText (Page 590) RW          RW
+
+CaptionTop (Page 591) RW           -
+
+CenterColor (Page 595) RW          RW
+
+CenterSize (Page 595) RW           -
+
+CompatibilityMode      -           -
+
+CornerRadius           -           -
+
+DangerRangeColor       RW          RW
+
+(Page 640)
+
+DangerRangeStart       RW          RW
+
+(Page 641)
+
+DangerRangeVisible     RW          RW
+
+(Page 642)
+
+DeviceStyle            -           -
+
+DialColor (Page 649)   RW          RW
+
+DialFillStyle (Page 650) RW        -
+
+DialPicture (Page 650) RW          -
+
+WinCC Engineering V18 ­ Programming reference            321
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+DialSize (Page 651)   sional      vanced
+                                          -         Specifies the diameter of the scale in relation to the
+                      RW          -                 smaller value of the geometry attributes "Width" and
+                                          -         "Height".
+EdgeStyle (Page 657) -            -       RW        -
+                                                    Specifies whether the selected object can be operat-
+Enabled (Page 660)    RW          RW      -         ed in runtime.
+                                                    Specifies whether the selected object flashes in run-
+Flashing (Page 692)   RW          -       RW        time.
+                                                    Specifies the value difference between two main
+Gradation (Page 716) RW           RW      -         marks of the "Gauge" object.
+                                          -         -
+InnerDialColor        -           -       -         -
+                                          R         -
+InnerDialInnerDistance -          -       RW        Specifies the height.
+                                                    Specifies the layer in the screen that contains an ob-
+InnerDialOuterDistane -           -       RW        ject.
+                                          -         Specifies the value of the X coordinate.
+Height (Page 720)     RW          R       -         -
+                                          -         -
+Layer (Page 764)      RW          RW                Specifies whether the size of the clock can be adjus-
+                                          RW        ted with the mouse.
+Left (Page 770)       RW          RW                Specifies the maximum value of the scale in the se-
+                                          RW        lected object.
+LimitRangeCollection -            -                 Specifies the minimum value of the scale in the se-
+                                          -         lected object.
+Location              -           -       -         Specifies the object name.
+                                          RW        -
+LockSquaredExtent     RW          -                 Specifies the color of the normal range on the scale of
+                                          RW        the "Gauge" object.
+(Page 793)                                          Specifies whether the normal range in the scale of the
+                                          RW        "Gauge" object is displayed.
+MaximumValue          RW          RW      RW        Specifies the pointer color of the "Gauge" object.
+                                          RW        Specifies the default for the value to be displayed.
+(Page 799)                                          Specifies the color of the label for the scale marks of
+                                          -         the "Gauge" object.
+MinimumValue          RW          RW                Specifies the font for the scale label.
+                                          RW
+(Page 822)                                          Specifies the color of the scale gradation of the
+                                          -         "Gauge" object.
+Name (Page 827)       RW          -                 Specifies the diameter of the imaginary circle on
+                                          -         which the scale tick label is location.
+NeedleHeight          -           -                 Specifies the length of the main scale ticks.
+                                          -
+NormalRangeColor      RW          RW                Specifies the diameter of the assumed circle on which
+                                                    the scale divisions are located.
+(Page 834)
+
+NormalRangeVisible    RW          RW
+
+(Page 835)
+
+PointerColor (Page 869) RW        RW
+
+ProcessValue (Page 874) RW        RW
+
+ScaleLabelColor       RW          RW
+
+(Page 894)
+
+ScaleLabelFont        RW          -
+
+(Page 895)
+
+ScaleTickColor        RW          RW
+
+(Page 896)
+
+ScaleTickLabelPosition RW         -
+
+(Page 897)
+
+ScaleTickLength       RW          -
+
+(Page 898)
+
+ScaleTickPosition     RW          -
+
+(Page 898)
+
+322                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties             RT Profes-  RT Ad-      Panel RT  Description
+                       sional      vanced
+ShowDecimalPoint                               -         Specifies whether the scale is labeled with decimal
+(Page 928)             RW          -                     figures (decimal point and one decimal place) or with
+                                               -         whole integers.
+ShowInnerDial          -           -           -         -
+                                               RW        -
+ShowLimitRanges        -           -                     Specifies whether a slave pointer will be used for the
+                                               -         selected object.
+ShowPeakValuePointer RW            RW          -         -
+                                               -         -
+(Page 937)                                     -         -
+                                               RW        -
+Size                   -           -           -         Specifies the value of the Y coordinate.
+                                                         Specifies the object transparency in percent.
+StyleItem              -           -           RW
+                                               -         Specifies the text color for the unit of measurement.
+TabIndex               -           -           RW        Specified the font of the unit of measurement.
+                                               -         Specifies the text for the unit of measurement.
+TabIndexAlpha          -           -                     Specifies the distance from the unit of measurement
+                                               -         to the upper edge of the object.
+Top (Page 1083)        RW          RW                    Specifies whether the colors defined in the global
+                                               -         color scheme of the current design are to be used for
+Transparency           RW          -                     this object.
+(Page 1087)                                    RW        Specifies whether the object is displayed with global
+                                               RW        shading.
+UnitColor (Page 1143) RW           RW                    Specifies whether the selected object is visible.
+                                               RW        Specifies the color of the warning range on the scale
+UnitFont (Page 1143) RW            -                     of the "Gauge" object.
+                                               RW        Specifies at which scale value the warning range of
+UnitText (Page 1144) RW            RW                    the "Gauge" object will start.
+                                               R         Specifies whether the warning range in the scale of
+UnitTop (Page 1144)    RW          -                     the "Gauge" object is to be displayed.
+                                                         Specifies the width of the object in pixels.
+UseDesignColorSchema RW            -
+
+(Page 1148)
+
+UseDesignShadowSet- RW             -
+
+tings (Page 1150)
+
+Visible (Page 1204)    RW          RW
+
+WarningRangeColor      RW          RW
+
+(Page 1212)
+
+WarningRangeStart      RW          RW
+
+(Page 1213)
+
+WarningRangeVisible RW             RW
+
+(Page 1214)
+
+Width (Page 1217)      RW          R
+
+Table 1-43    Methods
+ Methods
+                       RT Profes-  RT Ad-      Panel RT  Description
+Activate (Page 1250)   sional      vanced
+                       Yes         Yes         Yes       Enables the permanent area or the root screen.
+ActivateDynamic        Yes         -           -         Dynamically activates a trigger and the specified cycle
+(Page 1252)                                              for a property at runtime.
+                       Yes         -           -         Deactivates the trigger of the "ActivateDynamic"
+DeactivateDynamic                                        method used for the specified property in/during run-
+(Page 1259)                                              time.
+
+WinCC Engineering V18 ­ Programming reference            323
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+GraphicIOField
+Description
+
+                                      6FUHHQV
+                                       6FUHHQ
+
+                                   6FUHHQ,WHPV
+                                    6FUHHQ,WHP
+

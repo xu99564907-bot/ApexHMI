@@ -1,0 +1,75 @@
+9090:             Represents the process screen which is being displayed on the HMI device at the moment or
+9127:             Represents an object in the specified screen. The ScreenItem object is an element of the
+9332:             Represents the value of the specified process tag. The SmartTag object is an element of the
+9971:             Represents the screen which is being displayed on the HMI device at the moment or the
+10071:             Represents an object in the specified screen. The ScreenItem object is an element of the
+10306:             Represents the value of the specified process tag. The SmartTag object is an element of the
+10849:                         Represents the "Alarm view" object. The AlarmControl object is an element of the
+11978:                         Represents the "Alarm view" object. The AlarmView object is an element of the ScreenItems
+12334:                    Represents the "ApplicationWindow" object. The ApplicationWindow object is an element of
+12438:             Represents the "Bar" object. The Bar object is an element of the ScreenItems list.
+12911:                   Represents the "Charge condition" object. The BatteryView object is an element of the
+12982:              Represents the "Button" object. The Button object is an element of the ScreenItems list.
+13341:               Represents the "CameraControl" object. The CameraControl object is an element of the
+13427:                    Represents the "Channel diagnostics display" object. The ChannelDiagnose object is an
+13495:                         Represents the "Check box" object. The CheckBox object is an element of the ScreenItems list.
+13716:             Represents the "Circle" object. The Circle object is an element of the ScreenItems list.
+13867:     Represents the "CircleSegment" object. The CircleSegment object is an element of the
+14027:             Represents the "CircularArc" object. The CircularArc object is an element of the ScreenItems
+14154:             Represents the "Clock" object. The Clock object is an element of the ScreenItems list.
+14325:     Represents the "Check box" object. The ComboBox object is an element of the ScreenItems
+14473:             Represents the "Connector" object. The Connector object is an element of the ScreenItems
+14631:     Represents the "Date/time field" object. The DateTimeField object is an element of the
+14764:               Represents the "Memory space view" object. The DiskSpaceView object is an element of the
+14888:                         Represents the "Ellipse" object. The Ellipse object is an element of the ScreenItems list.
+15064:                     Represents the "EllipseSegment" object. The EllipseSegment object is an element of the
+15215:               Represents the "EllipticalArc" object. The EllipticalArc object is an element of the ScreenItems
+15344:                    Represents the "f(x)FunctionTrendView" object. The FunctionTrendControl object is an
+16238:             Represents the "Gauge" object. The Gauge object is an element of the ScreenItems list.
+16503:     Represents the "Graphic I/O field" object. The GraphicIOField object is an element of the
+16692:             Represents the "Graphic view" object. The GraphicView object is an element of the
+16873:             Represents the object "HTML Browser". The HTMLBrowser object is an element of the
+16970:             Represents the "I/O field" object. The IOField object is an element of the ScreenItems list.
+17284:                      Represents the "Line" object. The Line object is an element of the ScreenItems list.
+17445:                         Represents the "Listbox" object. The Listbox object is an element of the ScreenItems list.
+17598:                         Represents the "Media Player" object. The MediaPlayer object is an element of the
+17739:               Represents the "Editable text field" object. The MultiLineEdit object is an element of the
+17882:                         Represents the "Table view" object. The OnlineTableControl object is an element of the
+18833:Represents the "f(t) TrendView" object. The OnlineTrendControl object is an element of the
+19805:                 Represents the "Option button" object. The OptionGroup object is an element of the
+20041:             Represents the "PDF view" object. The PDFview object is an element of the ScreenItems list.
+20215:                   Represents the "Polygon" object. The Polygon object is an element of the ScreenItems list.
+20386:             Represents the "Polyline" object. The Polyline object is an element of the ScreenItems list.
+20540:                    Represents the "ProDiagOverview" object. The ProDiagOverview object is an element of the
+20601:                     Represents the "EffectiveRangeName" (RFID)" object. The ProtectedAreaNameView object is
+20665:                     Represents the "EffectiveRangeName" object. The RangeLabelView object is an element of
+20734:                     Represents the "EffectiveRangeSignal" object. The RangeQualityView object is an element of
+21215:                         Represents the "Rectangle" object. The Rectangle object is an element of the ScreenItems list.
+21388:                         Represents the "Round button" object. The RoundButton object is an element of the
+21665:                    Represents the "GRAPH overview" object. The S7GraphOverview object is an element of the
+21780:                    Represents the "ScreenWindow" object. The ScreenWindow object is an element of the
+21931:                     Represents the "ApplicationWindow" object. The ApplicationWindow object is an element of
+22030:             Represents the "Slider" object. The Slider object is an element of the ScreenItems list.
+22254:                    Represents the "Sm@rtClient View" object. The SmartClientView object is an element of the
+22368:     Represents the "Watch table" object. The StatusForce object is an element of the ScreenItems
+22632:             Represents the "Switch" object. The Switch object is an element of the ScreenItems list.
+22882:     Represents the "SymbolicIOField" object. The SymbolicIOField object is an element of the
+23229:               Represents the "SymbolLibrary" object. The SymbolLibrary object is an element of the
+23345:                     Represents the "System diagnostic view" object. The SystemDiagnoseView object is an
+23964:                    Represents the "TextField" object. The TextField object is an element of the ScreenItems list.
+24178:                         Represents the "Value table" object. The TrendRulerControl object is an element of the
+24946:              Represents the "TrendView" object. The TrendView object is an element of the ScreenItems
+25327:               Represents the "TubeArc" object. The TubeArcObject is an element of the ScreenItems list.
+25452:                         Represents the "DoubleTee" object. The TubeDoubleTeeObject is an element of the
+25550:                         Represents the "Pipe" object. The TubePolyline object is an element of the ScreenItems list.
+25659:             Represents the "Tee" object. The TubeTeeObject is an element of the ScreenItems list.
+26800:                    Represents the "UserView" object. The UserView object is an element of the ScreenItems list.
+27053:     Represents the "Window slider" object. The WindowSlider object is an element of the
+27264:             Represents the "WLAN reception" object. The WLanQualityView object is an element of the
+27327:                    Represents the "Zone name" object. The ZoneLabelView object is an element of the
+27384:                     Represents the "ZoneSignal" object. The ZoneQualityView object is an element of the
+34650:2         String       Represents character strings.
+126997:                         Represents a network which is uniquely identified via the attribute "NetId". Contains the
+127013:                         Represents the description of the network. Contains the sections "Parts" and "Wires".
+127016:                         Represents an instruction or an operand.
+127020:                         Represents networking between instructions and operands.

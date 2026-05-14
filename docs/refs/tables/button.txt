@@ -1,0 +1,337 @@
+Table 1-11 Properties
+
+Properties              RT Profes-  RT Ad-  Panel RT  Description
+AdaptBorder (Page 498)  sional      vanced  -
+                                            -         Specifies whether the border of the object will be dy-
+                        RW          -       RW        namically adapted to the text size.
+                                            RW        -
+AllTagTypesAllowed      -           -       -         Specifies the operating rights of the selected object in
+                                            -         runtime.
+Authorization           RW          RW      -         Specifies the background color of the selected object.
+(Page 517)                                  -         Specifies the fill pattern of the selected object.
+                                            -         Specifies the background color for flash state "Off".
+BackColor (Page 526) RW             RW      -
+                                            -         Specifies the background color for flash state "On".
+BackFillStyle (Page 531) RW         -       -
+                                                      Specifies whether the background of the selected ob-
+BackFlashingColorOff RW             -       -         ject flashes in runtime.
+                                            -         Specifies the flash rate of the background for the se-
+(Page 533)                                  -         lected object.
+                                            -         -
+BackFlashingColorOn RW              -       -         Specifies the background color of the broken border
+                                            -         line for the selected object.
+(Page 534)                                            Specifies the frame color of the following frame parts
+                                            -         in case of a 3D display of the selected object: Outer
+BackFlashingEnabled RW              -       -         border parts top and bottom; inner border parts bot-
+                                            -         tom and right
+(Page 535)                                  -         Specifies the line color of the object.
+                                            -         Specifies the border line color of the selected object
+BackFlashingRate        RW          -                 for the flash state "Off".
+                                                      Specifies the border line color of the selected object
+(Page 536)                                            for the flash state "On".
+                                                      Specifies whether the border line of the selected ob-
+BitNumber               -           -                 ject flashes in runtime.
+                                                      Specifies the flash rate of the border line for the se-
+BorderBackColor         RW          -                 lected object.
+                                                      Specifies the frame color of the following frame parts
+(Page 558)                                            in case of a 3D display of the selected object: Inner
+                                                      border parts top and bottom; outer border parts bot-
+BorderBrightColor3D     RW          -                 tom and right
+                                                      Specifies the type of border lines for the selected ob-
+(Page 561)                                            ject.
+                                                      Specifies the line thickness of the selected object.
+BorderColor (Page 562) RW           -                 Specifies the width of the inner border for the 3D
+                                                      presentation of the selected object.
+BorderFlashingColorOff RW           -                 -
+                                                      -
+(Page 566)
+
+BorderFlashingColorOn RW            -
+
+(Page 567)
+
+BorderFlashingEnabled RW            -
+
+(Page 569)
+
+BorderFlashingRate      RW          -
+
+(Page 570)
+
+BorderShadeColor3D RW               -
+
+(Page 575)
+
+BorderStyle (Page 576) RW           -
+
+BorderWidth (Page 577) RW           -
+
+BorderWidth3D           RW          -
+
+(Page 580)
+
+CanBeGrouped            -           -
+
+CornerRadius            -           -
+
+268                                                   WinCC Engineering V18 ­ Programming reference
+                                                       System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-     Panel RT  Description
+CornerStyle (Page 635)  sional      vanced
+                                               -         Specifies the shape of the corners of the specified
+                        RW          -          -         object.
+                                               -         -
+DeviceStyle             -           -                    Specifies whether the border line of the selected ob-
+                                               -         ject with a line thickness greater than 1 should be
+DrawInsideFrame         RW          -          RW        drawn within the border or symmetrically to the bor-
+                                               -         der.
+(Page 655)                                     -         Specifies the line style of the selected object.
+                                               -         Specifies whether the selected object can be operat-
+EdgeStyle (Page 657) RW             -          -         ed in runtime.
+                                               -         -
+Enabled (Page 660)      RW          RW         -
+                                               -         Specifies the fill direction.
+ES2RT_StoreAsCheck- -               -          -
+                                               -         Specifies the color of the fill pattern for the selected
+Back                                           -         object.
+                                               -         -
+FillingDirection        RW          -          RW        -
+                                               RW        -
+(Page 687)                                     -         -
+                                               -         Specifies the border line color of the selected object
+FillPatternColor        RW          -          -         for the flash state "Off".
+                                               -         Specifies the border line color of the selected object
+(Page 685)                                     -         for the flash state "On".
+                                               -         Specifies whether the border line of the selected ob-
+FirstGradientColor      -           -          RW        ject flashes in runtime.
+                                               R         Specifies the flash rate of the border line for the se-
+FirstGradientOffset     -           -                    lected object.
+                                                         Specifies the color for the focus frame of the selected
+FitToLargest            -           -                    object when it is in focus.
+                                                         Specifies the border width of the specified object
+Flashing                -           -                    when the object is in focus.
+                                                         -
+FlashingColorOff        RW          -                    Specifies whether the text of the selected object is
+                                                         shown in bold.
+(Page 693)                                               Specifies whether the text of the selected object is
+                                                         shown in italics.
+FlashingColorOn         RW          -                    Specifies the font of the selected object.
+                                                         Specifies the font size of the text for the selected ob-
+(Page 695)                                               ject.
+                                                         Specifies whether the text of the selected object is
+FlashingEnabled         RW          -                    underlined.
+                                                         Specifies the font color of the text for the selected
+(Page 697)                                               object.
+                                                         Specifies the height of the selected object.
+FlashingRate (Page 699) RW          -
+
+FocusColor (Page 703) -             RW
+
+FocusWidth (Page 704) -             RW
+
+Font                    -           -
+
+FontBold (Page 708)     RW          -
+
+FontItalic (Page 708) RW            -
+
+FontName (Page 709) RW              -
+
+FontSize (Page 711)     RW          -
+
+FontUnderline           RW          -
+
+(Page 711)
+
+ForeColor (Page 712) RW             RW
+
+Height (Page 720)       RW          R
+
+WinCC Engineering V18 ­ Programming reference            269
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+HelpText (Page 724)   sional      vanced
+                                          RW        Returns the tooltip that is shown in runtime as user
+                      -           RW                help for the specified object.
+                                          RW        Specifies the horizontal alignment of the text within
+HorizontalAlignment RW            RW                the selected object.
+                                          -         -
+(Page 736)
+                                          -         -
+HorizontalPictureAlign- -         -       RW        Specifies the layer in the screen that contains an ob-
+                                                    ject.
+ment                                      RW        Specifies the value of the X coordinate of the selected
+                                                    object.
+Hotkey                -           -       -         Specifies the shape of the line ends.
+
+Layer (Page 764)      RW          RW      -         -
+                                          -         -
+Left (Page 770)       RW          RW      -         Specifies the field type of the selected object.
+                                          -         -
+LineEndShapeStyle     RW          -       -         Specifies the display type for the background screen
+                                                    in the process image.
+(Page 787)                                -         -
+
+Location              -           -       -         -
+                                          -         -
+MiddleGradientColor -             -       -         -
+                                          -         -
+Mode (Page 824)       RW          -       -         -
+                                          -         Specifies the picture that is displayed in the "Off" sta-
+Name                  -           -                 tus.
+                                          -         Specifies the screen to be displayed in the "On" state.
+PictureAlignment      RW          -       -         Specifies whether the selected object is displayed in a
+                                                    pressed state.
+(Page 864)                                -         Specifies the default for the value to be displayed.
+                                          -         Specifies the fill percentage for the object.
+PictureAreaBottomMar- -           -
+                                          -         -
+gin                                       -         -
+                                          -         Specifies whether the selected object is filled.
+PictureAreaLeftMargin -           -
+                                          -         -
+PictureAreaRightMargin -          -       -         -
+                                          -         Specifies the style in which the object is displayed.
+PictureAreaTopMargin -            -       -         -
+                                          -         -
+PictureAutoSizing     -           -       -         -
+                                          -         -
+PictureList           -           -
+
+PictureOff (Page 866) RW          -
+
+PictureOn (Page 867) RW           -
+
+Pressed (Page 872)    RW          -
+
+ProcessValue (Page 874) RW        -
+
+RelativeFillLevel     RW          -
+
+(Page 881)
+
+SecondGradientColor -             -
+
+SecondGradientOffset -            -
+
+ShowFillLevel         RW          -
+(Page 933)
+
+Size                  -           -
+
+StyleItem             -           -
+
+StyleSettings (Page 982) RW       -
+
+TabIndex              -           -
+
+TabIndexAlpha         -           -
+
+TextAreaBottomMargin -            -
+
+TextAreaLeftMargin    -           -
+
+270                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties             RT Profes-  RT Ad-      Panel RT  Description
+                       sional      vanced
+TextAreaRightMargin                            -         -
+TextAreaTopMargin      -           -           -         -
+TextList               -           -           -         -
+TextOff (Page 1002)    -           -           RW        Specifies the text to be displayed in the "Off" state of
+                       RW          RW          RW        the selected object.
+                                               -         Specifies the text to be displayed in the "On" state of
+TextOn (Page 1003)     -           RW          -         the selected object.
+                                               RW        Specifies the text orientation of the selected object.
+TextOrientation        RW          -           RW
+                                               -         Specifies whether the selected object engages after it
+(Page 1004)                                    -         has been operated in Runtime.
+                                               -         Specifies the tooltip text.
+Toggle (Page 1052)     RW          -           -         Specifies the value of the Y coordinate of the selected
+                                                         object.
+ToolTipText (Page 1082) RW         RW          -         Specifies the object transparency in percent.
+                                               -
+Top (Page 1083)        RW          RW          -         Specifies the color to be set to "transparent" for the
+                                               -         "Off" state of the assigned bitmap object.
+Transparency           RW          -                     Specifies the color to be set to "transparent" for the
+(Page 1087)                                    -         "On" state of the assigned bitmap object.
+                                                         Specifies whether the colors defined in the global
+TransparentColorPic-   RW          -           -         color scheme of the current design are to be used for
+                                               RW        this object.
+tureOff (Page 1090)                            -         Specifies whether the object is displayed with the
+                                               RW        shading defined in the active design.
+TransparentColorPictur- RW         -           R         -
+                                               -         -
+eOn (Page 1091)                                          Specifies if the transparent color defined in the "Trans-
+                                                         parentColorPictureOff" property is used for the "Off"
+UseDesignColorSchema RW            -                     state.
+                                                         Specifies if the transparent color defined in the "Trans-
+(Page 1148)                                              parentColorPictureOff" property is used for the "Off"
+                                                         state.
+UseDesignShadowSet- RW             -                     -
+                                                         Specifies the vertical alignment of the text for the
+tings (Page 1150)                                        selected object.
+                                                         -
+UseFirstGradient       -           -
+                                                         Specifies whether the selected object is visible.
+UseSecondGradient      -           -                     Specifies the width of the object in pixels.
+                                                         Specifies whether the object is displayed in the gen-
+UseTransparentColorPic- RW         -                     eral Windows style.
+
+tureOff (Page 1161)
+
+UseTransparentColorPic- RW         -
+
+tureOn (Page 1161)
+
+UseTwoHandOperation -              -
+
+VerticalAlignment      RW          RW
+
+(Page 1200)
+
+VerticalPictureAlign-  -           -
+
+ment
+
+Visible (Page 1204)    RW          RW
+
+Width (Page 1217)      RW          R
+
+WindowsStyle           RW          -
+(Page 1224)
+
+WinCC Engineering V18 ­ Programming reference            271
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Table 1-12  Methods
+ Methods
+                      RT Profes-    RT Ad-  Panel RT   Description
+Activate (Page 1250)  sional        vanced
+                      Yes           Yes     Yes        Enables the permanent area or the root screen.
+ActivateDynamic       Yes           -       -          Dynamically activates a trigger and the specified cycle
+(Page 1252)                                            for a property at runtime.
+                      Yes           -       -          Deactivates the trigger of the "ActivateDynamic"
+DeactivateDynamic                                      method used for the specified property in/during run-
+(Page 1259)                                            time.
+
+CameraControl
+Description
+
+                        6FUHHQV
+                         6FUHHQ
+
+                      6FUHHQ,WHPV
+                      6FUHHQ,WHP
+

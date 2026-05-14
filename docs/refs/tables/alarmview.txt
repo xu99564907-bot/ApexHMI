@@ -1,0 +1,343 @@
+Table 1-3 Properties
+
+Properties               RT Profes-  RT Ad-  Panel RT   Description
+                         sional      vanced
+AlarmAreaHeight                              -          -
+AlarmAreaWidth           -           -       -          -
+AlarmClasses             -           -       -          -
+AlarmLog                 -           -       -          -
+AlarmSource              -           -       -          -
+AlarmTextTag             -           -       -          -
+AllTagTypesAllowed       -           -       -          -
+Authorization            -           -       -          -
+BackColor (Page 526)     -           -       RW         Specifies the background color of the selected object.
+BorderBackColor          -           RW      -          -
+BorderColor              -           -       -          -
+BorderWidth              -           -       -          -
+Bounds                   -           -       -          -
+ButtonBackColor          -           -       -          -
+ButtonBackFillStyle      -           -       -          -
+ButtonBarElements        -           -       -          -
+ButtonBarStyle           -           -       -          -
+ButtonBorderBackColor    -           -       -          -
+ButtonBorderColor        -           -       -          -
+ButtonBorderWidth        -           -       -          -
+ButtonCornerRadius       -           -       -          -
+ButtonEdgeStyle          -           -       -          -
+ButtonFirstGradientCol-  -           -       -          -
+or                       -           -
+
+252                                                     WinCC Engineering V18 ­ Programming reference
+                                                         System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties               RT Profes-  RT Ad-    Panel RT  Description
+                         sional      vanced
+ButtonFirstGradientOff-  -           -         -         -
+set
+ButtonMiddleGradient-    -           -         -         -
+Color
+ButtonPositions          -           -         -         -
+ButtonSecondGradient-    -           -         -         -
+Color
+ButtonSecondGradien-     -           -         -         -
+tOffset
+CanBeGrouped             -           -         -         -
+ColumnOrder              -           -         -         -
+Columns                  -           -         -         -
+ColumnsMoveable          -           -         -         -
+ColumnTextAckGroup       -           -         -         -
+ColumnTextAlarmState     -           -         -         -
+ColumnTextAlarmText      -           -         -         -
+ColumnTextClassName      -           -         -         -
+ColumnTextDate           -           -         -         -
+ColumnTextDevice         -           -         -         -
+ColumnTextDiagnosable    -           -         -         -
+ColumnTextNumber         -           -         -         -
+ColumnTextTime           -           -         -         -
+ColumnWidth              -           -         -         -
+ConfiguredAlarmClasses   -           -         -         -
+CornerRadius             -           -         -         -
+CountOfLinesPerAlarms    -           -         -         -
+CountOfVisibleAlarms     -           -         -         -
+DeviceStyle              -           -         -         -
+EdgeStyle                -           -         -         -
+Enabled (Page 660)       -           RW        RW        Specifies whether the selected object can be operat-
+                                                         ed in runtime.
+ES2RT_ButtonPositions -              -         -         -
+                                               -         -
+ES2RT_ColumnOrder -                  -         -         -
+                                               -         -
+ES2RT_ColumnWidth -                  -
+                                               -         -
+ES2RT_MessageArea- -                 -
+                                               -         -
+Height                                         -         -
+                                               -         -
+ES2RT_MessageArea- -                 -         -         -
+                                               RW        Specifies the color of the focus border when the ob-
+Width                                                    ject has the focus.
+
+FilterTag                -           -
+
+FilterText               -           -
+
+FitToSize                -           -
+
+Flashing                 -           -
+
+FocusColor (Page 703) -              RW
+
+WinCC Engineering V18 ­ Programming reference            253
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties             RT Profes-  RT Ad-  Panel RT  Description
+FocusWidth (Page 704)  sional      vanced
+                                           RW        Specifies the border width when the object has the
+                       -           RW                focus.
+                                           -         -
+ForeColor              -           -       RW        Specifies the color for the grid lines.
+
+GridLineColor          -           RW      R         Specifies the height.
+                                           -         -
+(Page 717)
+                                           -         -
+Height                 -           R       RW        Specifies the layer in the screen that contains an ob-
+                                                     ject.
+HorizontalScrollingEna- -          -       RW        Specifies the value of the X coordinate.
+                                           -         -
+bled                                       -         -
+                                           -         -
+IsRunningUnderCE       -           -       -         -
+                                           -         -
+Layer (Page 764)       -           RW      -         -
+                                           -         -
+Left (Page 770)        -           RW      -         -
+                                           -         -
+LineAlarmView          -           -       -         -
+                                           -         -
+Location               -           -       -         -
+                                           -         -
+MessageAreaHeight      -           -       -         -
+
+MessageAreaLeft        -           -       RW        Specifies the background color of the selected cells.
+
+MessageAreaTop         -           -       RW        Specifies the foreground color of the selected cells.
+
+MessageAreaWidth       -           -       -         -
+
+Name                   -           -       -         -
+
+PaddingBottom          -           -       RW        Specifies that only those message events are dis-
+                                                     played that are saved in this tag.
+PaddingLeft            -           -       -         -
+
+PaddingRight           -           -       -         -
+                                           -         -
+PaddingTop             -           -       -         -
+
+PreferredUseOnAck      -           -       -         -
+
+S7Device               -           -
+
+SecurityForSimpleVie- -            -
+
+wEnabled
+
+SelectionBackColor     -           RW
+
+(Page 913)
+
+SelectionForeColor     -           RW
+
+(Page 915)
+
+SeparateLineForAlarm- -            -
+
+Text
+
+ShowAcknowledgeBut- -              -
+
+ton
+
+ShowAlarmsFromDate -               RW
+
+(Page 925)
+
+ShowAlarmsToAcknowl- -             -
+
+edge
+
+ShowColumnHeaders -                -
+
+ShowHelpButton         -           -
+
+ShowHorizontalGrid- -              -
+
+lines
+
+ShowLoopInAlarmBut- -              -
+
+ton
+
+254                                                  WinCC Engineering V18 ­ Programming reference
+                                                      System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-       Panel RT  Description
+                      sional      vanced
+                                  -            -         -
+ShowMilliseconds      -           -            -         -
+                                  -            -         -
+ShowPendingAlarms     -           RW           RW        Specifies whether the last alarm received is shown at
+                                                         the top (ascending sorting order).
+Size                  -           RW           RW        Specifies whether alarm sorting can be altered ac-
+                                                         cording to the time.
+SortByTimeDirection   -           -            -         -
+                                  -            -         -
+(Page 953)
+                                  -            -         -
+SortByTimeEnabled     -           -            -         -
+                                  RW           RW        Specifies the background color of the table cells.
+(Page 954)
+                                  -            -         -
+StyleItem             -           -            -         -
+                                  RW           RW        Specifies the text color used in the table cells of the
+SupportsS7Diagnostic- -                                  object.
+sInSimpleView                     RW           RW        Specifies the background color in the header of the
+                                                         table.
+TabIndex              -           -            -         -
+
+TabIndexAlpha         -           -            -         -
+
+TableBackColor        -           -            -         -
+                                  -            -         -
+(Page 987)
+                                  -            -         -
+TableEvenRowBackColor -
+                                  -            -         -
+TableFont             -           -            -         -
+
+TableForeColor        -           -            -         -
+
+(Page 990)                        -            -         -
+                                  RW           RW        Specifies the text color in the header of the table.
+TableHeaderBackColor -
+(Page 993)                        -            -         -
+
+TableHeaderBackFill-  -           -            -         -
+
+Style                             -            -         -
+                                  -            -         -
+TableHeaderBorderBack- -
+Color                             -            -         -
+
+TableHeaderBorderColor -
+
+TableHeaderBorder-    -
+
+Width
+
+TableHeaderCornerRa- -
+dius
+
+TableHeaderEdgeStyle -
+
+TableHeaderFirstGra- -
+dientColor
+
+TableHeaderFirstGra- -
+dientOffset
+
+TableHeaderFont       -
+
+TableHeaderForeColor -
+(Page 995)
+
+TableHeaderMiddleGra- -
+dientColor
+
+TableHeaderPaddingBot- -
+tom
+
+TableHeaderPaddingLeft -
+
+TableHeaderPadding- -
+Right
+
+TableHeaderPaddingTop -
+
+WinCC Engineering V18 ­ Programming reference            255
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties             RT Profes-  RT Ad-  Panel RT  Description
+                       sional      vanced
+                                   -       -         -
+TableHeaderSecondGra- -
+dientColor                         -       -         -
+
+TableHeaderSecondGra- -            -       -         -
+dientOffset                        -       -         -
+                                   -       -         -
+ToolbarHeight          -           -       -         -
+                                   RW      RW        Specifies the value of the Y coordinate.
+ToolbarLeft            -           -       -         -
+                                   -       -         -
+ToolbarTop             -
+                                   -       -         -
+ToolbarWidth           -           -       -         -
+
+Top (Page 1083)        -           -       -         -
+
+UseButtonFirstGradient -           -       -         -
+                                   -       -         -
+UseButtonSecondGradi- -            -       -         -
+ent                                -       -         -
+                                   RW      RW        Specifies whether the selected object is visible.
+UseDesignColorSchema -             R       R         Specifies the width.
+
+UseTableHeaderFirst- -
+Gradient
+
+UseTableHeaderSecond- -
+Gradient
+
+VerticalScrollBarEnabled -
+
+VerticalScrollingEnabled -
+
+ViewType               -
+
+ViewTypeForSaveStream -
+
+Visible (Page 1204)    -
+
+Width                  -
+
+Table 1-4     Methods
+ Methods
+                       RT Profes-  RT Ad-  Panel RT  Description
+Activate (Page 1250)   sional      vanced  Yes       Enables the permanent area or the root screen.
+
+                       -           Yes
+
+256                                                  WinCC Engineering V18 ­ Programming reference
+                                                      System Manual, 11/2022, Online documentation
+                                                                      VB scripting
+                                                          1.5 VBS object model
+
+ApplicationWindow
+Description
+
+                                      6FUHHQV
+                                       6FUHHQ
+
+                                   6FUHHQ,WHPV
+                                    6FUHHQ,WHP
+
