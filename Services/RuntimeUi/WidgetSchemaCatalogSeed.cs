@@ -305,6 +305,32 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "maxRows", DisplayName = "最大行数", EditorType = PropertyEditorType.Integer, DefaultValue = "100", Category = "数据" },
             new PropertyDescriptor { Key = "showAck", DisplayName = "显示确认按钮", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+
+            // ============ B2E: WinCC AlarmControl 扩展（PDF Table 1-1 / 1-3）============
+            // 8 个状态色（来 IN / 来确认 INA / 已确认 CA / 走未确认 LIA / 走已确认 LCA / 闪烁 / Hover / Selected）
+            new PropertyDescriptor { Key = "colorIn", DisplayName = "来报警色 (IN)", EditorType = PropertyEditorType.Color, DefaultValue = "#DC2626", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorInAck", DisplayName = "来已确认色 (INA)", EditorType = PropertyEditorType.Color, DefaultValue = "#F59E0B", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorCame", DisplayName = "已确认色 (CA)", EditorType = PropertyEditorType.Color, DefaultValue = "#22C55E", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorLeftInactive", DisplayName = "走未确认色 (LIA)", EditorType = PropertyEditorType.Color, DefaultValue = "#94A3B8", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorLeftConfirmed", DisplayName = "走已确认色 (LCA)", EditorType = PropertyEditorType.Color, DefaultValue = "#64748B", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorFlashing", DisplayName = "闪烁色", EditorType = PropertyEditorType.Color, DefaultValue = "#FBBF24", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorHover", DisplayName = "悬停色", EditorType = PropertyEditorType.Color, DefaultValue = "#E0F2FE", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorSelected", DisplayName = "选中色", EditorType = PropertyEditorType.Color, DefaultValue = "#BAE6FD", Category = "状态色" },
+
+            // 过滤 / 时间窗
+            new PropertyDescriptor { Key = "alarmClassFilter", DisplayName = "报警类过滤", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "过滤",
+                Description = "多类用逗号分隔，例 '系统,工艺,过程'。留空 = 全部。" },
+            new PropertyDescriptor { Key = "timeSpan", DisplayName = "时间窗", EditorType = PropertyEditorType.Enum, DefaultValue = "1h", Category = "过滤",
+                EnumOptions = new[] { "1h|1 小时", "4h|4 小时", "8h|8 小时", "24h|24 小时", "History|历史" } },
+
+            // 排序
+            new PropertyDescriptor { Key = "sortColumn", DisplayName = "排序列", EditorType = PropertyEditorType.String, DefaultValue = "Time", Category = "排序" },
+            new PropertyDescriptor { Key = "sortDirection", DisplayName = "排序方向", EditorType = PropertyEditorType.Enum, DefaultValue = "Descending", Category = "排序",
+                EnumOptions = new[] { "Ascending|升序", "Descending|降序" } },
+
+            // 导出
+            new PropertyDescriptor { Key = "exportFormat", DisplayName = "导出格式", EditorType = PropertyEditorType.Enum, DefaultValue = "CSV", Category = "导出",
+                EnumOptions = new[] { "CSV|CSV", "Excel|Excel", "PDF|PDF" } },
         }
     };
 
@@ -965,6 +991,42 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showGrid", DisplayName = "显示网格", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
             new PropertyDescriptor { Key = "backgroundColor", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+
+            // ============ B2E: WinCC TrendControl 扩展（PDF Table 1-60）============
+            // 多 Y 轴系统（最多 4 个）
+            new PropertyDescriptor { Key = "yAxisCount", DisplayName = "Y 轴数", EditorType = PropertyEditorType.Integer, DefaultValue = "1", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y1Min", DisplayName = "Y1 最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y1Max", DisplayName = "Y1 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y1Color", DisplayName = "Y1 颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#1F2937", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y1Title", DisplayName = "Y1 标题", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y1Scale", DisplayName = "Y1 刻度", EditorType = PropertyEditorType.Enum, DefaultValue = "Linear", Category = "Y 轴",
+                EnumOptions = new[] { "Linear|线性", "Logarithmic|对数" } },
+            new PropertyDescriptor { Key = "y2Min", DisplayName = "Y2 最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y2Max", DisplayName = "Y2 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y2Color", DisplayName = "Y2 颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#DC2626", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y2Title", DisplayName = "Y2 标题", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y2Scale", DisplayName = "Y2 刻度", EditorType = PropertyEditorType.Enum, DefaultValue = "Linear", Category = "Y 轴",
+                EnumOptions = new[] { "Linear|线性", "Logarithmic|对数" } },
+            new PropertyDescriptor { Key = "y3Min", DisplayName = "Y3 最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y3Max", DisplayName = "Y3 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y3Color", DisplayName = "Y3 颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#22C55E", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y4Min", DisplayName = "Y4 最小值", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y4Max", DisplayName = "Y4 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "Y 轴" },
+            new PropertyDescriptor { Key = "y4Color", DisplayName = "Y4 颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#F59E0B", Category = "Y 轴" },
+
+            // 光标（Ruler）
+            new PropertyDescriptor { Key = "showRuler", DisplayName = "显示光标", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "光标" },
+            new PropertyDescriptor { Key = "rulerColor", DisplayName = "光标颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "光标" },
+            new PropertyDescriptor { Key = "rulerTimestamp", DisplayName = "光标时间(运行时)", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "光标",
+                Description = "运行时计算的当前光标时间戳。" },
+            new PropertyDescriptor { Key = "rulerValues", DisplayName = "光标各曲线值(运行时)", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "光标",
+                Description = "运行时计算的当前光标位置各曲线值。" },
+
+            // 工具栏细分
+            new PropertyDescriptor { Key = "showZoom", DisplayName = "工具栏-缩放", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "工具栏" },
+            new PropertyDescriptor { Key = "showPan", DisplayName = "工具栏-平移", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "工具栏" },
+            new PropertyDescriptor { Key = "showExport", DisplayName = "工具栏-导出", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "工具栏" },
+            new PropertyDescriptor { Key = "showPauseResume", DisplayName = "工具栏-暂停/继续", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "工具栏" },
         }
     };
 }
