@@ -23,29 +23,90 @@ public static class AnimationEngine
     private static bool _blinkPhaseOn = true;
     private static readonly DispatcherTimer _blinkTimer;
 
+    // B1C: Properties["flashing"] 字段驱动的属性级闪烁。每 tick 切换 BG/FG 颜色。
+    // Standard 模式：用 600ms 主时钟；Strong 模式：300ms 子时钟（独立 tick 计数器）。
+    private sealed class FlashEntry
+    {
+        public WeakReference<FrameworkElement> View = null!;
+        public string Mode = "Standard";   // Standard / Strong
+        public string Rate = "Medium";     // Slow / Medium / Fast
+        public Brush? BgOn;
+        public Brush? BgOff;
+        public Brush? FgOn;
+        public Brush? FgOff;
+        public Brush? OriginalBg;
+        public Brush? OriginalFg;
+        public int TickCounter;
+    }
+    private static readonly List<FlashEntry> _propFlash = new();
+
     static AnimationEngine()
     {
+        // B1C: 主时钟 300ms。Slow=每 4 拍切；Medium=每 2 拍切；Fast=每 1 拍切。
         _blinkTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
-            Interval = TimeSpan.FromMilliseconds(600),
+            Interval = TimeSpan.FromMilliseconds(300),
         };
         _blinkTimer.Tick += (_, _) => TickBlink();
         _blinkTimer.Start();
     }
 
+    private static int _masterTick;
     private static void TickBlink()
     {
-        _blinkPhaseOn = !_blinkPhaseOn;
-        // 清理已释放的弱引用
-        for (int i = _blinking.Count - 1; i >= 0; i--)
+        _masterTick++;
+        // B1C: Appearance.Blink 走每 2 拍（600ms）切换 Opacity（保持原行为）
+        if (_masterTick % 2 == 0)
         {
-            if (!_blinking[i].TryGetTarget(out var view))
+            _blinkPhaseOn = !_blinkPhaseOn;
+            for (int i = _blinking.Count - 1; i >= 0; i--)
             {
-                _blinking.RemoveAt(i);
+                if (!_blinking[i].TryGetTarget(out var view))
+                {
+                    _blinking.RemoveAt(i);
+                    continue;
+                }
+                view.Opacity = _blinkPhaseOn ? 1.0 : 0.3;
+            }
+        }
+
+        // B1C: Properties["flashing"] 驱动的属性级闪烁（颜色切换）
+        for (int i = _propFlash.Count - 1; i >= 0; i--)
+        {
+            var entry = _propFlash[i];
+            if (!entry.View.TryGetTarget(out var view))
+            {
+                _propFlash.RemoveAt(i);
                 continue;
             }
-            view.Opacity = _blinkPhaseOn ? 1.0 : 0.3;
+            // Slow=4 拍 / Medium=2 拍 / Fast=1 拍 切一次
+            int period = entry.Rate switch { "Slow" => 4, "Fast" => 1, _ => 2 };
+            if (_masterTick % period != 0) continue;
+            bool on = ((_masterTick / period) & 1) == 0;
+            ApplyFlashColors(view, entry, on);
         }
+    }
+
+    private static void ApplyFlashColors(FrameworkElement view, FlashEntry entry, bool phaseOn)
+    {
+        var target = FindStylableTarget(view);
+        var bg = phaseOn ? entry.BgOn : entry.BgOff;
+        var fg = phaseOn ? entry.FgOn : entry.FgOff;
+        if (target is Control ctrl)
+        {
+            if (bg is not null) ctrl.Background = bg;
+            if (fg is not null) ctrl.Foreground = fg;
+        }
+        else if (target is Panel panel)
+        {
+            if (bg is not null) panel.Background = bg;
+        }
+        else if (target is Border border)
+        {
+            if (bg is not null) border.Background = bg;
+        }
+        // Strong 模式：额外切 Opacity 强调
+        if (entry.Mode == "Strong") view.Opacity = phaseOn ? 1.0 : 0.5;
     }
 
     private static void SetBlink(FrameworkElement view, bool blink)
@@ -76,6 +137,9 @@ public static class AnimationEngine
     public static void Subscribe(WidgetInstance widget, FrameworkElement view, IWidgetDataContext ctx)
     {
         if (widget is null || view is null || ctx is null) return;
+
+        // B1C: 属性级闪烁（widget.Properties["flashing"]）
+        ApplyPropertyFlashing(widget, view);
 
         // -------- Appearance --------
         if (widget.Appearance is { } app && !string.IsNullOrWhiteSpace(app.TagId))
@@ -123,6 +187,41 @@ public static class AnimationEngine
                     break;
             }
         }
+    }
+
+    // =====================================================================
+    // B1C: Property-level Flashing（widget.Properties["flashing"]）
+    // =====================================================================
+
+    private static void ApplyPropertyFlashing(WidgetInstance widget, FrameworkElement view)
+    {
+        // 先移除该 view 上的旧 entry（每次 Subscribe 重新计算）
+        for (int i = _propFlash.Count - 1; i >= 0; i--)
+        {
+            if (!_propFlash[i].View.TryGetTarget(out var v) || ReferenceEquals(v, view))
+                _propFlash.RemoveAt(i);
+        }
+
+        if (!widget.Properties.TryGetValue("flashing", out var mode) || string.IsNullOrEmpty(mode) || mode == "None")
+            return;
+
+        widget.Properties.TryGetValue("flashingRate", out var rate);
+        widget.Properties.TryGetValue("flashingBackgroundColorOn", out var bgOn);
+        widget.Properties.TryGetValue("flashingBackgroundColorOff", out var bgOff);
+        widget.Properties.TryGetValue("flashingForegroundColorOn", out var fgOn);
+        widget.Properties.TryGetValue("flashingForegroundColorOff", out var fgOff);
+
+        var entry = new FlashEntry
+        {
+            View = new WeakReference<FrameworkElement>(view),
+            Mode = mode,
+            Rate = string.IsNullOrEmpty(rate) ? "Medium" : rate!,
+            BgOn = ParseBrush(bgOn ?? "#FFFF00"),
+            BgOff = ParseBrush(bgOff ?? "#FFFFFF"),
+            FgOn = ParseBrush(fgOn ?? "#000000"),
+            FgOff = ParseBrush(fgOff ?? "#000000"),
+        };
+        _propFlash.Add(entry);
     }
 
     // =====================================================================

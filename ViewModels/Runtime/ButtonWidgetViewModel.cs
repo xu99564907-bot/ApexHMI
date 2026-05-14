@@ -62,19 +62,8 @@ public partial class ButtonWidgetViewModel : WidgetViewModelBase
         !string.IsNullOrEmpty(s) &&
         (string.Equals(s, "True", StringComparison.OrdinalIgnoreCase) || s == "1");
 
-    private bool CheckPermission()
-    {
-        if (string.IsNullOrWhiteSpace(Model.RequiredRole) ||
-            _dataContext.Shell is not ApexHMI.ViewModels.MainViewModel shell) return true;
-        if (!Enum.TryParse<ApexHMI.Models.UserRole>(Model.RequiredRole, true, out var required))
-            required = ApexHMI.Models.UserRole.Operator;
-        if (shell.CurrentUserRole < required)
-        {
-            shell.SystemMessage = $"权限不足：操作需要 {required} 角色";
-            return false;
-        }
-        return true;
-    }
+    // B1C: 改走基类统一的 CheckAuthorizationAndNotify，同时检查 RequiredRole + Properties["authorization"]
+    private bool CheckPermission() => CheckAuthorizationAndNotify();
 
     /// <summary>顺序执行 event 名下挂的所有动作步骤。</summary>
     private void ExecuteEvent(string eventName)

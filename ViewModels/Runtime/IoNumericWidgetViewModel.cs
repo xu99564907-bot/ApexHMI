@@ -111,6 +111,9 @@ public partial class IoNumericWidgetViewModel : WidgetViewModelBase
         var tag = ResolveTag();
         if (string.IsNullOrWhiteSpace(tag)) return;
 
+        // B1C: 写入前权限检查（Properties["authorization"] + RequiredRole）
+        if (!CheckAuthorizationAndNotify()) return;
+
         var text = EditText?.Trim() ?? string.Empty;
         if (!double.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var v))
         {

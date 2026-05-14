@@ -94,6 +94,63 @@ public abstract partial class WidgetViewModelBase : ObservableObject
     protected string PropRaw(string key, string fallback = "")
         => Model.Properties.TryGetValue(key, out var v) ? v : fallback;
 
+    /// <summary>B1C: 操作授权检查。检查 widget 的 RequiredRole 与 Properties["authorization"] 双重权限。
+    /// <para>RequiredRole 沿用 P3.1（UserRole 数值递增比较）。</para>
+    /// <para>Properties["authorization"] 是 WinCC 风格的"权限组名"，需要当前用户角色名（或角色名包含/等于此值）才能操作。</para>
+    /// <para>留空 → 跳过该项检查。两项都通过才允许操作。</para>
+    /// </summary>
+    /// <param name="reason">权限不足时返回原因；通过时为 null。</param>
+    protected bool CheckAuthorization(out string? reason)
+    {
+        reason = null;
+        if (_dataContext.Shell is not ApexHMI.ViewModels.MainViewModel shell) return true;
+
+        // 1) 老 RequiredRole 检查（按 UserRole 枚举比较）
+        if (!string.IsNullOrWhiteSpace(Model.RequiredRole))
+        {
+            if (System.Enum.TryParse<ApexHMI.Models.UserRole>(Model.RequiredRole, true, out var required)
+                && shell.CurrentUserRole < required)
+            {
+                reason = $"权限不足：操作需要 {required} 角色";
+                return false;
+            }
+        }
+
+        // 2) B1C 新增 Authorization 权限组检查（基于 Properties["authorization"]）
+        var authGroup = PropRaw("authorization", "").Trim();
+        if (string.IsNullOrEmpty(authGroup)) return true;
+
+        // 当前用户角色名字符串
+        var currentRole = shell.CurrentUserRole.ToString();
+        if (string.Equals(currentRole, authGroup, System.StringComparison.OrdinalIgnoreCase)) return true;
+
+        // 兼容写多个权限组（逗号/分号分隔，任一匹配即通过）
+        var groups = authGroup.Split(new[] { ',', ';', '|' }, System.StringSplitOptions.RemoveEmptyEntries);
+        foreach (var g in groups)
+        {
+            if (string.Equals(g.Trim(), currentRole, System.StringComparison.OrdinalIgnoreCase)) return true;
+            // 名称为 UserRole 枚举值时按等级比较
+            if (System.Enum.TryParse<ApexHMI.Models.UserRole>(g.Trim(), true, out var roleReq)
+                && shell.CurrentUserRole >= roleReq) return true;
+        }
+
+        reason = $"权限不足：操作需要权限组 \"{authGroup}\"，当前角色 {currentRole}";
+        Serilog.Log.Warning("WidgetAuthz: 拒绝操作 widget={Id} require={Auth} current={Cur}",
+            Model.Id, authGroup, currentRole);
+        return false;
+    }
+
+    /// <summary>B1C: 简化封装，权限不足时把原因塞进 Shell.SystemMessage。</summary>
+    protected bool CheckAuthorizationAndNotify()
+    {
+        if (CheckAuthorization(out var reason)) return true;
+        if (_dataContext.Shell is ApexHMI.ViewModels.MainViewModel shell && !string.IsNullOrEmpty(reason))
+        {
+            shell.SystemMessage = reason;
+        }
+        return false;
+    }
+
     /// <summary>解析 ${KEY} 引用为本地化文本（不匹配时原样返回）。</summary>
     protected static string ResolveLocalized(string raw)
     {
