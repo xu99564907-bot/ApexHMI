@@ -13,6 +13,10 @@ namespace ApexHMI.Services.RuntimeUi;
 public interface IWidgetDataContext
 {
     void RegisterValueCallback(string tagId, Action<string> callback);
+
+    /// <summary>M3.1: 带 quality 的值回调重载。运行时上下文会同时携带 OPC UA StatusCode。</summary>
+    void RegisterValueCallback(string tagId, Action<string, TagQuality> callback);
+
     void ExecuteAction(string actionType, string actionParam);
 
     /// <summary>

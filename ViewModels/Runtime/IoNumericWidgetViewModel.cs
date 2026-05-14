@@ -27,7 +27,12 @@ public partial class IoNumericWidgetViewModel : WidgetViewModelBase
         var tag = ResolveTag();
         if (!string.IsNullOrWhiteSpace(tag))
         {
-            dataContext.RegisterValueCallback(tag, OnTagValueChanged);
+            // M3.1: 走 quality 回调，驱动 ####/yellow 显示
+            dataContext.RegisterValueCallback(tag, (val, q) =>
+            {
+                CurrentQuality = q;
+                OnTagValueChanged(val);
+            });
         }
     }
 
@@ -66,9 +71,13 @@ public partial class IoNumericWidgetViewModel : WidgetViewModelBase
 
     /// <summary>
     /// B2B: 当前生效背景色。默认=Background；OnTagValueChanged 中根据 min/max 切到 above/belowLimit 色。
+    /// M3.1: Bad 质量 → 灰底（覆盖 limit 色）。
     /// </summary>
-    public string EffectiveBackground => _effectiveBackground ?? Background;
+    public string EffectiveBackground => IsQualityBad ? "#E5E7EB" : (_effectiveBackground ?? Background);
     private string? _effectiveBackground;
+
+    /// <summary>M3.1: Bad 质量 → 红边框（强制覆盖 BorderColor）。</summary>
+    public string EffectiveBorderColor => IsQualityBad ? "#DC2626" : BorderColor;
 
     // B1A: Input 模式即允许显示+输入；InputOutput 仅作迁移兼容（迁移层会替换掉）。
     public bool IsInput  => Mode is "Input" or "InputOutput";
@@ -92,11 +101,29 @@ public partial class IoNumericWidgetViewModel : WidgetViewModelBase
         // B2B: hiddenInput=true，显示字符全替换为 *
         var visibleText = HiddenInput ? new string('*', formatted.Length) : formatted;
 
-        DisplayText = string.IsNullOrEmpty(Unit) ? visibleText : $"{visibleText} {Unit}";
+        // M3.1: Bad 质量显示 ####（WinCC 真实行为，掩盖陈旧/错误读数）；Uncertain 在末尾加 ⚠
+        if (IsQualityBad)
+        {
+            DisplayText = "####";
+        }
+        else
+        {
+            var withUnit = string.IsNullOrEmpty(Unit) ? visibleText : $"{visibleText} {Unit}";
+            DisplayText = IsQualityUncertain ? withUnit + " ⚠" : withUnit;
+        }
+
         if (string.IsNullOrEmpty(EditText)) EditText = formatted;
 
         // B2B: 越限切背景色（仅 Decimal 类型才比较）
         UpdateLimitBackgroundColor(rawValue);
+    }
+
+    /// <summary>M3.1: 质量变化时刷新显示（即使值未变也要切到 ####）。</summary>
+    protected override void OnQualityChanged(TagQuality quality)
+    {
+        OnTagValueChanged(_lastRawValue);
+        OnPropertyChanged(nameof(EffectiveBackground));
+        OnPropertyChanged(nameof(EffectiveBorderColor));
     }
 
     /// <summary>B2B: 按 min/max 切 aboveUpperLimitColor / belowLowerLimitColor。</summary>

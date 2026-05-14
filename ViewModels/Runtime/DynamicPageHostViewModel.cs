@@ -18,6 +18,8 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
     private readonly IWidgetViewFactory _widgetFactory;
     private readonly Action<string, string> _executeActionHandler;
     private readonly Dictionary<string, List<Action<string>>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
+    // M3.1: 带质量的回调列表（与上方表并存；PushTagValue / PushTagValueWithQuality 各自分发）
+    private readonly Dictionary<string, List<Action<string, TagQuality>>> _qualityCallbacks = new(StringComparer.OrdinalIgnoreCase);
 
     [ObservableProperty]
     private PageDefinition? _currentPage;
@@ -68,6 +70,7 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
     public void LoadPage(PageDefinition page)
     {
         _valueCallbacks.Clear();
+        _qualityCallbacks.Clear();
         WidgetElements.Clear();
         CurrentPage = page;
 
@@ -96,12 +99,23 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
 
     /// <summary>将某 Tag 最新值推送给所有关注它的 Widget。</summary>
     public void PushTagValue(string tagId, string value)
+        => PushTagValueWithQuality(tagId, value, TagQuality.Good);
+
+    /// <summary>M3.1: 推送带 quality 的 Tag 值。两种回调都通知。</summary>
+    public void PushTagValueWithQuality(string tagId, string value, TagQuality quality)
     {
         if (_valueCallbacks.TryGetValue(tagId, out var callbacks))
         {
             foreach (var cb in callbacks)
             {
                 Application.Current?.Dispatcher.Invoke(() => cb(value));
+            }
+        }
+        if (_qualityCallbacks.TryGetValue(tagId, out var qcb))
+        {
+            foreach (var cb in qcb)
+            {
+                Application.Current?.Dispatcher.Invoke(() => cb(value, quality));
             }
         }
     }
@@ -117,11 +131,33 @@ public partial class DynamicPageHostViewModel : ObservableObject, IWidgetDataCon
         list.Add(callback);
     }
 
+    /// <summary>M3.1: 注册带 quality 回调。</summary>
+    public void RegisterValueCallback(string tagId, Action<string, TagQuality> callback)
+    {
+        if (!_qualityCallbacks.TryGetValue(tagId, out var list))
+        {
+            list = new List<Action<string, TagQuality>>();
+            _qualityCallbacks[tagId] = list;
+        }
+        list.Add(callback);
+    }
+
     public void ExecuteAction(string actionType, string actionParam)
         => _executeActionHandler?.Invoke(actionType, actionParam);
 
     /// <summary>当前页面中所有绑定了 Tag 的 TagId 集合，用于订阅 OPC UA。</summary>
-    public IEnumerable<string> BoundTagIds => _valueCallbacks.Keys;
+    public IEnumerable<string> BoundTagIds
+    {
+        get
+        {
+            // M3.1: 合并两种回调表的 key
+            foreach (var k in _valueCallbacks.Keys) yield return k;
+            foreach (var k in _qualityCallbacks.Keys)
+            {
+                if (!_valueCallbacks.ContainsKey(k)) yield return k;
+            }
+        }
+    }
 }
 
 /// <summary>携带绝对坐标的控件包装，供 Canvas 布局使用。</summary>

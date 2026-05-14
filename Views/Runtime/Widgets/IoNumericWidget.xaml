@@ -18,7 +18,7 @@
             Padding="{Binding PaddingThickness}">
         <Border.BorderBrush>
             <MultiBinding Converter="{StaticResource BorderStyleBrush}">
-                <Binding Path="BorderColor"/>
+                <Binding Path="EffectiveBorderColor"/>
                 <Binding Path="BorderStyleName"/>
             </MultiBinding>
         </Border.BorderBrush>

@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using ApexHMI.Models.RuntimeUi;
 
 namespace ApexHMI.Services.RuntimeUi;
 
@@ -26,6 +27,10 @@ public sealed class FaceplateChildDataContext : IWidgetDataContext
     public IReadOnlyDictionary<string, string>? CurrentFaceplateProperties => _propertyValues;
 
     public void RegisterValueCallback(string tagId, Action<string> callback)
+        => _parent.RegisterValueCallback(tagId, callback);
+
+    /// <summary>M3.1: 透传 quality 回调给父上下文。</summary>
+    public void RegisterValueCallback(string tagId, Action<string, TagQuality> callback)
         => _parent.RegisterValueCallback(tagId, callback);
 
     public void ExecuteAction(string actionType, string actionParam)

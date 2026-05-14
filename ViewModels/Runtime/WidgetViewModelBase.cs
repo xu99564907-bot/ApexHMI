@@ -9,6 +9,39 @@ public abstract partial class WidgetViewModelBase : ObservableObject
 {
     protected readonly IWidgetDataContext _dataContext;
 
+    /// <summary>M3.1: 当前主绑定 Tag 的最新质量码（OPC UA StatusCode 映射），用于 UI 显示规则切换。</summary>
+    private TagQuality _currentQuality = TagQuality.Good;
+    public TagQuality CurrentQuality
+    {
+        get => _currentQuality;
+        protected set
+        {
+            if (_currentQuality == value) return;
+            _currentQuality = value;
+            OnPropertyChanged(nameof(CurrentQuality));
+            OnPropertyChanged(nameof(IsQualityGood));
+            OnPropertyChanged(nameof(IsQualityBad));
+            OnPropertyChanged(nameof(IsQualityUncertain));
+            OnPropertyChanged(nameof(QualityBadge));
+            OnQualityChanged(value);
+        }
+    }
+
+    /// <summary>M3.1: 子类钩子，质量变化时被通知（如 IoNumeric 切到 ####/yellow）。</summary>
+    protected virtual void OnQualityChanged(TagQuality quality) { }
+
+    public bool IsQualityGood => _currentQuality == TagQuality.Good;
+    public bool IsQualityBad => _currentQuality == TagQuality.Bad;
+    public bool IsQualityUncertain => _currentQuality == TagQuality.Uncertain;
+
+    /// <summary>M3.1: UI 角标符号。Good→空；Uncertain→黄三角 ⚠；Bad→红叉 ✕。</summary>
+    public string QualityBadge => _currentQuality switch
+    {
+        TagQuality.Uncertain => "⚠",
+        TagQuality.Bad => "✕",
+        _ => string.Empty,
+    };
+
     protected WidgetViewModelBase(WidgetInstance model, IWidgetDataContext dataContext)
     {
         Model = model;
@@ -16,7 +49,12 @@ public abstract partial class WidgetViewModelBase : ObservableObject
 
         if (model.Binding is { TagId.Length: > 0 } binding)
         {
-            dataContext.RegisterValueCallback(binding.TagId, OnTagValueChanged);
+            // M3.1: 主绑定 Tag 走 quality 回调，同时驱动 OnTagValueChanged + CurrentQuality
+            dataContext.RegisterValueCallback(binding.TagId, (val, q) =>
+            {
+                CurrentQuality = q;
+                OnTagValueChanged(val);
+            });
         }
 
         // P2.5 状态动画：每个动画的 TagId 注册回调，触发时重新计算属性
