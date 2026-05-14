@@ -140,7 +140,8 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor
             {
                 Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Output", Category = "数据",
-                EnumOptions = new[] { "Input|输入", "Output|输出", "InputOutput|输入输出" }
+                EnumOptions = new[] { "Input|输入", "Output|仅输出" },
+                Description = "B1A: WinCC GraphicIOField Mode 只有 Input/Output 两值"
             },
             new PropertyDescriptor { Key = "entries", DisplayName = "图形条目", EditorType = PropertyEditorType.GraphicListRef, DefaultValue = "", Category = "数据", Description = "引用图形列表 {graphicList:xxx} 或 'value=path;...'" },
             new PropertyDescriptor
@@ -551,6 +552,9 @@ internal static class WidgetSchemaCatalogSeed
     };
 
     // ---------------- io-numeric ----------------
+    // B1A: mode 拆出 dataFormat（PDF Page 642 + Page 824）
+    // - Mode = Input / Output（仅 2 选项；WinCC IOField 的 Mode 在 Input 时本身就允许显示+输入）
+    // - DataFormat = Decimal / Binary / Hexadecimal / String / DateTime
     private static WidgetSchema BuildIoNumeric() => new()
     {
         TypeId = "io-numeric",
@@ -560,9 +564,16 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor
             {
                 Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Output", Category = "数据",
-                EnumOptions = new[] { "Input|输入", "Output|输出", "InputOutput|输入输出" }
+                EnumOptions = new[] { "Input|输入", "Output|仅输出" },
+                Description = "Input=允许显示+输入；Output=只读显示（WinCC IOField Mode, PDF Page 824）"
             },
-            new PropertyDescriptor { Key = "format", DisplayName = "数值格式", EditorType = PropertyEditorType.String, DefaultValue = "0.##", Category = "格式", Description = ".NET 数值格式串" },
+            new PropertyDescriptor
+            {
+                Key = "dataFormat", DisplayName = "数据格式", EditorType = PropertyEditorType.Enum, DefaultValue = "Decimal", Category = "格式",
+                EnumOptions = new[] { "Decimal|十进制", "Binary|二进制", "Hexadecimal|十六进制", "String|字符串", "DateTime|日期时间" },
+                Description = "显示格式（WinCC IOField DataFormat, PDF Page 642）。Decimal 走 format 串；其余按类型转换。"
+            },
+            new PropertyDescriptor { Key = "format", DisplayName = "数值格式", EditorType = PropertyEditorType.String, DefaultValue = "0.##", Category = "格式", Description = ".NET 数值格式串（仅 dataFormat=Decimal 生效）" },
             new PropertyDescriptor { Key = "decimals", DisplayName = "小数位", EditorType = PropertyEditorType.Integer, DefaultValue = "2", Category = "格式" },
             new PropertyDescriptor { Key = "unit", DisplayName = "单位", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "格式" },
             new PropertyDescriptor { Key = "minValue", DisplayName = "最小值", EditorType = PropertyEditorType.Number, DefaultValue = "", Category = "限值" },
@@ -588,7 +599,8 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor
             {
                 Key = "mode", DisplayName = "模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Output", Category = "数据",
-                EnumOptions = new[] { "Input|输入", "Output|输出", "InputOutput|输入输出" }
+                EnumOptions = new[] { "Input|输入", "Output|仅输出" },
+                Description = "B1A: WinCC SymbolicIOField Mode 只有 Input/Output 两值"
             },
             new PropertyDescriptor { Key = "entries", DisplayName = "条目映射", EditorType = PropertyEditorType.String, DefaultValue = "0=停止;1=运行", Category = "数据", Description = "格式：value=text;value=text，或引用文本列表" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },

@@ -19,6 +19,7 @@ public static class ProjectMigration
             {
                 MigrateLegacyEvents(w);
                 MigrateLegacyAnimations(w);
+                MigrateIoNumericMode(w);
             }
         }
 
@@ -186,6 +187,31 @@ public static class ProjectMigration
             w.Movement.TagIdX = a.TagId;
             if (double.TryParse(a.TargetValue, out var px)) w.Movement.PixelEndX = px;
             if (double.TryParse(a.CompareTo, out var rx))  w.Movement.RangeMaxX = rx;
+        }
+    }
+
+    /// <summary>B1A: io-numeric 旧 mode=InputOutput 迁移 → mode=Input + dataFormat 默认 Decimal。
+    /// <para>WinCC IOField Mode（PDF p824）只有 Input/Output 两值，InputOutput 是 ApexHMI 早期混淆设计。</para>
+    /// <para>Input 本身允许显示+输入，所以语义无损。</para>
+    /// </summary>
+    public static void MigrateIoNumericMode(WidgetInstance w)
+    {
+        if (!string.Equals(w.TypeId, "io-numeric", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(w.TypeId, "io-symbolic", StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(w.TypeId, "io-graphic", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        if (w.Properties.TryGetValue("mode", out var mode) &&
+            string.Equals(mode, "InputOutput", StringComparison.OrdinalIgnoreCase))
+        {
+            w.Properties["mode"] = "Input";
+        }
+
+        // 仅 io-numeric 需要 dataFormat；其它两个 IO widget 不引入
+        if (string.Equals(w.TypeId, "io-numeric", StringComparison.OrdinalIgnoreCase)
+            && !w.Properties.ContainsKey("dataFormat"))
+        {
+            w.Properties["dataFormat"] = "Decimal";
         }
     }
 
