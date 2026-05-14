@@ -28,7 +28,7 @@
                 <Binding Path="BorderStyleName"/>
             </MultiBinding>
         </Button.BorderBrush>
-        <TextBlock Text="{Binding Text}"
+        <TextBlock Text="{Binding DisplayText}"
                    TextDecorations="{Binding FontUnderline, Converter={StaticResource BoolToTextDecorations}}"
                    VerticalAlignment="Center" HorizontalAlignment="Center"/>
     </Button>

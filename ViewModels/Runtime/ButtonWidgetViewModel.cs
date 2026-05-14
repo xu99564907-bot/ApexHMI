@@ -25,17 +25,45 @@ public partial class ButtonWidgetViewModel : WidgetViewModelBase
         var readTag = ResolveReadTag();
         if (!string.IsNullOrEmpty(readTag))
         {
-            _dataContext.RegisterValueCallback(readTag!, v => _currentBoolValue = ParseBool(v));
+            _dataContext.RegisterValueCallback(readTag!, v =>
+            {
+                _currentBoolValue = ParseBool(v);
+                OnPropertyChanged(nameof(DisplayText));
+                OnPropertyChanged(nameof(DisplayPicture));
+            });
         }
     }
 
+    /// <summary>B2D: 普通文本字段。Toggle 模式时由 DisplayText 选 onText/offText。</summary>
     public string Text       => Prop("text",       "按钮");
     public string Background => Prop("background", "#2563EB");
     public string Foreground => Prop("foreground", "#FFFFFF");
 
-    /// <summary>读取地址优先级：Binding.TagId > 新 Events["click"][0].Args["address"] > 旧 ActionParam。</summary>
+    // ============ B2D: WinCC Button Toggle 一体化（PDF Table 1-11） ============
+
+    /// <summary>Push（默认）/ Toggle。</summary>
+    public string ButtonMode => Prop("buttonMode", "Push");
+    public bool   IsToggleMode => string.Equals(ButtonMode, "Toggle", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Toggle 模式绑定的 BOOL 变量地址。</summary>
+    public string StateTag => Prop("stateTag", "");
+    public string OnText   => Prop("onText",  "ON");
+    public string OffText  => Prop("offText", "OFF");
+    public string OnPicture  => Prop("onPicture",  "");
+    public string OffPicture => Prop("offPicture", "");
+
+    /// <summary>B2D: 当前显示的文本。Push 模式=Text；Toggle 模式按 stateTag 当前值选 on/offText。</summary>
+    public string DisplayText => IsToggleMode ? (_currentBoolValue ? OnText : OffText) : Text;
+
+    /// <summary>B2D: 当前显示的图片路径（Toggle）。Push 模式返回空。</summary>
+    public string DisplayPicture => IsToggleMode ? (_currentBoolValue ? OnPicture : OffPicture) : string.Empty;
+
+    /// <summary>读取地址优先级：B2D StateTag > Binding.TagId > 新 Events["click"][0].Args["address"] > 旧 ActionParam。</summary>
     private string? ResolveReadTag()
     {
+        // B2D: Toggle 模式优先 StateTag
+        if (IsToggleMode && !string.IsNullOrWhiteSpace(StateTag)) return StateTag;
+
         var t = Model.Binding?.TagId;
         if (!string.IsNullOrWhiteSpace(t)) return t;
 
@@ -205,7 +233,17 @@ public partial class ButtonWidgetViewModel : WidgetViewModelBase
     }
 
     [RelayCommand]
-    private void Click() => ExecuteEvent("click");
+    private void Click()
+    {
+        // B2D: Toggle 模式优先 — 读 stateTag 当前值，写反值
+        if (IsToggleMode && !string.IsNullOrWhiteSpace(StateTag))
+        {
+            if (!CheckPermission()) return;
+            _dataContext.ExecuteAction("write-bool", $"{StateTag}|{!_currentBoolValue}");
+            return;
+        }
+        ExecuteEvent("click");
+    }
 
     /// <summary>复归型按下：写 True（新 Events 中的 momentary step 或旧字段）。</summary>
     [RelayCommand]

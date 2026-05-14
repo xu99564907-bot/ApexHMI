@@ -711,6 +711,28 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "borderWidth", DisplayName = "边框宽度", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "外观" },
             new PropertyDescriptor { Key = "cornerRadius", DisplayName = "圆角", EditorType = PropertyEditorType.Number, DefaultValue = "4", Category = "外观" },
             new PropertyDescriptor { Key = "pressedBackground", DisplayName = "按下背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#1E40AF", Category = "外观" },
+
+            // ============ B2D: WinCC Button Toggle 一体化（Table 1-11）============
+            new PropertyDescriptor
+            {
+                Key = "buttonMode", DisplayName = "按钮模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Push", Category = "行为",
+                EnumOptions = new[] { "Push|普通", "Toggle|切换" },
+                Description = "Push=普通点击 / Momentary 子模式；Toggle=按 stateTag BOOL 双态切换（WinCC Button Mode）。"
+            },
+            new PropertyDescriptor { Key = "stateTag", DisplayName = "状态变量", EditorType = PropertyEditorType.TagAddress,
+                DefaultValue = "", Category = "行为",
+                Description = "Toggle 模式下双状态绑定的 BOOL 变量。点击时读取并写反值。" },
+            new PropertyDescriptor { Key = "onText", DisplayName = "ON 文本", EditorType = PropertyEditorType.String,
+                DefaultValue = "ON", Category = "文本",
+                Description = "Toggle 模式下 stateTag=true 时显示文本（覆盖 text）。" },
+            new PropertyDescriptor { Key = "offText", DisplayName = "OFF 文本", EditorType = PropertyEditorType.String,
+                DefaultValue = "OFF", Category = "文本",
+                Description = "Toggle 模式下 stateTag=false 时显示文本。" },
+            new PropertyDescriptor { Key = "onPicture", DisplayName = "ON 图片", EditorType = PropertyEditorType.String,
+                DefaultValue = "", Category = "外观",
+                Description = "Toggle 模式 ON 状态图片路径（同 graphic-view 模式）。当前版本仅 schema，运行时未渲染图片。" },
+            new PropertyDescriptor { Key = "offPicture", DisplayName = "OFF 图片", EditorType = PropertyEditorType.String,
+                DefaultValue = "", Category = "外观", Description = "Toggle 模式 OFF 状态图片路径。" },
         }
     };
 
