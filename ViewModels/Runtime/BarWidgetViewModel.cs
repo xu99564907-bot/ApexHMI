@@ -43,10 +43,24 @@ public partial class BarWidgetViewModel : WidgetViewModelBase
 
     public bool IsVertical => string.Equals(OrientationProp, "vertical", System.StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>B2C: useLimitBandColors=true 时启用 5 级带 + hysteresis 防抖。</summary>
+    public bool UseLimitBandColors
+        => string.Equals(Prop("useLimitBandColors", "false"), "true", System.StringComparison.OrdinalIgnoreCase);
+
+    private string? _lastBandColor;
+
     public string CurrentFillColor
     {
         get
         {
+            if (UseLimitBandColors)
+            {
+                var bands = LimitBands.FromProperties(Model.Properties);
+                var c = bands.SelectColor(Value, _lastBandColor);
+                _lastBandColor = c;
+                return c;
+            }
+            // 兼容旧 warnThreshold / alarmThreshold（向后兼容）
             if (double.TryParse(AlarmThresholdRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out var alarm) && Value >= alarm)
                 return AlarmColor;
             if (double.TryParse(WarnThresholdRaw, NumberStyles.Any, CultureInfo.InvariantCulture, out var warn) && Value >= warn)

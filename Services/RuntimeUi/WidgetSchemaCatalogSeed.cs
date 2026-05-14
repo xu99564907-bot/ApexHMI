@@ -868,6 +868,24 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "alarmColor", DisplayName = "报警色", EditorType = PropertyEditorType.Color, DefaultValue = "#EF4444", Category = "外观" },
             new PropertyDescriptor { Key = "showLabel", DisplayName = "显示标签", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "showScale", DisplayName = "显示刻度", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+
+            // ============ B2C: WinCC 5 级限值带（Bar PDF Table 1-7）============
+            new PropertyDescriptor { Key = "useLimitBandColors", DisplayName = "启用 5 级限值带", EditorType = PropertyEditorType.Boolean,
+                DefaultValue = "false", Category = "限值带",
+                Description = "true 时优先使用 alarmHigh / warningHigh / toleranceHigh/Low / warningLow / alarmLow 6 阈值 + 4 色；false 沿用旧 warn/alarmThreshold。" },
+            new PropertyDescriptor { Key = "alarmHigh", DisplayName = "报警上限", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "限值带" },
+            new PropertyDescriptor { Key = "warningHigh", DisplayName = "警告上限", EditorType = PropertyEditorType.Number, DefaultValue = "90", Category = "限值带" },
+            new PropertyDescriptor { Key = "toleranceHigh", DisplayName = "容差上限", EditorType = PropertyEditorType.Number, DefaultValue = "80", Category = "限值带" },
+            new PropertyDescriptor { Key = "toleranceLow", DisplayName = "容差下限", EditorType = PropertyEditorType.Number, DefaultValue = "20", Category = "限值带" },
+            new PropertyDescriptor { Key = "warningLow", DisplayName = "警告下限", EditorType = PropertyEditorType.Number, DefaultValue = "10", Category = "限值带" },
+            new PropertyDescriptor { Key = "alarmLow", DisplayName = "报警下限", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值带" },
+            new PropertyDescriptor { Key = "alarmHighColor", DisplayName = "报警色", EditorType = PropertyEditorType.Color, DefaultValue = "#DC2626", Category = "限值带" },
+            new PropertyDescriptor { Key = "warningHighColor", DisplayName = "警告色", EditorType = PropertyEditorType.Color, DefaultValue = "#F59E0B", Category = "限值带" },
+            new PropertyDescriptor { Key = "toleranceColor", DisplayName = "容差色", EditorType = PropertyEditorType.Color, DefaultValue = "#22C55E", Category = "限值带" },
+            new PropertyDescriptor { Key = "normalColor", DisplayName = "常态色", EditorType = PropertyEditorType.Color, DefaultValue = "#3B82F6", Category = "限值带" },
+            new PropertyDescriptor { Key = "colorChangeHysteresis", DisplayName = "切色防抖", EditorType = PropertyEditorType.Number,
+                DefaultValue = "0", Category = "限值带",
+                Description = "值在阈值附近抖动时保持旧色（生产现场必备）。0 = 关闭。" },
         }
     };
 
@@ -888,6 +906,21 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "majorTicks", DisplayName = "主刻度数", EditorType = PropertyEditorType.Integer, DefaultValue = "10", Category = "外观" },
             new PropertyDescriptor { Key = "minorTicks", DisplayName = "次刻度数", EditorType = PropertyEditorType.Integer, DefaultValue = "5", Category = "外观" },
             new PropertyDescriptor { Key = "foreground", DisplayName = "指针色", EditorType = PropertyEditorType.Color, DefaultValue = "#2563EB", Category = "外观" },
+
+            // ============ B2C: WinCC 5 级限值带（Gauge PDF Table 1-42）============
+            new PropertyDescriptor { Key = "useLimitBandColors", DisplayName = "启用 5 级限值带", EditorType = PropertyEditorType.Boolean,
+                DefaultValue = "false", Category = "限值带" },
+            new PropertyDescriptor { Key = "alarmHigh", DisplayName = "报警上限", EditorType = PropertyEditorType.Number, DefaultValue = "100", Category = "限值带" },
+            new PropertyDescriptor { Key = "warningHigh", DisplayName = "警告上限", EditorType = PropertyEditorType.Number, DefaultValue = "90", Category = "限值带" },
+            new PropertyDescriptor { Key = "toleranceHigh", DisplayName = "容差上限", EditorType = PropertyEditorType.Number, DefaultValue = "80", Category = "限值带" },
+            new PropertyDescriptor { Key = "toleranceLow", DisplayName = "容差下限", EditorType = PropertyEditorType.Number, DefaultValue = "20", Category = "限值带" },
+            new PropertyDescriptor { Key = "warningLow", DisplayName = "警告下限", EditorType = PropertyEditorType.Number, DefaultValue = "10", Category = "限值带" },
+            new PropertyDescriptor { Key = "alarmLow", DisplayName = "报警下限", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值带" },
+            new PropertyDescriptor { Key = "alarmHighColor", DisplayName = "报警色", EditorType = PropertyEditorType.Color, DefaultValue = "#DC2626", Category = "限值带" },
+            new PropertyDescriptor { Key = "warningHighColor", DisplayName = "警告色", EditorType = PropertyEditorType.Color, DefaultValue = "#F59E0B", Category = "限值带" },
+            new PropertyDescriptor { Key = "toleranceColor", DisplayName = "容差色", EditorType = PropertyEditorType.Color, DefaultValue = "#22C55E", Category = "限值带" },
+            new PropertyDescriptor { Key = "normalColor", DisplayName = "常态色", EditorType = PropertyEditorType.Color, DefaultValue = "#3B82F6", Category = "限值带" },
+            new PropertyDescriptor { Key = "colorChangeHysteresis", DisplayName = "切色防抖", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "限值带" },
         }
     };
 
