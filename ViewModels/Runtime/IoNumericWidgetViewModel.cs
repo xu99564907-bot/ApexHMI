@@ -59,6 +59,8 @@ public partial class IoNumericWidgetViewModel : WidgetViewModelBase
     public string AboveUpperLimitColor => Prop("aboveUpperLimitColor", "");
     public string BelowLowerLimitColor => Prop("belowLowerLimitColor", "");
     public string TooltipText          => Prop("tooltipText", "");
+    /// <summary>M3.3: 触屏键盘开关。true → GotFocus 时弹 NumericKeypadDialog。</summary>
+    public bool   ShowTouchKeyboard    => ParseBool(Prop("showTouchKeyboard", "false"));
 
     // ====== B2B WinCC 中优字段 ======
     public int    FieldLength          => int.TryParse(Prop("fieldLength", "0"), out var x) ? x : 0;
