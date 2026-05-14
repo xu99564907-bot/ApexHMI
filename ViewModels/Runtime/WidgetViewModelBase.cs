@@ -151,6 +151,63 @@ public abstract partial class WidgetViewModelBase : ObservableObject
         return false;
     }
 
+    // ================== B2A: B1 通用字段统一暴露给所有 widget View ==================
+    // 这些属性都从 Properties 字典读，无 schema 时回退默认值，因此对所有 widget 安全。
+
+    /// <summary>B2A: 字体族（schema fontFamily, 默认 Microsoft YaHei UI）。</summary>
+    public string FontFamilyName  => Prop("fontFamily", "Microsoft YaHei UI");
+
+    /// <summary>B2A: 粗体 bool 串（fontBold）。</summary>
+    public string FontBold        => Prop("fontBold", "false");
+
+    /// <summary>B2A: 斜体 bool 串（fontItalic）。</summary>
+    public string FontItalic      => Prop("fontItalic", "false");
+
+    /// <summary>B2A: 下划线 bool 串（fontUnderline）。</summary>
+    public string FontUnderline   => Prop("fontUnderline", "false");
+
+    /// <summary>B2A: 删除线 bool 串（fontStrikeThrough）。</summary>
+    public string FontStrikeThrough => Prop("fontStrikeThrough", "false");
+
+    /// <summary>B2A: 边框颜色（borderColor）。</summary>
+    public string BorderColor     => Prop("borderColor", "#CBD5E1");
+
+    /// <summary>B2A: 边框样式（borderStyle: None / Solid / Dashed / Dotted / Double）。</summary>
+    public string BorderStyleName => Prop("borderStyle", "Solid");
+
+    /// <summary>B2A: 边框宽度（borderWidth）。</summary>
+    public string BorderWidthValue => Prop("borderWidth", "0");
+
+    /// <summary>B2A: 边框背景色（borderBackColor — 虚线/点线间隙色，目前未使用）。</summary>
+    public string BorderBackColor => Prop("borderBackColor", "#FFFFFF");
+
+    /// <summary>B2A: 内边距 Thickness（top/right/bottom/left Margin 4 字段拼成）。</summary>
+    public System.Windows.Thickness PaddingThickness
+    {
+        get
+        {
+            double Parse(string k, double def)
+            {
+                var s = Prop(k, def.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                return double.TryParse(s, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : def;
+            }
+            return new System.Windows.Thickness(Parse("leftMargin", 0), Parse("topMargin", 0),
+                                                Parse("rightMargin", 0), Parse("bottomMargin", 0));
+        }
+    }
+
+    /// <summary>B2A: operatorEnable=false 时控件 IsEnabled=false（WinCC OperatorEnable）。</summary>
+    public bool IsEnabledByOperator
+    {
+        get
+        {
+            var s = Prop("operatorEnable", "true");
+            return !string.IsNullOrEmpty(s) &&
+                   (s.Equals("true", System.StringComparison.OrdinalIgnoreCase) || s == "1");
+        }
+    }
+
     /// <summary>解析 ${KEY} 引用为本地化文本（不匹配时原样返回）。</summary>
     protected static string ResolveLocalized(string raw)
     {

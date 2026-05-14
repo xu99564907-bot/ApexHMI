@@ -42,6 +42,15 @@ public partial class IoNumericWidgetViewModel : WidgetViewModelBase
     public string TextAlignment   => Prop("textAlign",   "Right");
     public string Background      => Prop("background",  "#FFFFFF");
     public string Foreground      => Prop("foreground",  "#0F172A");
+    /// <summary>B2A: 字号（io-numeric schema 自有字段 fontSize）。</summary>
+    public string FontSizeRaw     => Prop("fontSize",    "14");
+
+    /// <summary>
+    /// B2B 起：当前生效背景色。默认=Background；越上限→aboveUpperLimitColor；越下限→belowLowerLimitColor。
+    /// 由 OnTagValueChanged 时计算并 OnPropertyChanged。
+    /// </summary>
+    public string EffectiveBackground => _effectiveBackground ?? Background;
+    private string? _effectiveBackground;
 
     // B1A: Input 模式即允许显示+输入；InputOutput 仅作迁移兼容（迁移层会替换掉）。
     public bool IsInput  => Mode is "Input" or "InputOutput";
@@ -115,9 +124,38 @@ public partial class IoNumericWidgetViewModel : WidgetViewModelBase
         if (!CheckAuthorizationAndNotify()) return;
 
         var text = EditText?.Trim() ?? string.Empty;
-        if (!double.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out var v))
+        double v;
+
+        // B2A: DataFormat=DateTime 时，先尝试 DateTime.Parse(text) 再转 ticks/Unix 秒
+        if (string.Equals(DataFormat, "DateTime", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out var stamp) &&
+                !DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out stamp))
+            {
+                Log.Warning("IoNumeric DateTime: 输入无法解析为日期时间 {Text}", text);
+                if (_dataContext.Shell is ApexHMI.ViewModels.MainViewModel shell)
+                    shell.SystemMessage = $"日期时间格式错误：{text}";
+                // 恢复显示
+                EditText = FormatByDataFormat(_lastRawValue);
+                return;
+            }
+            // 按当前值量级判断目标类型：>1e11 → ticks，否则 Unix 秒
+            long target;
+            if (long.TryParse(_lastRawValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var existing)
+                && existing > 100000000000L)
+                target = stamp.ToUniversalTime().Ticks;
+            else
+                target = new DateTimeOffset(stamp).ToUnixTimeSeconds();
+            _dataContext.ExecuteAction("write-int", $"{tag}|{target}");
+            return;
+        }
+
+        if (!double.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out v))
         {
             Log.Warning("IoNumeric: 输入无法解析为数字 {Text}", text);
+            if (_dataContext.Shell is ApexHMI.ViewModels.MainViewModel shellNan)
+                shellNan.SystemMessage = $"无法解析为数字：{text}";
+            EditText = FormatByDataFormat(_lastRawValue);
             return;
         }
 
