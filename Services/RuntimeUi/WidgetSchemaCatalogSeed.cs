@@ -445,6 +445,21 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showHeader", DisplayName = "显示表头", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "alternateRowColor", DisplayName = "斑马纹颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#F8FAFC", Category = "外观" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+
+            // ============ B3.3: TableView 通用 HMI 控件扩展（参考 WinCC TableControl/AlarmControl）============
+            new PropertyDescriptor { Key = "rowHeight", DisplayName = "行高", EditorType = PropertyEditorType.Integer, DefaultValue = "22", Category = "外观" },
+            new PropertyDescriptor { Key = "allowSort", DisplayName = "允许排序", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "allowFilter", DisplayName = "允许列过滤", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "showRowNumbers", DisplayName = "显示行号", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor
+            {
+                Key = "exportFormat", DisplayName = "导出格式", EditorType = PropertyEditorType.Enum, DefaultValue = "CSV", Category = "导出",
+                EnumOptions = new[] { "CSV|CSV", "Excel|Excel", "JSON|JSON" }
+            },
+            new PropertyDescriptor { Key = "selectionMode", DisplayName = "选择模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Single", Category = "行为",
+                EnumOptions = new[] { "Single|单选", "Extended|扩展", "None|禁选" } },
+            new PropertyDescriptor { Key = "refreshInterval", DisplayName = "刷新间隔(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "行为",
+                Description = "B3.3: >0 时按周期重读 dataSource；0 = 仅由 Tag 触发。" },
         }
     };
 
@@ -457,6 +472,17 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showHeader", DisplayName = "显示标题栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "zoomToFit", DisplayName = "缩放适应", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+
+            // ============ B3.3: ScreenWindow 扩展（参考 WinCC PictureWindow）============
+            new PropertyDescriptor { Key = "showTitle", DisplayName = "显示标题", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showCloseButton", DisplayName = "显示关闭按钮", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观",
+                Description = "B3.3: WinCC ShowCloseButton。" },
+            new PropertyDescriptor { Key = "modal", DisplayName = "模态对话框", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "autoSize", DisplayName = "自适应大小", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观",
+                Description = "B3.3: true 时按嵌入页面原始尺寸；false 时按外部矩形。" },
+            new PropertyDescriptor { Key = "scrollEnabled", DisplayName = "允许滚动", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "titleText", DisplayName = "标题文本", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "文本",
+                Description = "B3.3: 留空时使用 pageRoute 的页面名。" },
         }
     };
 
@@ -470,6 +496,16 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "navigateOnLoad", DisplayName = "加载时跳转", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
             new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+
+            // ============ B3.3: HtmlBrowser 扩展（参考 WinCC HMIRuntime browser host）============
+            new PropertyDescriptor { Key = "allowNavigation", DisplayName = "允许导航", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为",
+                Description = "B3.3: false 时锁定到初始 URL，禁止跳转。" },
+            new PropertyDescriptor { Key = "showAddressBar", DisplayName = "显示地址栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "showProgressBar", DisplayName = "显示进度条", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "homeUrl", DisplayName = "主页 URL", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据" },
+            new PropertyDescriptor { Key = "userAgent", DisplayName = "User-Agent", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据",
+                Description = "B3.3: 留空时使用 WebView2 默认。" },
+            new PropertyDescriptor { Key = "javascriptEnabled", DisplayName = "启用 JavaScript", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
         }
     };
 
@@ -482,6 +518,20 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "filePath", DisplayName = "文件路径", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "本地 PDF 路径或 http(s):// URL" },
             new PropertyDescriptor { Key = "fitToWidth", DisplayName = "适应宽度", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#F8FAFC", Category = "外观" },
+
+            // ============ B3.3: PdfView 扩展 ============
+            new PropertyDescriptor
+            {
+                Key = "zoomMode", DisplayName = "缩放模式", EditorType = PropertyEditorType.Enum, DefaultValue = "FitWidth", Category = "外观",
+                EnumOptions = new[] { "FitWidth|适应宽度", "FitPage|适应页面", "Actual|实际大小", "Custom|自定义" }
+            },
+            new PropertyDescriptor { Key = "zoomLevel", DisplayName = "缩放比例", EditorType = PropertyEditorType.Number, DefaultValue = "1.0", Category = "外观",
+                Description = "B3.3: zoomMode=Custom 时生效。" },
+            new PropertyDescriptor { Key = "pageNumber", DisplayName = "起始页码", EditorType = PropertyEditorType.Integer, DefaultValue = "1", Category = "数据" },
+            new PropertyDescriptor { Key = "showThumbnails", DisplayName = "显示缩略图侧栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "printEnabled", DisplayName = "允许打印", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "downloadEnabled", DisplayName = "允许下载", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
         }
     };
 
@@ -496,6 +546,19 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "loop", DisplayName = "循环", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
             new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "volume", DisplayName = "音量", EditorType = PropertyEditorType.Number, DefaultValue = "0.5", Category = "行为", Description = "0~1" },
+
+            // ============ B3.3: MediaPlayer 扩展（参考通用 HMI 视频墙控件）============
+            new PropertyDescriptor { Key = "showControls", DisplayName = "显示控制条", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "muted", DisplayName = "静音", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "playbackRate", DisplayName = "播放倍速", EditorType = PropertyEditorType.Number, DefaultValue = "1.0", Category = "行为" },
+            new PropertyDescriptor
+            {
+                Key = "stretch", DisplayName = "画面拉伸", EditorType = PropertyEditorType.Enum, DefaultValue = "Uniform", Category = "外观",
+                EnumOptions = new[] { "None|原始", "Fill|填充", "Uniform|等比", "UniformToFill|等比填充" }
+            },
+            new PropertyDescriptor { Key = "posterImage", DisplayName = "封面图", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "外观",
+                Description = "B3.3: 未播放时显示的静态图。" },
+            new PropertyDescriptor { Key = "startPosition", DisplayName = "起始位置(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "0", Category = "行为" },
         }
     };
 
@@ -520,6 +583,16 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "yMax", DisplayName = "Y 最大值", EditorType = PropertyEditorType.Number, DefaultValue = "auto", Category = "限值" },
             new PropertyDescriptor { Key = "color", DisplayName = "颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#2563EB", Category = "外观" },
             new PropertyDescriptor { Key = "maxPoints", DisplayName = "最大点数", EditorType = PropertyEditorType.Integer, DefaultValue = "200", Category = "数据" },
+
+            // ============ B3.3: XYTrend 扩展（参考 WinCC FunctionTrendControl）============
+            new PropertyDescriptor { Key = "showGrid", DisplayName = "显示网格", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showLegend", DisplayName = "显示图例", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "showRuler", DisplayName = "显示游标", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观",
+                Description = "B3.3: 鼠标 hover 显示 (x,y) 值。WinCC ShowRuler。" },
+            new PropertyDescriptor { Key = "pointSize", DisplayName = "散点大小", EditorType = PropertyEditorType.Number, DefaultValue = "4", Category = "外观" },
+            new PropertyDescriptor { Key = "lineThickness", DisplayName = "连线粗细", EditorType = PropertyEditorType.Number, DefaultValue = "1.5", Category = "外观" },
+            new PropertyDescriptor { Key = "trailLength", DisplayName = "拖尾长度", EditorType = PropertyEditorType.Integer, DefaultValue = "0", Category = "行为",
+                Description = "B3.3: >0 = 只显示最近 N 点（轨迹动画）。0 = 全部。" },
         }
     };
 
@@ -532,6 +605,23 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "templateId", DisplayName = "报表模板", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据", Description = "ProjectDocument.Reports 中的 ReportTemplate.Id" },
             new PropertyDescriptor { Key = "autoRefresh", DisplayName = "自动刷新", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
             new PropertyDescriptor { Key = "refreshInterval", DisplayName = "刷新间隔(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "10", Category = "行为" },
+
+            // ============ B3.3: ReportView 扩展（参考 WinCC ReportSystem）============
+            new PropertyDescriptor { Key = "showToolbar", DisplayName = "显示工具栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "allowExport", DisplayName = "允许导出", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor
+            {
+                Key = "exportFormat", DisplayName = "导出格式", EditorType = PropertyEditorType.Enum, DefaultValue = "PDF", Category = "导出",
+                EnumOptions = new[] { "PDF|PDF", "Excel|Excel", "CSV|CSV", "HTML|HTML" }
+            },
+            new PropertyDescriptor { Key = "allowPrint", DisplayName = "允许打印", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "showParameterPanel", DisplayName = "显示参数面板", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观",
+                Description = "B3.3: 模板含参数时是否显示输入面板。" },
+            new PropertyDescriptor
+            {
+                Key = "pageOrientation", DisplayName = "页面方向", EditorType = PropertyEditorType.Enum, DefaultValue = "Portrait", Category = "外观",
+                EnumOptions = new[] { "Portrait|纵向", "Landscape|横向" }
+            },
         }
     };
 
@@ -545,6 +635,17 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "readonly", DisplayName = "只读", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
             new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+
+            // ============ B3.3: StatusForce 扩展（参考 WinCC OnlineTableControl + Force Value）============
+            new PropertyDescriptor { Key = "showQuality", DisplayName = "显示质量码", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观",
+                Description = "B3.3: 显示 OPC UA StatusCode 列。" },
+            new PropertyDescriptor { Key = "showTimestamp", DisplayName = "显示时间戳", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
+            new PropertyDescriptor { Key = "allowForce", DisplayName = "允许强制值", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为",
+                Description = "B3.3: false 时即使 readonly=false 也不显示强制按钮。安全考虑默认关闭。" },
+            new PropertyDescriptor { Key = "refreshInterval", DisplayName = "刷新间隔(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "行为" },
+            new PropertyDescriptor { Key = "highlightChanges", DisplayName = "高亮变化值", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观",
+                Description = "B3.3: 值变化时短暂高亮该行。" },
+            new PropertyDescriptor { Key = "forceColor", DisplayName = "强制行颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#FBBF24", Category = "外观" },
         }
     };
 
@@ -563,6 +664,21 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "blinkOnNew", DisplayName = "新报警闪烁", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
             new PropertyDescriptor { Key = "indicatorColor", DisplayName = "指示器颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#DC2626", Category = "外观" },
             new PropertyDescriptor { Key = "foreground", DisplayName = "数字颜色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
+
+            // ============ B3.3: AlarmIndicator 扩展（参考 WinCC AlarmIndicator）============
+            new PropertyDescriptor { Key = "filterPattern", DisplayName = "过滤模式", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据",
+                Description = "B3.3: Source/Message 包含此关键字。留空 = 不过滤。WinCC AlarmFilter。" },
+            new PropertyDescriptor { Key = "alarmClassFilter", DisplayName = "报警类过滤", EditorType = PropertyEditorType.String, DefaultValue = "", Category = "数据",
+                Description = "B3.3: 多类用逗号分隔。" },
+            new PropertyDescriptor { Key = "autoNavigateTo", DisplayName = "新报警自动跳转", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor
+            {
+                Key = "displayMode", DisplayName = "显示模式", EditorType = PropertyEditorType.Enum, DefaultValue = "Count", Category = "外观",
+                EnumOptions = new[] { "Count|数字", "Dot|圆点", "Both|两者" }
+            },
+            new PropertyDescriptor { Key = "showOnlyActive", DisplayName = "仅活动报警", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "数据" },
+            new PropertyDescriptor { Key = "maxCountDisplay", DisplayName = "最大显示数", EditorType = PropertyEditorType.Integer, DefaultValue = "99", Category = "外观",
+                Description = "B3.3: 超过显示 'N+'。" },
         }
     };
 
@@ -577,6 +693,17 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showHmiSection",  DisplayName = "显示 HMI 资源", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "refreshInterval", DisplayName = "刷新间隔(秒)", EditorType = PropertyEditorType.Number, DefaultValue = "1", Category = "数据" },
             new PropertyDescriptor { Key = "background",      DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#F8FAFC", Category = "外观" },
+
+            // ============ B3.3: DiagnosticView 扩展（参考 WinCC SystemDiagnosticControl）============
+            new PropertyDescriptor
+            {
+                Key = "showLevel", DisplayName = "显示等级", EditorType = PropertyEditorType.Enum, DefaultValue = "Info", Category = "数据",
+                EnumOptions = new[] { "Error|仅错误", "Warning|警告以上", "Info|信息以上", "Verbose|全部" }
+            },
+            new PropertyDescriptor { Key = "autoRefresh", DisplayName = "自动刷新", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "showCpuUsage", DisplayName = "显示 CPU 占用", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "showMemoryUsage", DisplayName = "显示内存占用", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "showNetworkStats", DisplayName = "显示网络统计", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
         }
     };
 
@@ -590,6 +717,16 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showLastLogin", DisplayName = "显示上次登录", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "外观" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
             new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+
+            // ============ B3.3: UserView 扩展（参考 WinCC UserAdminControl）============
+            new PropertyDescriptor { Key = "allowGroupChange", DisplayName = "允许修改用户组", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor { Key = "passwordPolicyEnforced", DisplayName = "强制密码策略", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为",
+                Description = "B3.3: 密码长度 / 复杂度 / 失效期检查。" },
+            new PropertyDescriptor { Key = "showLogonAttempts", DisplayName = "显示登录尝试", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+            new PropertyDescriptor { Key = "allowSelfPasswordChange", DisplayName = "允许自助改密", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "passwordMinLength", DisplayName = "密码最小长度", EditorType = PropertyEditorType.Integer, DefaultValue = "8", Category = "行为" },
+            new PropertyDescriptor { Key = "passwordExpiryDays", DisplayName = "密码有效期(天)", EditorType = PropertyEditorType.Integer, DefaultValue = "90", Category = "行为",
+                Description = "B3.3: 0 = 永不过期。" },
         }
     };
 
@@ -605,6 +742,20 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "showFieldDescription", DisplayName = "显示字段描述", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
             new PropertyDescriptor { Key = "background", DisplayName = "背景色", EditorType = PropertyEditorType.Color, DefaultValue = "#FFFFFF", Category = "外观" },
             new PropertyDescriptor { Key = "foreground", DisplayName = "前景色", EditorType = PropertyEditorType.Color, DefaultValue = "#0F172A", Category = "外观" },
+
+            // ============ B3.3: RecipeView 扩展（参考 WinCC RecipeView）============
+            new PropertyDescriptor { Key = "allowEditRecord", DisplayName = "允许新增/删除记录", EditorType = PropertyEditorType.Boolean, DefaultValue = "true", Category = "行为" },
+            new PropertyDescriptor { Key = "dataRecordTag", DisplayName = "当前记录索引 Tag", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "数据",
+                Description = "B3.3: 用于在多个控件间同步当前记录。WinCC DataRecordTag。" },
+            new PropertyDescriptor { Key = "writeOnSelect", DisplayName = "选中时写 PLC", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为",
+                Description = "B3.3: 切换记录时自动下发到 PLC Tag。" },
+            new PropertyDescriptor { Key = "readOnDeselect", DisplayName = "切走前回读", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "行为" },
+            new PropertyDescriptor
+            {
+                Key = "exportFormat", DisplayName = "导出格式", EditorType = PropertyEditorType.Enum, DefaultValue = "CSV", Category = "导出",
+                EnumOptions = new[] { "CSV|CSV", "Excel|Excel", "XML|XML", "JSON|JSON" }
+            },
+            new PropertyDescriptor { Key = "showSearchBar", DisplayName = "显示搜索栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
         }
     };
 
