@@ -313,6 +313,8 @@ internal static class WidgetSchemaCatalogSeed
             new PropertyDescriptor { Key = "colorCame", DisplayName = "已确认色 (CA)", EditorType = PropertyEditorType.Color, DefaultValue = "#22C55E", Category = "状态色" },
             new PropertyDescriptor { Key = "colorLeftInactive", DisplayName = "走未确认色 (LIA)", EditorType = PropertyEditorType.Color, DefaultValue = "#94A3B8", Category = "状态色" },
             new PropertyDescriptor { Key = "colorLeftConfirmed", DisplayName = "走已确认色 (LCA)", EditorType = PropertyEditorType.Color, DefaultValue = "#64748B", Category = "状态色" },
+            new PropertyDescriptor { Key = "colorCleared", DisplayName = "已清除色 (CL)", EditorType = PropertyEditorType.Color, DefaultValue = "#CBD5E1", Category = "状态色",
+                Description = "B3.1: 操作员手动清除后的行色（WinCC AlarmControl Cleared 状态）。" },
             new PropertyDescriptor { Key = "colorFlashing", DisplayName = "闪烁色", EditorType = PropertyEditorType.Color, DefaultValue = "#FBBF24", Category = "状态色" },
             new PropertyDescriptor { Key = "colorHover", DisplayName = "悬停色", EditorType = PropertyEditorType.Color, DefaultValue = "#E0F2FE", Category = "状态色" },
             new PropertyDescriptor { Key = "colorSelected", DisplayName = "选中色", EditorType = PropertyEditorType.Color, DefaultValue = "#BAE6FD", Category = "状态色" },

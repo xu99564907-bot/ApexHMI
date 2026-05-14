@@ -54,6 +54,18 @@ public partial class AlarmViewWidgetViewModel : WidgetViewModelBase
     public bool AutoScroll => string.Equals(Prop("autoScroll", "true"), "true", StringComparison.OrdinalIgnoreCase);
     public bool AllowAck   => string.Equals(Prop("allowAck", "true"), "true", StringComparison.OrdinalIgnoreCase);
 
+    // ============ B3.1: 8 状态色暴露（DataGrid 行模板按 LifecycleState 选） ============
+    public string ColorIn             => Prop("colorIn", "#DC2626");
+    public string ColorInAck          => Prop("colorInAck", "#F59E0B");
+    public string ColorCame           => Prop("colorCame", "#22C55E");
+    public string ColorLeftInactive   => Prop("colorLeftInactive", "#94A3B8");
+    public string ColorLeftConfirmed  => Prop("colorLeftConfirmed", "#64748B");
+    public string ColorFlashing       => Prop("colorFlashing", "#FBBF24");
+    public string ColorCleared        => Prop("colorCleared", "#CBD5E1");
+    public string ColorHover          => Prop("colorHover", "#E0F2FE");
+    public string ColorSelected       => Prop("colorSelected", "#BAE6FD");
+    public bool LogOperation => string.Equals(Prop("logOperation", "false"), "true", StringComparison.OrdinalIgnoreCase);
+
     [ObservableProperty]
     private AlarmRecord? _selectedAlarm;
 
@@ -133,14 +145,15 @@ public partial class AlarmViewWidgetViewModel : WidgetViewModelBase
     private void AckSelected()
     {
         if (!AllowAck || SelectedAlarm is null) return;
-        SelectedAlarm.Acknowledged = true;
-        SelectedAlarm.State = SelectedAlarm.Active ? "Acknowledged" : "Cleared";
+        if (!CheckAuthorizationAndNotify()) return;
+        AckOne(SelectedAlarm);
     }
 
     [RelayCommand]
     private void AckAll()
     {
         if (!AllowAck) return;
+        if (!CheckAuthorizationAndNotify()) return;
         // 复用 Shell 的命令（如果存在），否则手工标记
         var shell = _shellRef;
         if (shell is not null)
@@ -154,10 +167,54 @@ public partial class AlarmViewWidgetViewModel : WidgetViewModelBase
             }
         }
         foreach (var a in VisibleAlarms)
+            AckOne(a);
+    }
+
+    /// <summary>B3.1: 单条 Ack — 写新 AckedAt/AckedBy + audit trail（按 logOperation 字段）。</summary>
+    private void AckOne(AlarmRecord a)
+    {
+        if (a.Acknowledged) return;
+        var who = GetCurrentUser();
+        a.Acknowledged = true;
+        a.AckedAt = DateTime.Now;
+        a.AckedBy = who;
+        a.AcknowledgedBy = who;
+        a.State = a.Active ? "Acknowledged" : "Cleared";
+
+        if (LogOperation)
         {
-            a.Acknowledged = true;
-            a.State = a.Active ? "Acknowledged" : "Cleared";
+            TryWriteAudit("报警确认",
+                target: $"{a.Source}/{a.Message}",
+                result: "OK",
+                detail: $"alarmTime={a.Time:yyyy-MM-dd HH:mm:ss} level={a.Level} state={a.LifecycleState}");
         }
+    }
+
+    private string GetCurrentUser()
+    {
+        var shell = _shellRef;
+        if (shell is null) return "(designer)";
+        var p = shell.GetType().GetProperty("LoginUser");
+        return (p?.GetValue(shell) as string) ?? "(unknown)";
+    }
+
+    private void TryWriteAudit(string action, string target, string result, string detail)
+    {
+        var shell = _shellRef;
+        if (shell is null)
+        {
+            Serilog.Log.Information("AlarmAck audit (no shell): {Action} target={Target} detail={Detail}",
+                action, target, detail);
+            return;
+        }
+        var m = shell.GetType().GetMethod("AddAudit");
+        if (m is not null)
+        {
+            try { m.Invoke(shell, new object[] { action, target, result, detail }); return; }
+            catch (Exception ex) { Serilog.Log.Warning(ex, "AlarmAck audit invoke 失败"); }
+        }
+        Serilog.Log.Information("AlarmAck audit: {Action} target={Target} detail={Detail}",
+            action, target, detail);
     }
 
     [RelayCommand]
