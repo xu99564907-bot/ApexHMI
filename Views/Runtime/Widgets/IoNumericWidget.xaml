@@ -23,6 +23,7 @@
         </Border.BorderBrush>
         <Grid>
             <TextBlock Text="{Binding DisplayText}"
+                       ToolTip="{Binding TooltipText}"
                        Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}"
                        FontSize="{Binding FontSizeRaw}"
                        FontFamily="{Binding FontFamilyName}"
@@ -51,7 +52,9 @@
                      TextAlignment="{Binding TextAlignment}"
                      VerticalContentAlignment="Center"
                      BorderThickness="0" Background="Transparent"
-                     KeyDown="EditBox_KeyDown" LostFocus="EditBox_LostFocus">
+                     ToolTip="{Binding TooltipText}"
+                     KeyDown="EditBox_KeyDown" LostFocus="EditBox_LostFocus"
+                     GotFocus="EditBox_GotFocus" TextChanged="EditBox_TextChanged">
                 <TextBox.Style>
                     <Style TargetType="TextBox">
                         <Setter Property="Visibility" Value="Collapsed"/>
