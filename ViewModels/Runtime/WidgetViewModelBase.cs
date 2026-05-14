@@ -181,6 +181,46 @@ public abstract partial class WidgetViewModelBase : ObservableObject
     /// <summary>B2A: 边框背景色（borderBackColor — 虚线/点线间隙色，目前未使用）。</summary>
     public string BorderBackColor => Prop("borderBackColor", "#FFFFFF");
 
+    /// <summary>B3.4: 边框 StrokeDashArray（WPF Border 不支持，View 用 Rectangle 模拟）。
+    /// <list type="bullet">
+    ///   <item>Solid → 空 collection（None DashArray = 实线）</item>
+    ///   <item>Dashed → 4,2</item>
+    ///   <item>Dotted → 1,1</item>
+    ///   <item>Double / None → 空（View 可用 IsBorderDouble / IsBorderVisible 控制）</item>
+    /// </list></summary>
+    public System.Windows.Media.DoubleCollection BorderDashArrayCollection =>
+        BorderStyleName.ToLowerInvariant() switch
+        {
+            "dashed" => new System.Windows.Media.DoubleCollection { 4, 2 },
+            "dotted" => new System.Windows.Media.DoubleCollection { 1, 1 },
+            _ => new System.Windows.Media.DoubleCollection(),
+        };
+
+    /// <summary>B3.4: 是否绘制 Rectangle 边框覆盖层（Dashed/Dotted/Double 时显示）。</summary>
+    public bool IsBorderDashStyle
+    {
+        get
+        {
+            var s = BorderStyleName.ToLowerInvariant();
+            return s is "dashed" or "dotted" or "double";
+        }
+    }
+
+    /// <summary>B3.4: 双线模式（borderStyle=Double 时 View 渲染双 Rectangle）。</summary>
+    public bool IsBorderDouble =>
+        string.Equals(BorderStyleName, "Double", System.StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>B3.4: 数值化 borderWidth（View 直接绑 StrokeThickness 用）。</summary>
+    public double BorderWidthDouble
+    {
+        get
+        {
+            var s = BorderWidthValue;
+            return double.TryParse(s, System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
+        }
+    }
+
     /// <summary>B2A: 内边距 Thickness（top/right/bottom/left Margin 4 字段拼成）。</summary>
     public System.Windows.Thickness PaddingThickness
     {

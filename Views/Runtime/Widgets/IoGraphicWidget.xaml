@@ -6,16 +6,30 @@
              IsEnabled="{Binding IsEnabledByOperator}">
     <UserControl.Resources>
         <conv:BorderStyleVisibilityConverter x:Key="BorderStyleBrush"/>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
     </UserControl.Resources>
-    <Border BorderThickness="{Binding BorderWidthValue}"
-            Padding="{Binding PaddingThickness}">
-        <Border.BorderBrush>
-            <MultiBinding Converter="{StaticResource BorderStyleBrush}">
-                <Binding Path="BorderColor"/>
-                <Binding Path="BorderStyleName"/>
-            </MultiBinding>
-        </Border.BorderBrush>
-        <Image Source="{Binding CurrentImage}"
-               Stretch="{Binding Stretch}"/>
-    </Border>
+    <Grid>
+        <Border BorderThickness="{Binding BorderWidthValue}"
+                Padding="{Binding PaddingThickness}">
+            <Border.BorderBrush>
+                <MultiBinding Converter="{StaticResource BorderStyleBrush}">
+                    <Binding Path="BorderColor"/>
+                    <Binding Path="BorderStyleName"/>
+                </MultiBinding>
+            </Border.BorderBrush>
+            <Image Source="{Binding CurrentImage}"
+                   Stretch="{Binding Stretch}"/>
+        </Border>
+        <!-- B3.4: Dashed/Dotted/Double 边框覆盖 -->
+        <Rectangle Stroke="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                   StrokeThickness="{Binding BorderWidthDouble}"
+                   StrokeDashArray="{Binding BorderDashArrayCollection}"
+                   IsHitTestVisible="False"
+                   Visibility="{Binding IsBorderDashStyle, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <Rectangle Stroke="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                   StrokeThickness="{Binding BorderWidthDouble}"
+                   Margin="3"
+                   IsHitTestVisible="False"
+                   Visibility="{Binding IsBorderDouble, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+    </Grid>
 </UserControl>

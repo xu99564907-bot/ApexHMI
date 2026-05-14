@@ -11,6 +11,7 @@
         <conv:BoolToTextDecorationsConverter x:Key="BoolToTextDecorations"/>
         <conv:BorderStyleVisibilityConverter x:Key="BorderStyleBrush"/>
     </UserControl.Resources>
+    <Grid>
     <Border Background="{Binding Background, Converter={StaticResource StringToBrushConverter}}"
             BorderThickness="{Binding BorderWidthValue}"
             Padding="{Binding PaddingThickness}">
@@ -62,4 +63,16 @@
             </DockPanel>
         </Grid>
     </Border>
+        <!-- B3.4: Dashed/Dotted/Double 边框覆盖 -->
+        <Rectangle Stroke="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                   StrokeThickness="{Binding BorderWidthDouble}"
+                   StrokeDashArray="{Binding BorderDashArrayCollection}"
+                   IsHitTestVisible="False"
+                   Visibility="{Binding IsBorderDashStyle, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <Rectangle Stroke="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                   StrokeThickness="{Binding BorderWidthDouble}"
+                   Margin="3"
+                   IsHitTestVisible="False"
+                   Visibility="{Binding IsBorderDouble, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+    </Grid>
 </UserControl>

@@ -11,25 +11,40 @@
         <conv:BoolToTextDecorationsConverter x:Key="BoolToTextDecorations"/>
         <conv:BorderStyleVisibilityConverter x:Key="BorderStyleBrush"/>
     </UserControl.Resources>
-    <Border Background="{Binding Background, Converter={StaticResource StringToBrushConverter}}"
-            BorderThickness="{Binding BorderWidthValue}"
-            CornerRadius="4"
-            Padding="{Binding PaddingThickness}">
-        <Border.BorderBrush>
-            <MultiBinding Converter="{StaticResource BorderStyleBrush}">
-                <Binding Path="BorderColor"/>
-                <Binding Path="BorderStyleName"/>
-            </MultiBinding>
-        </Border.BorderBrush>
-        <TextBlock Text="{Binding Text}"
-                   FontSize="{Binding FontSize}"
-                   FontWeight="{Binding FontWeight}"
-                   FontFamily="{Binding FontFamilyName}"
-                   FontStyle="{Binding FontItalic, Converter={StaticResource BoolToFontStyle}}"
-                   TextDecorations="{Binding FontUnderline, Converter={StaticResource BoolToTextDecorations}}"
-                   Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}"
-                   TextAlignment="{Binding TextAlignment}"
-                   VerticalAlignment="{Binding VerticalAlignment}"
-                   TextWrapping="Wrap"/>
-    </Border>
+    <Grid>
+        <Border Background="{Binding Background, Converter={StaticResource StringToBrushConverter}}"
+                BorderThickness="{Binding BorderWidthValue}"
+                CornerRadius="4"
+                Padding="{Binding PaddingThickness}">
+            <Border.BorderBrush>
+                <MultiBinding Converter="{StaticResource BorderStyleBrush}">
+                    <Binding Path="BorderColor"/>
+                    <Binding Path="BorderStyleName"/>
+                </MultiBinding>
+            </Border.BorderBrush>
+            <TextBlock Text="{Binding Text}"
+                       FontSize="{Binding FontSize}"
+                       FontWeight="{Binding FontWeight}"
+                       FontFamily="{Binding FontFamilyName}"
+                       FontStyle="{Binding FontItalic, Converter={StaticResource BoolToFontStyle}}"
+                       TextDecorations="{Binding FontUnderline, Converter={StaticResource BoolToTextDecorations}}"
+                       Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}"
+                       TextAlignment="{Binding TextAlignment}"
+                       VerticalAlignment="{Binding VerticalAlignment}"
+                       TextWrapping="Wrap"/>
+        </Border>
+        <!-- B3.4: Dashed/Dotted/Double 边框覆盖（WPF Border 不支持 StrokeDashArray） -->
+        <Rectangle Stroke="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                   StrokeThickness="{Binding BorderWidthDouble}"
+                   StrokeDashArray="{Binding BorderDashArrayCollection}"
+                   RadiusX="4" RadiusY="4"
+                   IsHitTestVisible="False"
+                   Visibility="{Binding IsBorderDashStyle, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <Rectangle Stroke="{Binding BorderColor, Converter={StaticResource StringToBrushConverter}}"
+                   StrokeThickness="{Binding BorderWidthDouble}"
+                   Margin="3"
+                   RadiusX="2" RadiusY="2"
+                   IsHitTestVisible="False"
+                   Visibility="{Binding IsBorderDouble, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+    </Grid>
 </UserControl>
