@@ -22,6 +22,10 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly IProjectEditorService _projectEditorService;
     private readonly IWidgetEditorService _widgetEditorService;
     private readonly SimulationService _simulationService;
+    private readonly IAuditService _auditService;
+
+    /// <summary>M3.2: 默认 PLC 写入确认超时 = 3 秒。</summary>
+    private static readonly System.TimeSpan WriteConfirmTimeout = System.TimeSpan.FromSeconds(3);
 
     public MainWindowViewModel(
         IOpcUaService opcUaService,
@@ -47,7 +51,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         IUserService userService,
         PlcVariableImportService plcVariableImportService,
         IProductionCountService productionCountService,
-        SimulationService simulationService)
+        SimulationService simulationService,
+        IAuditService auditService)
         : base(
             opcUaService,
             csvImportService,
@@ -71,6 +76,12 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _projectEditorService = projectEditorService;
         _widgetEditorService = widgetEditorService;
         _simulationService = simulationService;
+        _auditService = auditService;
+        // M3.2: 把内存 sink 注入到 AuditService —— CSV + 内存 OperationAudits 同时收到记录
+        if (_auditService is AuditService concrete)
+        {
+            concrete.AttachMemorySink((action, target, result, detail) => AddAudit(action, target, result, detail));
+        }
 
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -265,7 +276,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         var parts = actionParam.Split('|');
         if (parts.Length >= 2 && bool.TryParse(parts[1], out var boolValue))
         {
-            await _dataBindingService.WriteAsync(parts[0], boolValue);
+            await WriteWithConfirmAndAuditAsync(parts[0], boolValue, "write-bool");
         }
     }
 
@@ -273,7 +284,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     {
         var parts = actionParam.Split('|');
         if (parts.Length >= 2 && int.TryParse(parts[1], out var v))
-            await _dataBindingService.WriteAsync(parts[0], v);
+            await WriteWithConfirmAndAuditAsync(parts[0], v, "write-int");
     }
 
     private async Task HandleWriteFloatAsync(string actionParam)
@@ -283,7 +294,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
                 System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture,
                 out var v))
-            await _dataBindingService.WriteAsync(parts[0], v);
+            await WriteWithConfirmAndAuditAsync(parts[0], v, "write-float");
     }
 
     /// <summary>P10C: 字符串写入。actionParam 格式：tag|value（value 内允许含 | 时取首段后剩余全部）。</summary>
@@ -294,7 +305,37 @@ public sealed partial class MainWindowViewModel : MainViewModel
         if (idx <= 0 || idx >= actionParam.Length - 1) return;
         var tag = actionParam.Substring(0, idx);
         var value = actionParam.Substring(idx + 1);
-        await _dataBindingService.WriteAsync(tag, value);
+        await WriteWithConfirmAndAuditAsync(tag, value, "write-string");
+    }
+
+    /// <summary>
+    /// M3.2: 统一 PLC 写入入口 — 同步等待确认 + 超时 + 失败 SystemMessage + 审计。
+    /// 替换 fire-and-forget；WinCC 真实行为是写完才返回。
+    /// </summary>
+    private async Task WriteWithConfirmAndAuditAsync(string tagId, object value, string actionLabel)
+    {
+        var result = await _dataBindingService.WriteAsyncWithConfirm(tagId, value, WriteConfirmTimeout);
+        var detail = $"value={value} elapsedMs={result.Elapsed.TotalMilliseconds:F0}" +
+                     (result.Success ? string.Empty :
+                      result.TimedOut ? " timeout" :
+                      $" err={result.ErrorMessage}");
+
+        if (!result.Success)
+        {
+            SystemMessage = result.TimedOut
+                ? $"写入超时：{tagId}（{WriteConfirmTimeout.TotalSeconds:F0}s）"
+                : $"写入失败：{tagId} {result.ErrorMessage}";
+            Log.Warning("Write 失败 tag={Tag} value={Value} detail={Detail}", tagId, value, detail);
+        }
+
+        try
+        {
+            await _auditService.LogOperationAsync(LoginUser, actionLabel, tagId, result.Success, detail);
+        }
+        catch (System.Exception ex)
+        {
+            Log.Debug(ex, "审计写入失败 tag={Tag}", tagId);
+        }
     }
 
     internal async Task NavigateToRuntimePageAsync(string routeKey)

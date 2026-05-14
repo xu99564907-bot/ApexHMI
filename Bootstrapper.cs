@@ -46,6 +46,8 @@ public static class Bootstrapper
         services.AddSingleton<ThemeService>();
         services.AddSingleton<IRecipeService, RecipeService>();
         services.AddSingleton<IUserService, UserService>();
+        // M3.2: 审计服务 — 内存 sink 由 MainWindowViewModel 在构造后注入（避免循环依赖）
+        services.AddSingleton<IAuditService>(_ => new AuditService(System.AppContext.BaseDirectory));
         services.AddSingleton<IProductionCountService, ProductionCountService>();
 
         services.AddSingleton<ICsvImportService, CsvImportService>();
