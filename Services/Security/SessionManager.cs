@@ -12,7 +12,7 @@ namespace ApexHMI.Services.Security;
 /// </summary>
 public sealed class SessionManager
 {
-    private readonly DispatcherTimer _timer;
+    private DispatcherTimer? _timer;
     private DateTime _lastActivity;
     private string? _currentUser;
 
@@ -42,21 +42,36 @@ public sealed class SessionManager
 
     public SessionManager()
     {
-        _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
-        _timer.Tick += OnTick;
+        // M5.2: 不在 ctor 创建 DispatcherTimer，让单元测试可以在 MTA 线程构造服务。
+    }
+
+    private void EnsureTimer()
+    {
+        if (_timer is not null) return;
+        try
+        {
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
+            _timer.Tick += OnTick;
+        }
+        catch
+        {
+            // 测试 / 非 STA 线程：timer 不可用，会话超时检查交给手动调用
+            _timer = null;
+        }
     }
 
     public void Login(string username)
     {
         _currentUser = username;
         _lastActivity = DateTime.Now;
-        if (!_timer.IsEnabled) _timer.Start();
+        EnsureTimer();
+        if (_timer is { IsEnabled: false }) _timer.Start();
     }
 
     public void Logout()
     {
         _currentUser = null;
-        _timer.Stop();
+        _timer?.Stop();
     }
 
     /// <summary>每次用户活动（按键、点击、写 PLC、改配方等）调用以重置计时。</summary>
