@@ -119,7 +119,10 @@ public static class TabFocusCoordinator
 
     private static FrameworkElement? FindFirstFocusableDescendant(DependencyObject node)
     {
-        if (node is TextBox or ComboBox or DatePicker or CheckBox)
+        // M5.3: 加 Button / ToggleButton 以便 Toggle Button / Switch / RoundButton widget 内
+        // 真正接收焦点的子 Button 拿到键盘焦点，从而响应空格/回车触发 Click。
+        if (node is TextBox or ComboBox or DatePicker or CheckBox or Button
+            or System.Windows.Controls.Primitives.ToggleButton)
             return node as FrameworkElement;
         var count = VisualTreeHelper.GetChildrenCount(node);
         for (int i = 0; i < count; i++)
