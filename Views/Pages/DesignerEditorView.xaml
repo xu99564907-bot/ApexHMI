@@ -32,13 +32,14 @@
         <!-- Row 0: 横向工具箱 + 右侧紧凑动作组 -->
         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="10,8" Margin="0,0,0,10">
             <DockPanel>
-                <!-- 右侧动作 / 状态：固定宽度 WrapPanel，自动多行 + ItemHeight 制造行间距 -->
-                <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" Width="420" ItemHeight="36" Margin="10,0,0,0">
-                    <!-- 紧凑图标按钮组 -->
+                <!-- 右侧动作 / 状态：固定宽度 WrapPanel，自动多行 + ItemHeight 制造行间距
+                     C2: 统一 PackIcon 14×14、Padding 6,4；按"数据 / 资源 / 编辑 / 工程"分组并加 Separator -->
+                <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" Width="460" ItemHeight="36" Margin="10,0,0,0">
+                    <!-- ===== 组 1：数据 ===== -->
                     <Button Command="{Binding ReloadPlcVariablesCommand}"
                             Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
-                            Padding="8,5" Margin="0,0,4,0"
-                            ToolTip="从 PLC 程序保存目录加载 Device.Application.xml 变量表">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="加载 PLC 变量表（Device.Application.xml）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="DatabaseImport" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="PLC 变量" Margin="4,0,0,0" FontSize="11"/>
@@ -46,38 +47,28 @@
                     </Button>
                     <Button Command="{Binding BrowsePlcVariableFileCommand}"
                             Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,8,0"
-                            ToolTip="手动选择 Device.Application.xml 文件">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="选择 PLC 变量文件（Device.Application.xml）">
                         <materialDesign:PackIcon Kind="FolderOpen" Width="14" Height="14"/>
                     </Button>
+                    <Separator Width="1" Height="24" Background="#CBD5E1" Margin="4,0,8,0"/>
+
+                    <!-- ===== 组 2：资源（样式 / 文本 / 列表） ===== -->
                     <!-- P6A: 全局样式编辑入口 -->
                     <Button Command="{Binding OpenStyleEditorCommand}"
                             Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,4,0"
-                            ToolTip="全局样式：色板 + 字体预设（P6A）">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="打开样式编辑器（色板 + 字体预设）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Palette" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="样式" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
-                    <!-- P6C: 把当前选中控件存入项目库 / 全局库 -->
-                    <Button Command="{Binding SaveSelectedToProjectLibraryCommand}"
-                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,4,0"
-                            ToolTip="把当前选中的控件保存到项目库（P6C）">
-                        <materialDesign:PackIcon Kind="BookmarkPlus" Width="14" Height="14"/>
-                    </Button>
-                    <Button Command="{Binding SaveSelectedToGlobalLibraryCommand}"
-                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,4,0"
-                            ToolTip="把当前选中的控件保存到全局库，跨工程共享（P6C）">
-                        <materialDesign:PackIcon Kind="EarthPlus" Width="14" Height="14"/>
-                    </Button>
                     <!-- P6B: 多语言文本资源 + 当前语言切换 -->
                     <Button Command="{Binding OpenTextEditorCommand}"
                             Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,4,0"
-                            ToolTip="多语言文本资源（P6B）">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="打开多语言文本资源编辑器">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Translate" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="文本" Margin="4,0,0,0" FontSize="11"/>
@@ -85,50 +76,69 @@
                     </Button>
                     <ComboBox ItemsSource="{Binding AvailableLanguages}"
                               SelectedItem="{Binding CurrentLanguage, UpdateSourceTrigger=PropertyChanged}"
-                              MinWidth="80" Margin="0,0,8,0" VerticalAlignment="Center"
-                              ToolTip="当前显示语言（切换后所有 {text:...} 引用刷新）"/>
+                              MinWidth="80" Margin="0,0,4,0" VerticalAlignment="Center"
+                              ToolTip="切换当前显示语言（刷新 {text:...} 引用）"/>
                     <!-- P6E: 列表资源编辑入口 -->
                     <Button Command="{Binding OpenListEditorCommand}"
                             Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,4,0"
-                            ToolTip="文本列表 / 图形列表资源（P6E）">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="打开列表资源编辑器（文本列表 / 图形列表）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FormatListBulleted" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="列表" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
+                    <Separator Width="1" Height="24" Background="#CBD5E1" Margin="4,0,8,0"/>
+
+                    <!-- ===== 组 3：编辑（Faceplate / 库） ===== -->
                     <!-- P7C: Faceplate 编辑模式切换 -->
                     <ToggleButton IsChecked="{Binding IsFaceplateEditMode}"
                                   Padding="6,4" Margin="0,0,4,0"
-                                  ToolTip="切换到 Faceplate 编辑模式：复用画布编辑 Faceplate 的内部画面与接口属性">
+                                  ToolTip="切换 Faceplate 编辑模式（编辑内部画面与接口属性）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ViewModule" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="Faceplate" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </ToggleButton>
-                    <!-- P10D: 导出 / 导入 zip 包 -->
-                    <Button Command="{Binding ExportProjectZipCommand}"
+                    <!-- P6C: 把当前选中控件存入项目库 / 全局库 -->
+                    <Button Command="{Binding SaveSelectedToProjectLibraryCommand}"
                             Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,4,0"
-                            ToolTip="导出工程为 zip 包（P10D）">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="PackageDown" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="导出" Margin="4,0,0,0" FontSize="11"/>
-                        </StackPanel>
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="保存当前控件到项目库">
+                        <materialDesign:PackIcon Kind="BookmarkPlus" Width="14" Height="14"/>
                     </Button>
+                    <Button Command="{Binding SaveSelectedToGlobalLibraryCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="保存当前控件到全局库（跨工程共享）">
+                        <materialDesign:PackIcon Kind="EarthPlus" Width="14" Height="14"/>
+                    </Button>
+                    <Separator Width="1" Height="24" Background="#CBD5E1" Margin="4,0,8,0"/>
+
+                    <!-- ===== 组 4：工程（导入 / 导出 / 模拟 / 发布） ===== -->
+                    <!-- P10D: 导出 / 导入 zip 包 -->
                     <Button Command="{Binding ImportProjectZipCommand}"
                             Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,4,0"
-                            ToolTip="从 zip 包导入工程（覆盖当前工程）（P10D）">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="导入工程 zip 包（覆盖当前工程）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="PackageUp" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="导入" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding ExportProjectZipCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="导出工程为 zip 包">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="PackageDown" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="导出" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
                     <!-- P10F: 离线模拟模式 -->
                     <ToggleButton IsChecked="{Binding DataContext.IsSimulationMode, RelativeSource={RelativeSource AncestorType=Window}}"
                                   Padding="6,4" Margin="0,0,4,0"
-                                  ToolTip="离线模拟模式：SimTag1..5/SimBool1..3/SimText1 注入假数据（P10F）">
+                                  ToolTip="切换离线模拟模式（注入 SimTag/SimBool/SimText 假数据）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="SineWave" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="模拟" Margin="4,0,0,0" FontSize="11"/>
@@ -136,8 +146,8 @@
                     </ToggleButton>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
-                            Padding="8,5"
-                            ToolTip="发布到运行时：保存并刷新运行时页面">
+                            Padding="6,4"
+                            ToolTip="发布到运行时（保存并刷新页面）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Rocket" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="发布" Margin="4,0,0,0" FontSize="11"/>
