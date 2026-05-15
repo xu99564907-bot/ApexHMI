@@ -34,6 +34,21 @@ public sealed class GlobalLibraryService
     {
         try { Load(); }
         catch (Exception ex) { Log.Warning(ex, "GlobalLibraryService: 加载失败，使用空库"); }
+
+        // C3: 库为空 → 注入 27 个内置示例。已有任何资产则跳过。
+        if (Library.Assets.Count == 0)
+        {
+            try
+            {
+                foreach (var sample in GlobalLibrarySamples.Build())
+                {
+                    Library.Assets.Add(sample);
+                }
+                Save();
+                Log.Information("GlobalLibraryService: 已注入 {Count} 个内置示例样例", Library.Assets.Count);
+            }
+            catch (Exception ex) { Log.Warning(ex, "GlobalLibraryService: 注入内置样例失败"); }
+        }
     }
 
     private void Load()
