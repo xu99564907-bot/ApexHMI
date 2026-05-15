@@ -77,10 +77,12 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _widgetEditorService = widgetEditorService;
         _simulationService = simulationService;
         _auditService = auditService;
-        // M3.2: 把内存 sink 注入到 AuditService —— CSV + 内存 OperationAudits 同时收到记录
-        if (_auditService is AuditService concrete)
+        // M3.2/M4.3: 把内存 sink 注入到 AuditService —— 后端（CSV 或 SQLite）+ 内存 OperationAudits 同时收到记录
+        Action<string, string, string, string> sink = (action, target, result, detail) => AddAudit(action, target, result, detail);
+        switch (_auditService)
         {
-            concrete.AttachMemorySink((action, target, result, detail) => AddAudit(action, target, result, detail));
+            case AuditServiceSqlite sqlite: sqlite.AttachMemorySink(sink); break;
+            case AuditService csv: csv.AttachMemorySink(sink); break;
         }
 
         Home = new HomeViewModel(this);

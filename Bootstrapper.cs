@@ -46,8 +46,11 @@ public static class Bootstrapper
         services.AddSingleton<ThemeService>();
         services.AddSingleton<IRecipeService, RecipeService>();
         services.AddSingleton<IUserService, UserService>();
-        // M3.2: 审计服务 — 内存 sink 由 MainWindowViewModel 在构造后注入（避免循环依赖）
-        services.AddSingleton<IAuditService>(_ => new AuditService(System.AppContext.BaseDirectory));
+        // M4.3: 审计服务升级到 SQLite 后端（90 天自动滚动）
+        // CSV 实现保留作 fallback / 开发场景，由 IAuditService 抽象兼容。
+        // 内存 sink 由 MainWindowViewModel 在构造后注入（避免循环依赖）。
+        services.AddSingleton<IAuditService>(_ => new AuditServiceSqlite(
+            System.IO.Path.Combine(System.AppContext.BaseDirectory, "data")));
         services.AddSingleton<IProductionCountService, ProductionCountService>();
 
         services.AddSingleton<ICsvImportService, CsvImportService>();
