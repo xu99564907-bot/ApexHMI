@@ -109,6 +109,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 
+    <!-- "帮助 → 使用说明" reads docs/User-Manual.md at runtime -->
+    <Content Include="docs\User-Manual.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>docs\User-Manual.md</Link>
+    </Content>
+
     <!-- Preset config files shipped with the build.
          Runtime-only artifacts (certificates, resolved node cache, performance logs,
          IO table history, flow archives) are intentionally excluded: they must be

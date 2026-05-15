@@ -227,6 +227,44 @@ public sealed partial class MainWindowViewModel : MainViewModel
         }
     }
 
+    /// <summary>M6.2: Session 状态栏前景色。剩余 ≤ WarnThreshold 时变橙色。</summary>
+    public string SessionRemainingForeground
+    {
+        get
+        {
+            if (_sessionManager.CurrentUser is null) return "#64748B";
+            var r = _sessionManager.Remaining;
+            if (r <= TimeSpan.Zero) return "#DC2626"; // red — expired
+            if (r <= _sessionManager.WarnThreshold) return "#EA580C"; // orange — warn
+            return "#047857"; // green — healthy
+        }
+    }
+
+    /// <summary>M6.2: Session 状态栏徽标可见性 — 仅登录后显示。</summary>
+    public System.Windows.Visibility SessionRemainingVisibility =>
+        _sessionManager.CurrentUser is null
+            ? System.Windows.Visibility.Collapsed
+            : System.Windows.Visibility.Visible;
+
+    /// <summary>M6.2: 状态栏每 tick 主动刷新 Session 剩余时间显示。</summary>
+    internal void TickSessionRemaining()
+    {
+        OnPropertyChanged(nameof(SessionRemainingText));
+        OnPropertyChanged(nameof(SessionRemainingForeground));
+        OnPropertyChanged(nameof(SessionRemainingVisibility));
+    }
+
+    private DateTime _lastSessionTickAt;
+
+    /// <summary>M6.2: 重写 SubscriptionTimer 钩子 — 每秒刷新一次 Session 状态栏（200ms tick 节流）。</summary>
+    protected override void OnSubscriptionTimerTick()
+    {
+        var now = DateTime.UtcNow;
+        if ((now - _lastSessionTickAt).TotalMilliseconds < 950) return;
+        _lastSessionTickAt = now;
+        TickSessionRemaining();
+    }
+
     private void OnSessionExpired(string user)
     {
         // SessionManager 的 DispatcherTimer 已在 UI 线程触发

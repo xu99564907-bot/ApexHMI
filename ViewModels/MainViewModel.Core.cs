@@ -102,6 +102,8 @@ public partial class MainViewModel
             OnPropertyChanged(nameof(ShiftRemainingText));
             // M11 IO 监控"近期变化"高亮 1.5s 后自动恢复
             RefreshIoMonitorRecentlyChangedFlags();
+            // M6.2: 子类（MainWindowViewModel）可挂钩用于刷新 Session 剩余时间等 200ms-cadence UI 状态
+            OnSubscriptionTimerTick();
             await AutoRefreshTickAsync();
         }
         catch (Exception ex)
@@ -109,6 +111,9 @@ public partial class MainViewModel
             Log.Error(ex, "SubscriptionTimer_Tick 异常");
         }
     }
+
+    /// <summary>M6.2: 子类挂钩，每个 SubscriptionTimer tick（约 200ms）调用一次。</summary>
+    protected virtual void OnSubscriptionTimerTick() { }
 
     private async void OpcUaBrowserRefreshTimer_Tick(object? sender, EventArgs e)
     {

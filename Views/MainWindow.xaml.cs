@@ -271,18 +271,29 @@ public partial class MainWindow : Window
 
     private void ShowUsageHelpMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        const string message =
-            "文件 > 导入 XML 变量：导入 XML 变量表\r\n" +
-            "文件 > 导入 CSV 变量：导入 CSV 变量表\r\n" +
-            "文件 > 导入 IO 表：导入四列表头的 IO 地址和注释\r\n" +
-            "文件 > 生成手动程序：按模板生成 IO、对象和手动程序文件\r\n" +
-            "文件 > 导入流程 CSV：导入流程分析数据\r\n" +
-            "窗口：运行/设计态切换、最大化、还原、置顶\r\n" +
-            "帮助：查看 README 和关于信息\r\n" +
-            "设计器：支持手动程序生成、自动程序生成和结果预览\r\n" +
-            "监视画面：可直接浏览 OPC UA 节点并加入变量表";
+        var manualPath = ResolveUserManualPath();
+        if (manualPath is null)
+        {
+            MessageBox.Show(this,
+                "未找到 docs/User-Manual.md 文件。\n请确认工程根目录下 docs 文件夹包含此文档。",
+                "使用说明", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
 
-        MessageBox.Show(this, message, "使用说明", MessageBoxButton.OK, MessageBoxImage.Information);
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = manualPath,
+                UseShellExecute = true
+            });
+        }
+        catch (System.Exception ex)
+        {
+            MessageBox.Show(this,
+                $"打开使用说明失败：{ex.Message}\n\n文件路径：{manualPath}",
+                "使用说明", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void OpenReadmeMenuItem_Click(object sender, RoutedEventArgs e)
@@ -341,6 +352,19 @@ public partial class MainWindow : Window
         {
             Path.Combine(Environment.CurrentDirectory, "README.md"),
             Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "README.md"))
+        };
+
+        return candidates.FirstOrDefault(File.Exists);
+    }
+
+    private static string? ResolveUserManualPath()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(Environment.CurrentDirectory, "docs", "User-Manual.md"),
+            Path.Combine(AppContext.BaseDirectory, "docs", "User-Manual.md"),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "docs", "User-Manual.md")),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "docs", "User-Manual.md")),
         };
 
         return candidates.FirstOrDefault(File.Exists);

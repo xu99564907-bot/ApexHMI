@@ -836,6 +836,15 @@
                     <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0">
                             <TextBlock Text="{Binding CurrentRoleText}" Foreground="#047857" FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </Border>
+                    <!-- M6.2: Session 剩余时间徽标。仅登录后显示；剩余 ≤ 5 分钟时变橙色提示主动延期 -->
+                    <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12"
+                            Padding="10,4" Margin="0,0,10,0"
+                            Visibility="{Binding SessionRemainingVisibility}"
+                            ToolTip="距会话超时倒计时；执行任意操作或写入 PLC 即可重置">
+                        <TextBlock Text="{Binding SessionRemainingText}"
+                                   Foreground="{Binding SessionRemainingForeground, Converter={StaticResource StringToBrushConverter}}"
+                                   FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </Border>
                     <Border Background="#DBEAFE" BorderBrush="#93C5FD" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{l:Loc StatusBar_PlcPrefix}" Foreground="#1D4ED8" VerticalAlignment="Center"/>
