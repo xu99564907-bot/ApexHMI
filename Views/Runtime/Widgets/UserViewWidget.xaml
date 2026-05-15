@@ -11,6 +11,9 @@
                     <Button Content="删除"     Command="{Binding RemoveUserCommand}"     Margin="2" Padding="6,2" FontSize="12"/>
                     <Button Content="修改密码" Command="{Binding ChangePasswordCommand}" Margin="2" Padding="6,2" FontSize="12"/>
                     <Button Content="切换角色" Command="{Binding SwitchRoleCommand}"     Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="解锁"     Command="{Binding UnlockCommand}"         Margin="2" Padding="6,2" FontSize="12"
+                            Visibility="{Binding CanUnlockVisibility}"
+                            ToolTip="管理员手工解除选中用户的账户锁定（仅 admin 可见）"/>
                 </StackPanel>
             </Border>
 

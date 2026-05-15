@@ -23,6 +23,8 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
 {
     private IUserService? _userService;
     private PasswordPolicy? _passwordPolicy; // M5.2
+    private AccountLockoutService? _accountLockout; // M6.1
+    private object? _shell; // M6.1: 缓存 Shell 引用用于角色判断 + 审计
 
     public UserViewWidgetViewModel(WidgetInstance model, IWidgetDataContext dataContext)
         : base(model, dataContext)
@@ -45,6 +47,7 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
         // 先从 Shell 反射 UserService 属性；不存在则回退到 App.ServiceProvider
         var shell = _dataContext.Shell;
         if (shell is null) return;
+        _shell = shell;
         var t = shell.GetType();
         // 1) 公开属性 UserService
         var prop = t.GetProperty("UserService", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
@@ -62,6 +65,31 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
         // M5.2: 反射拿 PasswordPolicy（供 ChangePassword / AddUser 时校验）
         var ppProp = t.GetProperty("PasswordPolicy", BindingFlags.Public | BindingFlags.Instance);
         if (ppProp?.GetValue(shell) is PasswordPolicy pp) _passwordPolicy = pp;
+        // M6.1: 反射拿 AccountLockoutService（供解锁按钮）
+        var lockProp = t.GetProperty("AccountLockout", BindingFlags.Public | BindingFlags.Instance);
+        if (lockProp?.GetValue(shell) is AccountLockoutService al) _accountLockout = al;
+    }
+
+    /// <summary>M6.1: 解锁按钮仅 admin 可见。通过反射读取 Shell.CurrentUserRole（兼容 MainViewModel）。</summary>
+    public System.Windows.Visibility CanUnlockVisibility
+    {
+        get
+        {
+            if (_shell is null) return System.Windows.Visibility.Collapsed;
+            var roleProp = _shell.GetType().GetProperty("CurrentUserRole",
+                BindingFlags.Public | BindingFlags.Instance);
+            var role = roleProp?.GetValue(_shell);
+            return role is UserRole.Administrator
+                ? System.Windows.Visibility.Visible
+                : System.Windows.Visibility.Collapsed;
+        }
+    }
+
+    private string CurrentOperator()
+    {
+        if (_shell is null) return "unknown";
+        var loginUserProp = _shell.GetType().GetProperty("LoginUser", BindingFlags.Public | BindingFlags.Instance);
+        return loginUserProp?.GetValue(_shell) as string ?? "unknown";
     }
 
     [RelayCommand]
@@ -144,6 +172,31 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
         else
         {
             MessageBox.Show("删除失败（admin 账号不可删除）。", "用户管理", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>M6.1: 管理员解锁选中用户账户。</summary>
+    [RelayCommand]
+    private async System.Threading.Tasks.Task Unlock()
+    {
+        if (!AllowEdit || SelectedUser is null) return;
+        if (_accountLockout is null)
+        {
+            MessageBox.Show("锁定服务未就绪。", "用户管理", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        var op = CurrentOperator();
+        if (MessageBox.Show($"确认解锁用户 {SelectedUser.Username}？",
+                "解锁账户", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK) return;
+        try
+        {
+            await _accountLockout.UnlockAsync(SelectedUser.Username, op);
+            MessageBox.Show($"已解锁 {SelectedUser.Username}。", "用户管理");
+            Refresh();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"解锁失败：{ex.Message}", "用户管理", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 

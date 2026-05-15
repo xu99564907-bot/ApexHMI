@@ -103,6 +103,13 @@ public static class Bootstrapper
         // 主动 resolve 一次让它在 Bootstrapper 阶段就完成 OPC UA 事件订阅 + SQLite schema 初始化。
         _ = provider.GetRequiredService<IProductionCountService>();
 
+        // M6.1: 把 AccountLockoutService 注入到 UserService（属性注入避免构造循环）
+        var userSvc = provider.GetRequiredService<IUserService>() as UserService;
+        if (userSvc is not null)
+        {
+            userSvc.AccountLockout = provider.GetRequiredService<AccountLockoutService>();
+        }
+
         return provider;
     }
 }
