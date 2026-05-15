@@ -254,6 +254,87 @@ public sealed partial class MainWindowViewModel : MainViewModel
         OnPropertyChanged(nameof(SessionRemainingVisibility));
     }
 
+    /// <summary>M6.3: 登录后执行密码策略 + 过期检查。</summary>
+    protected override void OnAfterLogin(ApexHMI.Models.UserAccount account, string enteredPassword)
+    {
+        try
+        {
+            // 1) 当前密码是否符合策略？不符合 → 强制改密
+            var validation = _passwordPolicy.Validate(account.Username, enteredPassword);
+            if (!validation.IsValid)
+            {
+                System.Windows.MessageBox.Show(
+                    "您的当前密码不符合最新密码策略：\n - " + string.Join("\n - ", validation.Errors)
+                    + "\n\n请立即修改密码。",
+                    "密码不符策略", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                ForceChangePassword(account.Username, "登录后强制改密 — 当前密码不符策略");
+                return;
+            }
+
+            // 2) 过期检查
+            var state = _passwordPolicy.CheckExpiration(account.PasswordChangedAt);
+            if (state == PasswordExpirationState.Expired)
+            {
+                System.Windows.MessageBox.Show(
+                    $"您的密码已超过 {_passwordPolicy.Config.MaxAgeDays} 天未修改，已过期。\n请立即设置新密码。",
+                    "密码已过期", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                ForceChangePassword(account.Username, "登录后强制改密 — 密码过期");
+            }
+            else if (state == PasswordExpirationState.NearExpiry)
+            {
+                var remaining = _passwordPolicy.RemainingDays(account.PasswordChangedAt);
+                SystemMessage = $"密码将在 {Math.Max(0, remaining)} 天后过期，建议尽快修改";
+                System.Windows.MessageBox.Show(
+                    $"您的密码将在 {Math.Max(0, remaining)} 天后过期。建议在过期前主动到 用户管理 修改密码。",
+                    "密码即将过期", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Log.Warning(ex, "M6.3 OnAfterLogin policy check 异常");
+        }
+    }
+
+    private void ForceChangePassword(string username, string reason)
+    {
+        while (true)
+        {
+            var dlg = new ApexHMI.ViewModels.Runtime.PasswordPromptWindow(username)
+            {
+                Title = $"强制修改密码 — {username}",
+            };
+            var ok = dlg.ShowDialog();
+            if (ok != true)
+            {
+                // 用户取消 → 注销
+                System.Windows.MessageBox.Show("必须设置新密码才能继续使用系统。已自动注销。",
+                    "未修改密码", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                LogoutCommand.Execute(null);
+                return;
+            }
+            var newPwd = dlg.PasswordText;
+            var r = _passwordPolicy.Validate(username, newPwd);
+            if (!r.IsValid)
+            {
+                System.Windows.MessageBox.Show(
+                    "新密码不符合策略：\n - " + string.Join("\n - ", r.Errors),
+                    "请重新输入", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                continue;
+            }
+            var userSvc = _userService;
+            if (userSvc.ChangePassword(username, newPwd))
+            {
+                _passwordPolicy.RecordPasswordChange(username, newPwd);
+                _ = _auditService.LogOperationAsync(username, "force-change-password", username, true, reason);
+                System.Windows.MessageBox.Show("密码修改成功，请记住新密码。", "密码已更新");
+                SystemMessage = "密码已更新";
+                return;
+            }
+            System.Windows.MessageBox.Show("密码修改失败，请重试。", "错误",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
     private DateTime _lastSessionTickAt;
 
     /// <summary>M6.2: 重写 SubscriptionTimer 钩子 — 每秒刷新一次 Session 状态栏（200ms tick 节流）。</summary>

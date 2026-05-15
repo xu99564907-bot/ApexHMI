@@ -295,8 +295,8 @@ internal sealed class RolePromptWindow : Window
     }
 }
 
-/// <summary>简易密码输入弹窗（P8B 用户视图改密用）。</summary>
-internal sealed class PasswordPromptWindow : Window
+/// <summary>简易密码输入弹窗（P8B 用户视图改密用；M6.3 强制改密复用）。</summary>
+public sealed class PasswordPromptWindow : Window
 {
     private readonly System.Windows.Controls.PasswordBox _pwd = new() { Width = 220, Margin = new Thickness(8) };
     public string PasswordText => _pwd.Password ?? string.Empty;

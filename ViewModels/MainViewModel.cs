@@ -45,7 +45,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly TrendHistoryService _trendHistoryService;
     private readonly GitPullService _gitPullService;
     private readonly GeneratedArtifactSyncService _generatedArtifactSyncService;
-    private readonly IUserService _userService;
+    protected readonly IUserService _userService;
     private readonly DispatcherTimer _subscriptionTimer;
     private readonly DispatcherTimer _opcUaBrowserRefreshTimer;
     private readonly object _ioTableRowsSync = new();
@@ -1384,11 +1384,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         CurrentUserRole = account.Role;
+        var enteredPassword = LoginPassword ?? string.Empty;
         LoginPassword = string.Empty;
         SystemMessage = $"已登录为：{CurrentRoleText}";
         AddLog("登录", SystemMessage, "Info");
         AddAudit("登录", CurrentRoleText, "成功", SystemMessage);
+
+        // M6.3: 子类（MainWindowViewModel）挂钩执行密码策略 + 过期检查
+        OnAfterLogin(account, enteredPassword);
     }
+
+    /// <summary>M6.3: 登录成功后子类挂钩 — 用于密码策略校验、过期提醒、强制改密。</summary>
+    protected virtual void OnAfterLogin(UserAccount account, string enteredPassword) { }
 
     /// <summary>L4: 弹层切换用户，不退出会话（不离开当前页面）。</summary>
     [RelayCommand]

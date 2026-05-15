@@ -19,8 +19,23 @@ public sealed class PasswordPolicyConfig
     public bool RequireSpecial { get; set; } = false;
     /// <summary>历史不重复条数（最近 N 次）。0 = 关闭。</summary>
     public int HistoryCount { get; set; } = 3;
+    /// <summary>M6.3: 密码最长有效期（天）。0 = 永不过期，默认 90。</summary>
+    public int MaxAgeDays { get; set; } = 90;
+    /// <summary>M6.3: 接近过期的提醒阈值（天）。默认 7（剩余 ≤ 7 天提醒）。</summary>
+    public int WarnDaysBeforeExpire { get; set; } = 7;
     /// <summary>每个用户的密码 hash 历史（最近 HistoryCount 条）— 由 PasswordPolicy 内部维护。</summary>
     public Dictionary<string, List<string>> UserHistory { get; set; } = new();
+}
+
+/// <summary>M6.3: 密码过期状态。</summary>
+public enum PasswordExpirationState
+{
+    /// <summary>未启用过期或未到提醒阈值。</summary>
+    Healthy,
+    /// <summary>临近过期（剩余 ≤ WarnDaysBeforeExpire 天）。</summary>
+    NearExpiry,
+    /// <summary>已过期 — 调用方应强制改密。</summary>
+    Expired,
 }
 
 /// <summary>M5.2: 密码策略校验结果。</summary>
@@ -91,6 +106,33 @@ public sealed class PasswordPolicy
             }
         }
         return errors.Count == 0 ? PasswordPolicyResult.Ok() : PasswordPolicyResult.Fail(errors.ToArray());
+    }
+
+    /// <summary>M6.3: 检查 <paramref name="passwordChangedAt"/> 距今的天数是否超出策略。</summary>
+    public PasswordExpirationState CheckExpiration(DateTime? passwordChangedAt)
+    {
+        lock (_lock)
+        {
+            if (_cfg.MaxAgeDays <= 0) return PasswordExpirationState.Healthy;
+            var changedAt = passwordChangedAt ?? DateTime.UtcNow;
+            var age = (DateTime.UtcNow - changedAt).TotalDays;
+            if (age >= _cfg.MaxAgeDays) return PasswordExpirationState.Expired;
+            if (age >= _cfg.MaxAgeDays - Math.Max(0, _cfg.WarnDaysBeforeExpire))
+                return PasswordExpirationState.NearExpiry;
+            return PasswordExpirationState.Healthy;
+        }
+    }
+
+    /// <summary>M6.3: 返回密码剩余有效天数（负数 = 已过期）。MaxAgeDays = 0 时返回 int.MaxValue。</summary>
+    public int RemainingDays(DateTime? passwordChangedAt)
+    {
+        lock (_lock)
+        {
+            if (_cfg.MaxAgeDays <= 0) return int.MaxValue;
+            var changedAt = passwordChangedAt ?? DateTime.UtcNow;
+            var age = (DateTime.UtcNow - changedAt).TotalDays;
+            return (int)Math.Ceiling(_cfg.MaxAgeDays - age);
+        }
     }
 
     /// <summary>修改密码成功后调用：把新密码 hash 加入历史，自动裁剪到 HistoryCount。</summary>
