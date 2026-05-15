@@ -5,28 +5,75 @@
              Width="{Binding Model.Width}" Height="{Binding Model.Height}">
     <Border BorderBrush="#94A3B8" BorderThickness="1" Background="#FFFFFF">
         <DockPanel>
+            <!-- M4.1 工具栏：Zoom / Pause / Export -->
             <Border DockPanel.Dock="Top" Background="#F1F5F9" Padding="4"
                     Visibility="{Binding ToolbarVisibility}">
                 <StackPanel Orientation="Horizontal">
-                    <Button Command="{Binding TogglePauseCommand}" Margin="2" Padding="6,2" FontSize="12">
+                    <Button Command="{Binding ZoomInCommand}"     ToolTip="放大"
+                            Visibility="{Binding ShowZoomVisibility}"
+                            Margin="2" Padding="6,2" FontSize="12" Content="🔍+"/>
+                    <Button Command="{Binding ZoomOutCommand}"    ToolTip="缩小"
+                            Visibility="{Binding ShowZoomVisibility}"
+                            Margin="2" Padding="6,2" FontSize="12" Content="🔍-"/>
+                    <Button Command="{Binding ResetZoomCommand}"  ToolTip="重置缩放"
+                            Visibility="{Binding ShowZoomVisibility}"
+                            Margin="2" Padding="6,2" FontSize="12" Content="↺"/>
+                    <Separator Visibility="{Binding ShowZoomVisibility}"/>
+
+                    <Button Command="{Binding TogglePauseCommand}" Margin="2" Padding="6,2" FontSize="12"
+                            Visibility="{Binding ShowPauseResumeVisibility}">
                         <Button.Style>
                             <Style TargetType="Button">
-                                <Setter Property="Content" Value="暂停"/>
+                                <Setter Property="Content" Value="⏸ 暂停"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Paused}" Value="True">
-                                        <Setter Property="Content" Value="继续"/>
+                                        <Setter Property="Content" Value="▶ 继续"/>
                                         <Setter Property="Background" Value="#FBBF24"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
                     </Button>
-                    <Button Content="重置缩放" Command="{Binding ResetZoomCommand}" Margin="2" Padding="6,2" FontSize="12"/>
-                    <Button Content="导出 CSV"  Command="{Binding ExportCsvCommand}" Margin="2" Padding="6,2" FontSize="12"/>
-                    <Button Content="导出 PNG"  Command="{Binding ExportPngCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Separator Visibility="{Binding ShowPauseResumeVisibility}"/>
+
+                    <Button Content="📄 CSV" Command="{Binding ExportCsvCommand}"
+                            Visibility="{Binding ShowExportVisibility}"
+                            Margin="2" Padding="6,2" FontSize="12" ToolTip="导出 CSV"/>
+                    <Button Content="🖼 PNG" Command="{Binding ExportPngCommand}"
+                            Visibility="{Binding ShowExportVisibility}"
+                            Margin="2" Padding="6,2" FontSize="12" ToolTip="导出 PNG"/>
                 </StackPanel>
             </Border>
-            <oxy:PlotView Model="{Binding PlotModel}"/>
+
+            <!-- M4.1 Plot + Ruler popup overlay -->
+            <Grid>
+                <oxy:PlotView x:Name="Plot" Model="{Binding PlotModel}"
+                              MouseMove="OnPlotMouseMove"
+                              MouseLeave="OnPlotMouseLeave"/>
+
+                <!-- Ruler 弹表（鼠标 hover 时显示当前各曲线值） -->
+                <Border x:Name="RulerPopup"
+                        Background="#F8FAFC" BorderBrush="#0F172A" BorderThickness="1"
+                        Padding="6" CornerRadius="3"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        Margin="0" IsHitTestVisible="False"
+                        Visibility="{Binding RulerPopupVisibility}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding RulerTimeText}" FontWeight="Bold" FontSize="11" Margin="0,0,0,2"/>
+                        <ItemsControl ItemsSource="{Binding RulerRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,1">
+                                        <Border Width="10" Height="10" Background="{Binding ColorBrush}" Margin="0,0,4,0" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Label}" FontSize="11" Width="80"/>
+                                        <TextBlock Text="{Binding ValueText}" FontSize="11" FontFamily="Consolas" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </DockPanel>
     </Border>
 </UserControl>
