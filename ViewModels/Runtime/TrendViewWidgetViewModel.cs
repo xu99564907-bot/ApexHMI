@@ -41,6 +41,14 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
     private readonly Dictionary<string, LineSeries> _seriesByTag = new(StringComparer.OrdinalIgnoreCase);
     private readonly LineAnnotation _rulerLine;
 
+    // M6.5: 历史模式 Lazy Load — 记录已加载的时间区间（每 tag 独立），节流 + 缓存
+    private readonly Dictionary<string, List<(DateTime From, DateTime To)>> _loadedRanges
+        = new(StringComparer.OrdinalIgnoreCase);
+    private System.Windows.Threading.DispatcherTimer? _lazyLoadDebounce;
+    private (DateTime From, DateTime To)? _pendingLoadRange;
+    private bool _xAxisHookInstalled;
+    private ApexHMI.Services.TrendHistoryService? _historyService;
+
     [ObservableProperty] private bool _paused;
     [ObservableProperty] private bool _rulerVisible;
     [ObservableProperty] private string _rulerTimeText = string.Empty;
@@ -257,17 +265,152 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
     {
         try
         {
-            var svc = new ApexHMI.Services.TrendHistoryService();
+            _historyService ??= new ApexHMI.Services.TrendHistoryService();
             var to = DateTime.Now;
             var from = to.AddSeconds(-TimeWindow);
-            foreach (var (cfg, series) in _seriesByTag.Select(kv => (cfg: _traceConfigs.FirstOrDefault(c => c.TagId == kv.Key), s: kv.Value)))
+            LoadHistoryRange(from, to);
+
+            // M6.5: 安装 X 轴变化监听 — zoom/pan 到未加载区间时触发 lazy load
+            EnsureXAxisHook();
+        }
+        catch { /* ignore */ }
+    }
+
+    /// <summary>
+    /// M6.5: 加载指定时间区间到所有 LineSeries（去重 + 排序合并），并记录到 _loadedRanges。
+    /// </summary>
+    private void LoadHistoryRange(DateTime from, DateTime to)
+    {
+        if (_historyService is null) return;
+        if (from >= to) return;
+        foreach (var kv in _seriesByTag)
+        {
+            var tagId = kv.Key;
+            var series = kv.Value;
+            // 仅查询未覆盖部分
+            var gaps = ComputeMissingRanges(tagId, from, to);
+            foreach (var gap in gaps)
             {
-                if (cfg is null) continue;
-                var pts = svc.Query(cfg.TagId, from, to);
-                foreach (var p in pts)
-                    series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(p.Time), p.Value));
+                IReadOnlyList<ApexHMI.Services.TrendHistoryPoint> pts;
+                try { pts = _historyService.Query(tagId, gap.From, gap.To); }
+                catch { continue; }
+                if (pts.Count == 0)
+                {
+                    RecordLoadedRange(tagId, gap.From, gap.To);
+                    continue;
+                }
+                MergePointsIntoSeries(series, pts);
+                RecordLoadedRange(tagId, gap.From, gap.To);
             }
-            PlotModel.InvalidatePlot(true);
+        }
+        PlotModel.InvalidatePlot(true);
+    }
+
+    private static void MergePointsIntoSeries(LineSeries series, IReadOnlyList<ApexHMI.Services.TrendHistoryPoint> samples)
+    {
+        // OxyPlot LineSeries.Points 期望按 X 升序；这里把新点插入到正确位置（小集合简单 sort）
+        foreach (var s in samples)
+        {
+            series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(s.Time), s.Value));
+        }
+        series.Points.Sort((a, b) => a.X.CompareTo(b.X));
+    }
+
+    private List<(DateTime From, DateTime To)> ComputeMissingRanges(string tagId, DateTime from, DateTime to)
+    {
+        // 相交检测：把请求区间 [from, to] 减去已加载区间，返回剩余 gap 段
+        if (!_loadedRanges.TryGetValue(tagId, out var loaded) || loaded.Count == 0)
+            return new List<(DateTime, DateTime)> { (from, to) };
+
+        var result = new List<(DateTime, DateTime)>();
+        var cursor = from;
+        var sorted = loaded.Where(r => r.To > from && r.From < to).OrderBy(r => r.From).ToList();
+        foreach (var r in sorted)
+        {
+            if (r.From > cursor)
+            {
+                var gapEnd = r.From < to ? r.From : to;
+                if (gapEnd > cursor) result.Add((cursor, gapEnd));
+            }
+            if (r.To > cursor) cursor = r.To;
+            if (cursor >= to) break;
+        }
+        if (cursor < to) result.Add((cursor, to));
+        return result;
+    }
+
+    private void RecordLoadedRange(string tagId, DateTime from, DateTime to)
+    {
+        if (!_loadedRanges.TryGetValue(tagId, out var list))
+        {
+            list = new List<(DateTime, DateTime)>();
+            _loadedRanges[tagId] = list;
+        }
+        list.Add((from, to));
+        // 合并相邻 / 相交区间，控制列表增长
+        list.Sort((a, b) => a.From.CompareTo(b.From));
+        var merged = new List<(DateTime From, DateTime To)>();
+        foreach (var r in list)
+        {
+            if (merged.Count > 0 && r.From <= merged[^1].To)
+            {
+                var last = merged[^1];
+                if (r.To > last.To) merged[^1] = (last.From, r.To);
+            }
+            else
+            {
+                merged.Add(r);
+            }
+        }
+        _loadedRanges[tagId] = merged;
+    }
+
+    /// <summary>M6.5: 把 X 轴 AxisChanged 事件挂上 → 触发 200ms debounce 后的 lazy load。</summary>
+    private void EnsureXAxisHook()
+    {
+        if (_xAxisHookInstalled) return;
+        var x = PlotModel.Axes.OfType<DateTimeAxis>().FirstOrDefault();
+        if (x is null) return;
+        x.AxisChanged += OnXAxisChanged;
+        _xAxisHookInstalled = true;
+    }
+
+    private void OnXAxisChanged(object? sender, AxisChangedEventArgs e)
+    {
+        if (sender is not DateTimeAxis ax) return;
+        if (!string.Equals(Mode, "history", StringComparison.OrdinalIgnoreCase)) return;
+        try
+        {
+            var from = DateTimeAxis.ToDateTime(ax.ActualMinimum);
+            var to   = DateTimeAxis.ToDateTime(ax.ActualMaximum);
+            if (to <= from) return;
+            _pendingLoadRange = (from, to);
+            // Debounce 200ms — 拖动 / 滚轮高频时只在停顿后查询一次
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            if (dispatcher is null) return;
+            if (_lazyLoadDebounce is null)
+            {
+                _lazyLoadDebounce = new System.Windows.Threading.DispatcherTimer(System.Windows.Threading.DispatcherPriority.Background, dispatcher)
+                {
+                    Interval = TimeSpan.FromMilliseconds(200),
+                };
+                _lazyLoadDebounce.Tick += LazyLoadDebounceTick;
+            }
+            _lazyLoadDebounce.Stop();
+            _lazyLoadDebounce.Start();
+        }
+        catch { /* ignore */ }
+    }
+
+    private void LazyLoadDebounceTick(object? sender, EventArgs e)
+    {
+        _lazyLoadDebounce?.Stop();
+        var range = _pendingLoadRange;
+        _pendingLoadRange = null;
+        if (range is null) return;
+        try
+        {
+            LoadHistoryRange(range.Value.From, range.Value.To);
         }
         catch { /* ignore */ }
     }
