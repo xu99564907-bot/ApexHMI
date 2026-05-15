@@ -5,6 +5,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -30,8 +31,28 @@
             </DockPanel>
         </Border>
 
+        <!-- M5.5: SQLite 历史查询工具栏 -->
+        <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="12,8" Margin="0,0,0,6">
+            <WrapPanel>
+                <TextBlock Text="SQLite 历史：" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Text="从" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <DatePicker SelectedDate="{Binding SqliteFromDate, Mode=TwoWay}" Width="130" Margin="0,0,8,0"/>
+                <TextBlock Text="到" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                <DatePicker SelectedDate="{Binding SqliteToDate, Mode=TwoWay}" Width="130" Margin="0,0,8,0"/>
+                <Button Content="查询 SQLite" Command="{Binding QuerySqliteCommand}"
+                        Padding="10,4" Margin="0,0,8,0"
+                        Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
+                        ToolTip="M5.5: 从 SQLite 后端查询 90 天滚动窗口内的历史审计"/>
+                <Button Content="返回实时流" Command="{Binding ReloadLiveCommand}"
+                        Padding="10,4" Margin="0,0,8,0"
+                        ToolTip="M5.5: 恢复运行时内存中的实时审计流"/>
+                <TextBlock Text="{Binding SqliteStatus}" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Brush.TextMuted}" FontStyle="Italic"/>
+            </WrapPanel>
+        </Border>
+
         <!-- AU1/AU2/AU3/AU6 过滤工具栏 -->
-        <Border Grid.Row="1" Style="{StaticResource CardBorderStyle}" Padding="12,8" Margin="0,0,0,10">
+        <Border Grid.Row="2" Style="{StaticResource CardBorderStyle}" Padding="12,8" Margin="0,0,0,10">
             <WrapPanel>
                 <TextBlock Text="时间：" FontSize="13" Foreground="{DynamicResource Brush.TextSecondary}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                 <ComboBox Width="100" Height="26" Margin="0,0,12,0"
@@ -53,8 +74,12 @@
             </WrapPanel>
         </Border>
 
-        <DataGrid Grid.Row="2"
+        <DataGrid Grid.Row="3"
                   ItemsSource="{Binding AuditView}"
+                  EnableRowVirtualization="True"
+                  EnableColumnVirtualization="True"
+                  VirtualizingStackPanel.IsVirtualizing="True"
+                  VirtualizingStackPanel.VirtualizationMode="Recycling"
                   SelectedItem="{Binding SelectedAudit, Mode=TwoWay}"
                   AutoGenerateColumns="False"
                   Background="#FFFFFF" Foreground="{DynamicResource Brush.Text}" BorderBrush="{DynamicResource Brush.BorderSoft}"

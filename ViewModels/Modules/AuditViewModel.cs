@@ -9,7 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using ApexHMI.Services;
 using ApexHMI.Views.Dialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,6 +28,11 @@ public sealed partial class AuditViewModel : ModuleViewModelBase
         ExportAuditPdfCommand = new AsyncRelayCommand(ExportAuditPdfAsync);
         ArchiveOldAuditsCommand = new RelayCommand(ArchiveOldAudits);
         ShowEventChainCommand = new RelayCommand<OperationAuditRecord?>(ShowEventChain);
+        // M5.5: SQLite 历史查询
+        QuerySqliteCommand = new AsyncRelayCommand(QuerySqliteAsync);
+        ReloadLiveCommand = new RelayCommand(ReloadLive);
+        SqliteFromDate = DateTime.Now.AddHours(-24);
+        SqliteToDate   = DateTime.Now;
         RefreshSourceOptions();
         AuditView.Filter = FilterAudit;
     }
@@ -60,6 +67,99 @@ public sealed partial class AuditViewModel : ModuleViewModelBase
     public IAsyncRelayCommand ExportAuditPdfCommand { get; }
     public IRelayCommand ArchiveOldAuditsCommand { get; }
     public IRelayCommand<OperationAuditRecord?> ShowEventChainCommand { get; }
+
+    // ===== M5.5: SQLite 历史查询 =====
+    public IAsyncRelayCommand QuerySqliteCommand { get; }
+    public IRelayCommand ReloadLiveCommand { get; }
+
+    [ObservableProperty] private DateTime _sqliteFromDate;
+    [ObservableProperty] private DateTime _sqliteToDate;
+    [ObservableProperty] private bool _sqliteMode;
+    [ObservableProperty] private string _sqliteStatus = string.Empty;
+
+    private async Task QuerySqliteAsync()
+    {
+        IAuditService? auditSvc = null;
+        try
+        {
+            var t = Shell.GetType();
+            var p = t.GetProperty("AuditService", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+            auditSvc = p?.GetValue(Shell) as IAuditService;
+            if (auditSvc is null)
+            {
+                var f = t.GetField("_auditService", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                auditSvc = f?.GetValue(Shell) as IAuditService;
+            }
+        }
+        catch { }
+
+        if (auditSvc is not AuditServiceSqlite sqlite)
+        {
+            SqliteStatus = "当前未启用 SQLite 后端，无法查询历史。";
+            return;
+        }
+
+        SqliteStatus = "查询中…";
+        var fromUser = string.Equals(SelectedUser, "全部", StringComparison.Ordinal) ? null : SelectedUser;
+        var rows = await sqlite.QueryAsync(SqliteFromDate, SqliteToDate, fromUser, null);
+        SqliteMode = true;
+
+        // 替换内存列表为查询结果（保留原数据快照以便 ReloadLive 还原）
+        if (_liveSnapshot is null) _liveSnapshot = OperationAudits.ToList();
+        OperationAudits.Clear();
+        foreach (var r in rows)
+        {
+            OperationAudits.Add(new OperationAuditRecord
+            {
+                Time = r.Timestamp,
+                User = r.User,
+                Action = r.Action,
+                Target = r.Target,
+                Result = r.Success ? "成功" : "失败",
+                Detail = r.Detail,
+                Category = ClassifyCategory(r.Action),
+            });
+        }
+        SqliteStatus = $"已加载 {rows.Count} 条（{SqliteFromDate:yyyy-MM-dd HH:mm} ~ {SqliteToDate:yyyy-MM-dd HH:mm}）。";
+        RefreshSourceOptions();
+        AuditView.Refresh();
+    }
+
+    private System.Collections.Generic.List<OperationAuditRecord>? _liveSnapshot;
+
+    private void ReloadLive()
+    {
+        if (_liveSnapshot is null)
+        {
+            SqliteStatus = "当前已是实时模式。";
+            return;
+        }
+        OperationAudits.Clear();
+        foreach (var r in _liveSnapshot) OperationAudits.Add(r);
+        _liveSnapshot = null;
+        SqliteMode = false;
+        SqliteStatus = "已恢复实时审计流。";
+        RefreshSourceOptions();
+        AuditView.Refresh();
+    }
+
+    private static string ClassifyCategory(string action) => action switch
+    {
+        var a when a.IndexOf("login", StringComparison.OrdinalIgnoreCase) >= 0
+                || a.IndexOf("logout", StringComparison.OrdinalIgnoreCase) >= 0
+                || a.IndexOf("session", StringComparison.OrdinalIgnoreCase) >= 0
+                || a.IndexOf("account", StringComparison.OrdinalIgnoreCase) >= 0
+            => "登录类",
+        var a when a.IndexOf("write-", StringComparison.OrdinalIgnoreCase) >= 0
+                || a.IndexOf("recipe-", StringComparison.OrdinalIgnoreCase) >= 0
+            => "设备操作",
+        var a when a.IndexOf("param", StringComparison.OrdinalIgnoreCase) >= 0
+            => "参数修改",
+        var a when a.IndexOf("alarm", StringComparison.OrdinalIgnoreCase) >= 0
+                || a.IndexOf("ack", StringComparison.OrdinalIgnoreCase) >= 0
+            => "报警处理",
+        _ => "其他",
+    };
 
     partial void OnSelectedTimeRangeChanged(string value) => AuditView.Refresh();
     partial void OnSelectedUserChanged(string value) => AuditView.Refresh();
