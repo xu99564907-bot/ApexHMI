@@ -22,6 +22,9 @@ public partial class SwitchWidgetViewModel : WidgetViewModelBase
             dataContext.RegisterValueCallback(tag!, v => IsOn = ParseBool(v));
     }
 
+    /// <summary>M4.4: Switch 总参与 Tab 焦点链（可点击切换）。</summary>
+    public bool IsTabStop => true;
+
     public string ModeProp     => Prop("mode",        "bistable");
     public string OnText       => Prop("onText",      "ON");
     public string OffText      => Prop("offText",     "OFF");

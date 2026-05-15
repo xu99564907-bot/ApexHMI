@@ -32,6 +32,10 @@ public partial class IoGraphicWidgetViewModel : WidgetViewModelBase
     }
 
     public string Mode       => Prop("mode",       "Output");
+
+    /// <summary>M4.4: 是否参与 Tab 焦点链。Input/InputOutput 模式下可作输入目标。</summary>
+    public bool IsInput => Mode is "Input" or "InputOutput";
+    public bool IsTabStop => IsInput;
     public string EntriesRaw
     {
         get

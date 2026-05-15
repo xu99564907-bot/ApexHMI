@@ -20,14 +20,18 @@ namespace ApexHMI.Services.RuntimeUi;
 /// </summary>
 public static class TabFocusCoordinator
 {
-    /// <summary>判定一个 widget VM 是否参与 Tab 链（可输入 widget）。</summary>
+    /// <summary>判定一个 widget VM 是否参与 Tab 链（可输入 / 可交互 widget）。
+    /// M4.4: 扩展到 io-graphic / checkbox / switch / button(Toggle)。
+    /// 优先看 VM.IsTabStop 计算属性，更可控；fallback 旧 IsInput 判断保兼容。</summary>
     private static bool IsTabbable(WidgetViewModelBase? vm) => vm switch
     {
-        IoNumericWidgetViewModel n => n.IsInput,
+        IoNumericWidgetViewModel n  => n.IsInput,
         IoSymbolicWidgetViewModel s => s.IsInput,
-        DateTimeWidgetViewModel d => d.IsInput,
-        // io-graphic / checkbox / switch / button 通过 keyboard nav (focusable + IsTabStop) 默认支持，
-        // 此处只协调"按 tabIndex 跨 widget 流转"。
+        DateTimeWidgetViewModel d   => d.IsInput,
+        IoGraphicWidgetViewModel g  => g.IsTabStop,   // Input/InputOutput 模式
+        CheckBoxWidgetViewModel    => true,           // 总可勾选
+        SwitchWidgetViewModel      => true,           // 总可切换
+        ButtonWidgetViewModel b     => b.IsTabStop,   // Toggle 模式
         _ => false,
     };
 

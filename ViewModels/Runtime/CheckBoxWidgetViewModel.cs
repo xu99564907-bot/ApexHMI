@@ -26,6 +26,9 @@ public partial class CheckBoxWidgetViewModel : WidgetViewModelBase
             });
     }
 
+    /// <summary>M4.4: CheckBox 总参与 Tab 焦点链（可点击勾选）。</summary>
+    public bool IsTabStop => true;
+
     public string Text             => Prop("text",             "选项");
     public string CheckedColor     => Prop("checkedColor",     "#10B981");
     public string UncheckedColor   => Prop("uncheckedColor",   "#94A3B8");

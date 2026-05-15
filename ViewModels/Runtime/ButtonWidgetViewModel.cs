@@ -34,6 +34,9 @@ public partial class ButtonWidgetViewModel : WidgetViewModelBase
         }
     }
 
+    /// <summary>M4.4: Button 在 Toggle 模式下参与 Tab 焦点链（空格触发切换）；Push 模式按 WinCC 行为不属于 I/O 链。</summary>
+    public bool IsTabStop => IsToggleMode;
+
     /// <summary>B2D: 普通文本字段。Toggle 模式时由 DisplayText 选 onText/offText。</summary>
     public string Text       => Prop("text",       "按钮");
     public string Background => Prop("background", "#2563EB");
