@@ -129,6 +129,11 @@ public class UserService : IUserService
         }
     }
 
+    /// <summary>M5.2: 连续失败几次触发锁定。</summary>
+    public int MaxFailedAttempts { get; set; } = 5;
+    /// <summary>M5.2: 锁定时长。</summary>
+    public TimeSpan LockoutDuration { get; set; } = TimeSpan.FromMinutes(15);
+
     private UserAccount? AuthenticateInternal(UserAccount? user, string password)
     {
         if (user is null) return null;
@@ -137,6 +142,13 @@ public class UserService : IUserService
         if (!VerifyPassword(user, password))
         {
             user.FailedAttempts++;
+            // M5.2: 超阈值则锁定
+            if (user.FailedAttempts >= MaxFailedAttempts)
+            {
+                user.LockedUntil = DateTime.Now + LockoutDuration;
+                Log.Warning("UserService: 用户 {U} 连续失败 {N} 次，锁定到 {Until}",
+                    user.Username, user.FailedAttempts, user.LockedUntil);
+            }
             SaveTo(_configPath, _users);
             return null;
         }

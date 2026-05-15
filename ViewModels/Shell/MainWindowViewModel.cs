@@ -24,6 +24,9 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly SimulationService _simulationService;
     private readonly IAuditService _auditService;
     private readonly RecipeJobCoordinator _recipeJobCoordinator;
+    private readonly SessionManager _sessionManager;
+    private readonly PasswordPolicy _passwordPolicy;
+    private readonly AccountLockoutService _accountLockout;
 
     /// <summary>M3.2: 默认 PLC 写入确认超时 = 3 秒。</summary>
     private static readonly System.TimeSpan WriteConfirmTimeout = System.TimeSpan.FromSeconds(3);
@@ -54,7 +57,10 @@ public sealed partial class MainWindowViewModel : MainViewModel
         IProductionCountService productionCountService,
         SimulationService simulationService,
         IAuditService auditService,
-        RecipeJobCoordinator recipeJobCoordinator)
+        RecipeJobCoordinator recipeJobCoordinator,
+        SessionManager sessionManager,
+        PasswordPolicy passwordPolicy,
+        AccountLockoutService accountLockout)
         : base(
             opcUaService,
             csvImportService,
@@ -80,6 +86,28 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _simulationService = simulationService;
         _auditService = auditService;
         _recipeJobCoordinator = recipeJobCoordinator;
+        _sessionManager = sessionManager;
+        _passwordPolicy = passwordPolicy;
+        _accountLockout = accountLockout;
+        // M5.2: 订阅会话超时事件 → 强制注销 + 提示
+        _sessionManager.SessionExpired += OnSessionExpired;
+        // M5.2: 在角色变化时联动会话管理器（登入 / 注销）
+        this.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(LoginUser))
+            {
+                var user = LoginUser;
+                if (string.IsNullOrEmpty(user) || user == "操作员")
+                {
+                    _sessionManager.Logout();
+                }
+                else
+                {
+                    _sessionManager.Login(user);
+                }
+                OnPropertyChanged(nameof(SessionRemainingText));
+            }
+        };
         // M3.2/M4.3: 把内存 sink 注入到 AuditService —— 后端（CSV 或 SQLite）+ 内存 OperationAudits 同时收到记录
         Action<string, string, string, string> sink = (action, target, result, detail) => AddAudit(action, target, result, detail);
         switch (_auditService)
@@ -175,6 +203,43 @@ public sealed partial class MainWindowViewModel : MainViewModel
             foreach (var p in injected)
                 nav.Children.Add(new NavigationItemViewModel(p.Title, p.RouteKey, nav.Title));
         }
+    }
+
+    /// <summary>M5.2: 公开会话/策略/锁定服务供子 ViewModel 反射访问 + 状态栏绑定。</summary>
+    public SessionManager SessionManager => _sessionManager;
+    public PasswordPolicy PasswordPolicy => _passwordPolicy;
+    public AccountLockoutService AccountLockout => _accountLockout;
+    public RecipeJobCoordinator RecipeJobCoordinator => _recipeJobCoordinator;
+    public RuntimeDataBindingService DataBindingService => _dataBindingService;
+    public IAuditService AuditService => _auditService;
+
+    /// <summary>M5.2: 顶部状态栏可绑定的"距会话超时 X 分钟"。</summary>
+    public string SessionRemainingText
+    {
+        get
+        {
+            var r = _sessionManager.Remaining;
+            if (_sessionManager.CurrentUser is null) return string.Empty;
+            if (r <= TimeSpan.Zero) return "会话已超时";
+            return r.TotalMinutes >= 1
+                ? $"距会话超时 {(int)r.TotalMinutes} 分钟"
+                : $"距会话超时 {(int)r.TotalSeconds} 秒";
+        }
+    }
+
+    private void OnSessionExpired(string user)
+    {
+        // SessionManager 的 DispatcherTimer 已在 UI 线程触发
+        System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+        {
+            SystemMessage = "会话超时，请重新登录";
+            try { _ = _auditService.LogOperationAsync(user, "session-expired", user, true, $"timeout={_sessionManager.Timeout.TotalMinutes:F0}min"); } catch { }
+            LogoutCommand.Execute(null);
+            System.Windows.MessageBox.Show(
+                $"用户 {user} 已无操作 {_sessionManager.Timeout.TotalMinutes:F0} 分钟，会话超时已自动注销。请重新登录。",
+                "会话超时", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            OnPropertyChanged(nameof(SessionRemainingText));
+        });
     }
 
     /// <summary>P3.4 运行时全屏：true 时主窗口隐藏导航/状态栏，仅显示 DynamicPageHost。</summary>
@@ -319,6 +384,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     /// </summary>
     private async Task WriteWithConfirmAndAuditAsync(string tagId, object value, string actionLabel)
     {
+        _sessionManager.KeepAlive(); // M5.2: 写 PLC 算用户活动
         var result = await _dataBindingService.WriteAsyncWithConfirm(tagId, value, WriteConfirmTimeout);
         var detail = $"value={value} elapsedMs={result.Elapsed.TotalMilliseconds:F0}" +
                      (result.Success ? string.Empty :

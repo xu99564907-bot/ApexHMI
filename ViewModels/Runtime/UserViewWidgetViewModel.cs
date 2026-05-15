@@ -10,6 +10,7 @@ using ApexHMI.Models;
 using ApexHMI.Models.RuntimeUi;
 using ApexHMI.Services.RuntimeUi;
 using ApexHMI.Services.Security;
+using ApexHMI.Services;
 
 namespace ApexHMI.ViewModels.Runtime;
 
@@ -21,6 +22,7 @@ namespace ApexHMI.ViewModels.Runtime;
 public partial class UserViewWidgetViewModel : WidgetViewModelBase
 {
     private IUserService? _userService;
+    private PasswordPolicy? _passwordPolicy; // M5.2
 
     public UserViewWidgetViewModel(WidgetInstance model, IWidgetDataContext dataContext)
         : base(model, dataContext)
@@ -57,6 +59,9 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
         {
             _userService = svc2;
         }
+        // M5.2: 反射拿 PasswordPolicy（供 ChangePassword / AddUser 时校验）
+        var ppProp = t.GetProperty("PasswordPolicy", BindingFlags.Public | BindingFlags.Instance);
+        if (ppProp?.GetValue(shell) is PasswordPolicy pp) _passwordPolicy = pp;
     }
 
     [RelayCommand]
@@ -82,8 +87,20 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
         if (!AllowEdit || _userService is null || SelectedUser is null) return;
         var dlg = new PasswordPromptWindow(SelectedUser.Username);
         if (dlg.ShowDialog() != true) return;
+        // M5.2: 密码策略校验
+        if (_passwordPolicy is not null)
+        {
+            var r = _passwordPolicy.Validate(SelectedUser.Username, dlg.PasswordText);
+            if (!r.IsValid)
+            {
+                MessageBox.Show("密码不符合策略：\n - " + string.Join("\n - ", r.Errors),
+                    "密码策略", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
         if (_userService.ChangePassword(SelectedUser.Username, dlg.PasswordText))
         {
+            _passwordPolicy?.RecordPasswordChange(SelectedUser.Username, dlg.PasswordText);
             MessageBox.Show($"已修改 {SelectedUser.Username} 的密码。", "用户管理");
         }
         else

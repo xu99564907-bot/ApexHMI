@@ -46,6 +46,10 @@ public static class Bootstrapper
         services.AddSingleton<ThemeService>();
         services.AddSingleton<IRecipeService, RecipeService>();
         services.AddSingleton<IUserService, UserService>();
+        // M5.2: 用户会话管理 / 密码策略 / 账户锁定（三件套）
+        services.AddSingleton<SessionManager>();
+        services.AddSingleton<PasswordPolicy>();
+        services.AddSingleton<AccountLockoutService>();
         // M4.3: 审计服务升级到 SQLite 后端（90 天自动滚动）
         // CSV 实现保留作 fallback / 开发场景，由 IAuditService 抽象兼容。
         // 内存 sink 由 MainWindowViewModel 在构造后注入（避免循环依赖）。
