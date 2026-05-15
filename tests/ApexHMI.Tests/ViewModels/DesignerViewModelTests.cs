@@ -1,4 +1,4 @@
-// M4.2: 本文件原 6 条 [Fact] 全部针对 P0 之前的 MainWindowViewModel.Designer 子模块：
+﻿// M4.2: 本文件原 6 条 [StaFact] 全部针对 P0 之前的 MainWindowViewModel.Designer 子模块：
 //   - shell.Designer.AddDesignerElementCommand / RemoveSelectedDesignerElementCommand / ...
 //   - shell.Designer.Pages / Elements / DesignerActionOptions / IsDesignerCanvasPageVisible
 //
@@ -11,7 +11,7 @@
 // 新设计器命令的契约测试目前由手动验证 + DesignerEditorViewModel 单元测试（已经存在的 RuntimeUi/）覆盖。
 // 因此整文件清空，保留壳以便 git 历史保留。
 //
-// 删除条目数：6 个 [Fact]（命令存在 / 命令 distinct / 集合代理 / 模式 flag 代理 / IO 属性代理）。
+// 删除条目数：6 个 [StaFact]（命令存在 / 命令 distinct / 集合代理 / 模式 flag 代理 / IO 属性代理）。
 
 namespace ApexHMI.Tests.ViewModels;
 
