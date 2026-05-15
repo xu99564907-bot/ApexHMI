@@ -33,7 +33,7 @@ public class RuntimeProjectServiceTests : IDisposable
             SchemaVersion = 1,
             ProjectName = "RoundTripTest",
             DefaultPageRouteKey = "main",
-            Pages = new System.Collections.Generic.List<PageDefinition>
+            Pages = new System.Collections.ObjectModel.ObservableCollection<PageDefinition>
             {
                 new()
                 {
