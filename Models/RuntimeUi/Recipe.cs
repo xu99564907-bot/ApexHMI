@@ -49,6 +49,12 @@ public partial class Recipe : ObservableObject
 
     public ObservableCollection<RecipeField> Fields { get; set; } = new();
     public ObservableCollection<RecipeDataset> Datasets { get; set; } = new();
+
+    /// <summary>M5.1: 是否走 WinCC Job Mailbox 4-word 握手协议。默认 false（兼容旧工程的 fire-and-forget 直接写）。</summary>
+    [ObservableProperty] private bool _useJobMailbox;
+
+    /// <summary>M5.1: Job Mailbox 4-word 握手协议配置。</summary>
+    public RecipeJobMailbox Mailbox { get; set; } = new();
 }
 
 /// <summary>P8A 工程级配方库（挂在 ProjectDocument 上，随工程一起 JSON 落盘）。</summary>

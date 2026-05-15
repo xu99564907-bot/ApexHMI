@@ -52,6 +52,8 @@ public static class Bootstrapper
         services.AddSingleton<IAuditService>(_ => new AuditServiceSqlite(
             System.IO.Path.Combine(System.AppContext.BaseDirectory, "data")));
         services.AddSingleton<IProductionCountService, ProductionCountService>();
+        // M5.1: Recipe Job Mailbox 4-word 握手协调器
+        services.AddSingleton<RecipeJobCoordinator>();
 
         services.AddSingleton<ICsvImportService, CsvImportService>();
         services.AddSingleton(sp => (CsvImportService)sp.GetRequiredService<ICsvImportService>());

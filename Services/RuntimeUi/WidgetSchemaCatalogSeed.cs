@@ -756,6 +756,20 @@ internal static class WidgetSchemaCatalogSeed
                 EnumOptions = new[] { "CSV|CSV", "Excel|Excel", "XML|XML", "JSON|JSON" }
             },
             new PropertyDescriptor { Key = "showSearchBar", DisplayName = "显示搜索栏", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "外观" },
+
+            // ============ M5.1: Job Mailbox 4-word 握手（WinCC Recipe DR_REQ_HMI / DR_REQ_PLC / DR_DONE / DR_ERROR）============
+            new PropertyDescriptor { Key = "useJobMailbox", DisplayName = "启用 Job Mailbox", EditorType = PropertyEditorType.Boolean, DefaultValue = "false", Category = "PLC 握手",
+                Description = "M5.1: 启用后读/写 PLC 走 4-word 握手协议，避免 fire-and-forget 写半截。" },
+            new PropertyDescriptor { Key = "mailbox.reqHmiTag", DisplayName = "ReqHmi Tag", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "PLC 握手",
+                Description = "HMI → PLC 请求字：0 空闲 / 1 读出 / 2 写入。" },
+            new PropertyDescriptor { Key = "mailbox.reqPlcTag", DisplayName = "ReqPlc Tag", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "PLC 握手",
+                Description = "PLC → HMI 请求字（PLC 端发起读/写）。" },
+            new PropertyDescriptor { Key = "mailbox.doneTag", DisplayName = "Done Tag", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "PLC 握手",
+                Description = "PLC → HMI 完成位：1 = 完成。" },
+            new PropertyDescriptor { Key = "mailbox.errorTag", DisplayName = "Error Tag", EditorType = PropertyEditorType.TagAddress, DefaultValue = "", Category = "PLC 握手",
+                Description = "PLC → HMI 错误码：0 = 无错。" },
+            new PropertyDescriptor { Key = "mailbox.timeoutSeconds", DisplayName = "超时(秒)", EditorType = PropertyEditorType.Integer, DefaultValue = "10", Category = "PLC 握手",
+                Description = "等待 Done = 1 的最大秒数。" },
         }
     };
 

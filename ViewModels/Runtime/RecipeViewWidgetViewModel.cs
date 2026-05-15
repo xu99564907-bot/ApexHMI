@@ -9,7 +9,13 @@ using System.Text;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Threading;
+using System.Threading.Tasks;
+using ApexHMI.Interfaces;
+using ApexHMI.Models;
 using ApexHMI.Models.RuntimeUi;
+using ApexHMI.Services;
+using ApexHMI.Services.DataBinding;
 using ApexHMI.Services.RuntimeUi;
 using Microsoft.Win32;
 
@@ -26,11 +32,55 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
     /// <summary>当前订阅的 Tag 最新值缓存（用于"读出 PLC"动作）。</summary>
     private readonly Dictionary<string, string> _tagLatest = new(StringComparer.OrdinalIgnoreCase);
 
+    private RecipeJobCoordinator? _jobCoordinator;
+    private RuntimeDataBindingService? _dataBindingService;
+    private IAuditService? _auditService;
+    private CancellationTokenSource? _jobCts;
+
     public RecipeViewWidgetViewModel(WidgetInstance model, IWidgetDataContext dataContext)
         : base(model, dataContext)
     {
+        ResolveServices();
         RefreshRecipe();
         DesignerContext.ResourcesChanged += OnDocChanged;
+    }
+
+    /// <summary>M5.1: 通过 Shell 反射拿 RuntimeDataBindingService / IAuditService / RecipeJobCoordinator。</summary>
+    private void ResolveServices()
+    {
+        var shell = _dataContext.Shell;
+        if (shell is null) return;
+        var t = shell.GetType();
+        _dataBindingService = GetMember<RuntimeDataBindingService>(shell, t, "DataBindingService", "_dataBindingService");
+        _auditService       = GetMember<IAuditService>(shell, t, "AuditService", "_auditService");
+        _jobCoordinator     = GetMember<RecipeJobCoordinator>(shell, t, "RecipeJobCoordinator", "_recipeJobCoordinator");
+        // App.ServiceProvider 兜底
+        if (_jobCoordinator is null)
+        {
+            try
+            {
+                var app = System.Windows.Application.Current;
+                var spProp = app?.GetType().GetProperty("ServiceProvider");
+                var sp = spProp?.GetValue(app);
+                if (sp is not null)
+                {
+                    var getSvc = sp.GetType().GetMethod("GetService", new[] { typeof(Type) });
+                    _jobCoordinator ??= getSvc?.Invoke(sp, new object[] { typeof(RecipeJobCoordinator) }) as RecipeJobCoordinator;
+                    _auditService   ??= getSvc?.Invoke(sp, new object[] { typeof(IAuditService) }) as IAuditService;
+                    _dataBindingService ??= getSvc?.Invoke(sp, new object[] { typeof(RuntimeDataBindingService) }) as RuntimeDataBindingService;
+                }
+            }
+            catch { /* 设计时安静失败 */ }
+        }
+    }
+
+    private static T? GetMember<T>(object obj, Type t, string propName, string fieldName) where T : class
+    {
+        var p = t.GetProperty(propName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+        if (p?.GetValue(obj) is T v) return v;
+        var f = t.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+        if (f?.GetValue(obj) is T v2) return v2;
+        return null;
     }
 
     private void OnDocChanged() => RefreshRecipe();
@@ -66,6 +116,21 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
         }
         CurrentRecipe = r;
         SelectedDataset = r?.Datasets.FirstOrDefault();
+
+        // M5.1: 把 widget 实例上的 mailbox 配置合并到 Recipe.Mailbox（widget 级别覆盖 recipe 默认）
+        if (r is not null)
+        {
+            var useFromProp = Prop("useJobMailbox", "");
+            if (!string.IsNullOrEmpty(useFromProp))
+                r.UseJobMailbox = string.Equals(useFromProp, "true", StringComparison.OrdinalIgnoreCase);
+            var rh = Prop("mailbox.reqHmiTag", "");      if (!string.IsNullOrEmpty(rh)) r.Mailbox.ReqHmiTag = rh;
+            var rp = Prop("mailbox.reqPlcTag", "");      if (!string.IsNullOrEmpty(rp)) r.Mailbox.ReqPlcTag = rp;
+            var dn = Prop("mailbox.doneTag", "");        if (!string.IsNullOrEmpty(dn)) r.Mailbox.DoneTag = dn;
+            var er = Prop("mailbox.errorTag", "");       if (!string.IsNullOrEmpty(er)) r.Mailbox.ErrorTag = er;
+            if (int.TryParse(Prop("mailbox.timeoutSeconds", ""), out var t) && t > 0)
+                r.Mailbox.TimeoutSeconds = t;
+        }
+
         RebuildRows();
         RegisterTagCallbacks();
     }
@@ -93,6 +158,29 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
             var tag = f.TagAddress;
             _dataContext.RegisterValueCallback(tag, v => _tagLatest[tag] = v);
         }
+        // M5.1: 订阅 mailbox 4-word（Done / Error / ReqPlc）— ReqHmi 是写出方向，但订阅也无害
+        if (CurrentRecipe.UseJobMailbox)
+        {
+            var m = CurrentRecipe.Mailbox;
+            foreach (var tag in new[] { m.DoneTag, m.ErrorTag, m.ReqPlcTag, m.ReqHmiTag })
+            {
+                if (string.IsNullOrWhiteSpace(tag)) continue;
+                var captured = tag;
+                _dataContext.RegisterValueCallback(captured, v => _tagLatest[captured] = v);
+            }
+        }
+    }
+
+    /// <summary>M5.1: 标记是否正在跑 Job Mailbox（用于进度条/取消按钮 UI 显示）。</summary>
+    [ObservableProperty] private bool _jobRunning;
+
+    /// <summary>M5.1: Job 进行中的状态文字。</summary>
+    [ObservableProperty] private string _jobStatusText = "";
+
+    [RelayCommand]
+    private void CancelJob()
+    {
+        try { _jobCts?.Cancel(); } catch { /* ignore */ }
     }
 
     // ===== 工具栏命令 =====
@@ -129,13 +217,20 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
     }
 
     [RelayCommand]
-    private void ReadFromPlc()
+    private async Task ReadFromPlcAsync()
     {
         if (CurrentRecipe is null || SelectedDataset is null)
         {
             MessageBox.Show("请先选择一个数据集。", "读出 PLC", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
+        if (CurrentRecipe.UseJobMailbox && _jobCoordinator is not null && _dataBindingService is not null)
+        {
+            await RunMailboxReadAsync(CurrentRecipe, SelectedDataset).ConfigureAwait(true);
+            return;
+        }
+
+        // 旧路径：直接读缓存（兼容）
         int n = 0;
         foreach (var f in CurrentRecipe.Fields)
         {
@@ -152,7 +247,7 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
     }
 
     [RelayCommand]
-    private void WriteToPlc()
+    private async Task WriteToPlcAsync()
     {
         if (CurrentRecipe is null || SelectedDataset is null)
         {
@@ -164,6 +259,13 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
             "写入 PLC", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
         if (!ok) return;
 
+        if (CurrentRecipe.UseJobMailbox && _jobCoordinator is not null && _dataBindingService is not null)
+        {
+            await RunMailboxWriteAsync(CurrentRecipe, SelectedDataset).ConfigureAwait(true);
+            return;
+        }
+
+        // 旧路径：fire-and-forget 直接走 ExecuteAction
         int n = 0;
         foreach (var f in CurrentRecipe.Fields)
         {
@@ -174,12 +276,132 @@ public partial class RecipeViewWidgetViewModel : WidgetViewModelBase
                 RecipeFieldType.Boolean => "write-bool",
                 RecipeFieldType.Integer => "write-int",
                 RecipeFieldType.Number  => "write-float",
-                _ => "write-string" // P10C: 字符串字段走 write-string
+                _ => "write-string"
             };
             _dataContext.ExecuteAction(action, $"{f.TagAddress}|{val}");
             n++;
         }
         MessageBox.Show($"已向 PLC 写入 {n} 个字段。", "写入 PLC");
+    }
+
+    // ===== M5.1: Job Mailbox 4-word 握手路径 =====
+
+    private async Task RunMailboxWriteAsync(Recipe recipe, RecipeDataset dataset)
+    {
+        if (_jobCoordinator is null || _dataBindingService is null) return;
+        _jobCts?.Dispose();
+        _jobCts = new CancellationTokenSource();
+        JobRunning = true;
+        JobStatusText = $"写入 \"{dataset.Name}\" 中…";
+        var user = ResolveCurrentUser();
+
+        var timeout = TimeSpan.FromSeconds(Math.Max(1, recipe.Mailbox.TimeoutSeconds));
+        Func<string, int, Task<bool>> writeInt = async (tag, val) =>
+        {
+            if (string.IsNullOrWhiteSpace(tag)) return false;
+            var r = await _dataBindingService.WriteAsyncWithConfirm(tag, val, timeout).ConfigureAwait(false);
+            return r.Success;
+        };
+        Func<RecipeField, string, Task<bool>> writeField = async (f, val) =>
+        {
+            object parsed = val;
+            try
+            {
+                parsed = f.Type switch
+                {
+                    RecipeFieldType.Boolean => bool.TryParse(val, out var b) ? b : false,
+                    RecipeFieldType.Integer => int.TryParse(val, out var i) ? i : 0,
+                    RecipeFieldType.Number  => double.TryParse(val,
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : 0d,
+                    _ => val
+                };
+            }
+            catch { /* 保持原字符串 */ }
+            var r = await _dataBindingService.WriteAsyncWithConfirm(f.TagAddress, parsed, timeout).ConfigureAwait(false);
+            return r.Success;
+        };
+        Func<string, string?> readLatest = tag =>
+            !string.IsNullOrEmpty(tag) && _tagLatest.TryGetValue(tag, out var v) ? v : null;
+
+        try
+        {
+            var result = await _jobCoordinator.WriteDatasetAsync(
+                recipe, dataset, writeInt, writeField, readLatest, user, _jobCts.Token).ConfigureAwait(true);
+            if (result.Success)
+            {
+                JobStatusText = "写入成功";
+                MessageBox.Show($"数据集 \"{dataset.Name}\" 已通过 Job Mailbox 写入 PLC。\n{result.Detail}",
+                    "写入 PLC", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                JobStatusText = "写入失败：" + result.Detail;
+                MessageBox.Show($"写入 PLC 失败：{result.Detail}", "写入 PLC",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            JobRunning = false;
+        }
+    }
+
+    private async Task RunMailboxReadAsync(Recipe recipe, RecipeDataset dataset)
+    {
+        if (_jobCoordinator is null || _dataBindingService is null) return;
+        _jobCts?.Dispose();
+        _jobCts = new CancellationTokenSource();
+        JobRunning = true;
+        JobStatusText = $"读取到 \"{dataset.Name}\" 中…";
+        var user = ResolveCurrentUser();
+        var timeout = TimeSpan.FromSeconds(Math.Max(1, recipe.Mailbox.TimeoutSeconds));
+
+        Func<string, int, Task<bool>> writeInt = async (tag, val) =>
+        {
+            if (string.IsNullOrWhiteSpace(tag)) return false;
+            var r = await _dataBindingService.WriteAsyncWithConfirm(tag, val, timeout).ConfigureAwait(false);
+            return r.Success;
+        };
+        Func<string, string?> readLatest = tag =>
+            !string.IsNullOrEmpty(tag) && _tagLatest.TryGetValue(tag, out var v) ? v : null;
+        Action<RecipeField, string> onFieldRead = (f, v) =>
+        {
+            dataset.Values[f.Key] = v;
+        };
+
+        try
+        {
+            var result = await _jobCoordinator.ReadDatasetAsync(
+                recipe, dataset, writeInt, readLatest, onFieldRead, user, _jobCts.Token).ConfigureAwait(true);
+            dataset.ModifiedAt = DateTime.Now;
+            RebuildRows();
+            if (result.Success)
+            {
+                JobStatusText = "读取成功";
+                MessageBox.Show($"已从 PLC 读取数据到 \"{dataset.Name}\"。\n{result.Detail}",
+                    "读出 PLC", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            else
+            {
+                JobStatusText = "读取失败：" + result.Detail;
+                MessageBox.Show($"读出 PLC 失败：{result.Detail}", "读出 PLC",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+        finally
+        {
+            JobRunning = false;
+        }
+    }
+
+    private string ResolveCurrentUser()
+    {
+        var shell = _dataContext.Shell;
+        if (shell is null) return "anonymous";
+        var t = shell.GetType();
+        var p = t.GetProperty("LoginUser", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic);
+        return p?.GetValue(shell) as string ?? "anonymous";
     }
 
     [RelayCommand]

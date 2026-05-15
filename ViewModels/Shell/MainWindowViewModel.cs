@@ -23,6 +23,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly IWidgetEditorService _widgetEditorService;
     private readonly SimulationService _simulationService;
     private readonly IAuditService _auditService;
+    private readonly RecipeJobCoordinator _recipeJobCoordinator;
 
     /// <summary>M3.2: 默认 PLC 写入确认超时 = 3 秒。</summary>
     private static readonly System.TimeSpan WriteConfirmTimeout = System.TimeSpan.FromSeconds(3);
@@ -52,7 +53,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
         PlcVariableImportService plcVariableImportService,
         IProductionCountService productionCountService,
         SimulationService simulationService,
-        IAuditService auditService)
+        IAuditService auditService,
+        RecipeJobCoordinator recipeJobCoordinator)
         : base(
             opcUaService,
             csvImportService,
@@ -77,6 +79,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _widgetEditorService = widgetEditorService;
         _simulationService = simulationService;
         _auditService = auditService;
+        _recipeJobCoordinator = recipeJobCoordinator;
         // M3.2/M4.3: 把内存 sink 注入到 AuditService —— 后端（CSV 或 SQLite）+ 内存 OperationAudits 同时收到记录
         Action<string, string, string, string> sink = (action, target, result, detail) => AddAudit(action, target, result, detail);
         switch (_auditService)
