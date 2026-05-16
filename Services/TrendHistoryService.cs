@@ -180,6 +180,55 @@ public class TrendHistoryService : ITrendHistoryService
         return result;
     }
 
+    /// <summary>
+    /// M7.5: 按时间桶聚合查询 — 用于 TrendView 长跨度 LOD 降采样。
+    /// 每 <paramref name="bucketMs"/> 毫秒一个桶，输出 AVG(value)。
+    /// 例 bucketMs = 60_000 → 每分钟一点，bucketMs = 900_000 → 每 15 分钟一点。
+    /// </summary>
+    /// <param name="tagId">tag 名</param>
+    /// <param name="fromTs">起始（Local 或 Utc 均可）</param>
+    /// <param name="toTs">终止</param>
+    /// <param name="bucketMs">桶宽（毫秒）；&lt;=0 视为 1ms（等价 Query）</param>
+    public IReadOnlyList<TrendHistoryPoint> QueryAggregated(string tagId, DateTime fromTs, DateTime toTs, long bucketMs)
+    {
+        if (bucketMs <= 0) return Query(tagId, fromTs, toTs);
+        EnsureDb();
+        var fromMs = new DateTimeOffset(fromTs.ToUniversalTime()).ToUnixTimeMilliseconds();
+        var toMs   = new DateTimeOffset(toTs.ToUniversalTime()).ToUnixTimeMilliseconds();
+        var result = new List<TrendHistoryPoint>();
+        lock (_dbLock)
+        {
+            try
+            {
+                using var conn = OpenConn();
+                using var cmd = conn.CreateCommand();
+                // 桶 key = ts / bucketMs；输出每桶 AVG(value)、桶起点 ts；按时间升序
+                cmd.CommandText = @"
+                    SELECT (ts / $bucket) * $bucket AS bucket_ts, AVG(value) AS v
+                    FROM tag_history
+                    WHERE tag = $tag AND ts BETWEEN $a AND $b
+                    GROUP BY bucket_ts
+                    ORDER BY bucket_ts ASC";
+                cmd.Parameters.AddWithValue("$bucket", bucketMs);
+                cmd.Parameters.AddWithValue("$tag", tagId);
+                cmd.Parameters.AddWithValue("$a", fromMs);
+                cmd.Parameters.AddWithValue("$b", toMs);
+                using var rdr = cmd.ExecuteReader();
+                while (rdr.Read())
+                {
+                    var ts = rdr.GetInt64(0);
+                    var v = rdr.GetDouble(1);
+                    result.Add(new TrendHistoryPoint(DateTimeOffset.FromUnixTimeMilliseconds(ts).LocalDateTime, v));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "TrendHistory: 聚合查询失败 tag={Tag} bucket={Bucket}", tagId, bucketMs);
+            }
+        }
+        return result;
+    }
+
     /// <summary>每 60s 触发一次清理：删除 7 天前数据。</summary>
     private void MaybeCleanup()
     {

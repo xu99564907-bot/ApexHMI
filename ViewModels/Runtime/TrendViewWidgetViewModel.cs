@@ -52,6 +52,8 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
     [ObservableProperty] private bool _paused;
     [ObservableProperty] private bool _rulerVisible;
     [ObservableProperty] private string _rulerTimeText = string.Empty;
+    /// <summary>M7.5: 当前可视范围使用的 LOD 状态文本（"原始"/"已降采样 1 point / 15min"等）。</summary>
+    [ObservableProperty] private string _lodStatusText = string.Empty;
 
     public ObservableCollection<RulerRow> RulerRows { get; } = new();
 
@@ -278,11 +280,25 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
 
     /// <summary>
     /// M6.5: 加载指定时间区间到所有 LineSeries（去重 + 排序合并），并记录到 _loadedRanges。
+    /// M7.5: 按可视范围长度选 bucket，自动 LOD 降采样，避免拖远卡顿。
     /// </summary>
     private void LoadHistoryRange(DateTime from, DateTime to)
     {
         if (_historyService is null) return;
         if (from >= to) return;
+
+        // M7.5: 选 bucket — 短跨度原始；长跨度走 QueryAggregated
+        var span = to - from;
+        var bucketMs = PickBucketMs(span);
+        // 切换 LOD bucket 时清空已加载缓存（不同分辨率不能混合到一个 series）
+        if (bucketMs != _activeBucketMs)
+        {
+            _activeBucketMs = bucketMs;
+            _loadedRanges.Clear();
+            foreach (var s in _seriesByTag.Values) s.Points.Clear();
+        }
+        LodStatusText = BuildLodStatusText(bucketMs);
+
         foreach (var kv in _seriesByTag)
         {
             var tagId = kv.Key;
@@ -292,7 +308,12 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
             foreach (var gap in gaps)
             {
                 IReadOnlyList<ApexHMI.Services.TrendHistoryPoint> pts;
-                try { pts = _historyService.Query(tagId, gap.From, gap.To); }
+                try
+                {
+                    pts = bucketMs > 0
+                        ? _historyService.QueryAggregated(tagId, gap.From, gap.To, bucketMs)
+                        : _historyService.Query(tagId, gap.From, gap.To);
+                }
                 catch { continue; }
                 if (pts.Count == 0)
                 {
@@ -305,6 +326,33 @@ public partial class TrendViewWidgetViewModel : WidgetViewModelBase
         }
         PlotModel.InvalidatePlot(true);
     }
+
+    /// <summary>M7.5: 当前选用的 bucket 宽度（毫秒），0 = 原始无聚合。</summary>
+    private long _activeBucketMs = -1;
+
+    /// <summary>M7.5: 按可视跨度选 bucket。</summary>
+    /// <list type="bullet">
+    ///   <item>&lt; 1h → 原始</item>
+    ///   <item>1h - 12h → 60s</item>
+    ///   <item>12h - 7d → 900s</item>
+    ///   <item>&gt; 7d → 3600s</item>
+    /// </list>
+    private static long PickBucketMs(TimeSpan span)
+    {
+        if (span < TimeSpan.FromHours(1)) return 0;
+        if (span < TimeSpan.FromHours(12)) return 60_000;
+        if (span < TimeSpan.FromDays(7)) return 900_000;
+        return 3_600_000;
+    }
+
+    private static string BuildLodStatusText(long bucketMs) => bucketMs switch
+    {
+        <= 0      => "LOD：原始（无降采样）",
+        60_000    => "已降采样 1 point / 1min",
+        900_000   => "已降采样 1 point / 15min",
+        3_600_000 => "已降采样 1 point / 1h",
+        _ => $"已降采样 bucket={bucketMs}ms",
+    };
 
     private static void MergePointsIntoSeries(LineSeries series, IReadOnlyList<ApexHMI.Services.TrendHistoryPoint> samples)
     {

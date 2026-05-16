@@ -45,6 +45,13 @@
                 </StackPanel>
             </Border>
 
+            <!-- M7.5: 底部状态栏（LOD 降采样提示） -->
+            <Border DockPanel.Dock="Bottom" Background="#F8FAFC" Padding="6,2"
+                    BorderBrush="#E2E8F0" BorderThickness="0,1,0,0">
+                <TextBlock Text="{Binding LodStatusText}" FontSize="11" Foreground="#475569"
+                           HorizontalAlignment="Right"/>
+            </Border>
+
             <!-- M4.1 Plot + Ruler popup overlay -->
             <Grid>
                 <oxy:PlotView x:Name="Plot" Model="{Binding PlotModel}"
