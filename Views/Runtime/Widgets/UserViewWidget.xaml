@@ -14,6 +14,9 @@
                     <Button Content="解锁"     Command="{Binding UnlockCommand}"         Margin="2" Padding="6,2" FontSize="12"
                             Visibility="{Binding CanUnlockVisibility}"
                             ToolTip="管理员手工解除选中用户的账户锁定（仅 admin 可见）"/>
+                    <Button Content="密码策略" Command="{Binding OpenPasswordPolicyCommand}" Margin="2" Padding="6,2" FontSize="12"
+                            Visibility="{Binding CanUnlockVisibility}"
+                            ToolTip="M7.2: 配置密码长度/复杂度/历史/过期策略（仅 admin 可见）"/>
                 </StackPanel>
             </Border>
 

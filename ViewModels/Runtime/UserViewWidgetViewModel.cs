@@ -200,6 +200,33 @@ public partial class UserViewWidgetViewModel : WidgetViewModelBase
         }
     }
 
+    /// <summary>M7.2: 打开密码策略配置 Dialog（仅 admin 入口）。</summary>
+    [RelayCommand]
+    private void OpenPasswordPolicy()
+    {
+        if (_passwordPolicy is null)
+        {
+            MessageBox.Show("密码策略服务未就绪。", "密码策略", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+        try
+        {
+            var dlg = new ApexHMI.Views.Dialogs.PasswordPolicyDialog(_passwordPolicy)
+            {
+                Owner = Application.Current?.MainWindow,
+            };
+            if (dlg.ShowDialog() == true)
+            {
+                MessageBox.Show("密码策略已更新，下次校验生效。", "密码策略");
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"打开密码策略对话框失败：{ex.Message}",
+                "密码策略", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     [RelayCommand]
     private void SwitchRole()
     {
