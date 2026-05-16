@@ -14,6 +14,9 @@ namespace ApexHMI.Services.Security;
 /// <summary>
 /// 文件持久化的用户管理实现。读写 config/users.json。
 /// 第一次启动若文件不存在，会用默认 3 角色（operator/engineer/admin）+ 旧硬编码密码生成迁移数据。
+/// <para>M6.1: 账户锁定不再由本服务保存到 UserAccount.LockedUntil，已迁到
+/// <see cref="AccountLockoutService"/>（唯一来源）。本服务只在 Authenticate 时调三个 API。
+/// 注意：AccountLockoutService 通过属性注入（构造函数可选），未注入时退化为不锁定（向后兼容旧测试）。</para>
 /// </summary>
 public class UserService : IUserService
 {
@@ -23,6 +26,9 @@ public class UserService : IUserService
     private readonly string _configPath;
     private readonly object _lock = new();
     private readonly List<UserAccount> _users;
+
+    /// <summary>M6.1: 账户锁定服务（属性注入，可选）。Bootstrapper 构造后由 DI 容器/Shell 注入。</summary>
+    public AccountLockoutService? AccountLockout { get; set; }
 
     public UserService(IOptions<AppOptions> options)
     {
@@ -41,7 +47,24 @@ public class UserService : IUserService
             {
                 var json = File.ReadAllText(_configPath);
                 var users = JsonSerializer.Deserialize<List<UserAccount>>(json) ?? new List<UserAccount>();
-                if (users.Count > 0) return users;
+                if (users.Count > 0)
+                {
+                    // M6.3: 旧用户记录无 PasswordChangedAt，加载时初始化为 UtcNow（即被视为刚改密的状态）
+                    var changed = false;
+                    foreach (var u in users)
+                    {
+                        if (u.PasswordChangedAt is null)
+                        {
+                            u.PasswordChangedAt = DateTime.UtcNow;
+                            changed = true;
+                        }
+                    }
+                    if (changed)
+                    {
+                        try { SaveTo(_configPath, users); } catch { /* ignore */ }
+                    }
+                    return users;
+                }
             }
             catch (Exception ex)
             {
@@ -75,6 +98,7 @@ public class UserService : IUserService
             Salt = salt,
             PasswordHash = string.IsNullOrEmpty(password) ? string.Empty : Hash(password, salt),
             DisplayName = string.Empty,
+            PasswordChangedAt = DateTime.UtcNow,
         };
     }
 
@@ -132,18 +156,26 @@ public class UserService : IUserService
     private UserAccount? AuthenticateInternal(UserAccount? user, string password)
     {
         if (user is null) return null;
-        if (user.LockedUntil is { } until && until > DateTime.Now) return null;
+
+        // M6.1: 锁定状态由 AccountLockoutService 唯一裁定
+        if (AccountLockout is not null && AccountLockout.IsLocked(user.Username))
+        {
+            Log.Warning("UserService: 用户 {U} 当前处于锁定状态，登录被拒", user.Username);
+            return null;
+        }
 
         if (!VerifyPassword(user, password))
         {
-            user.FailedAttempts++;
+            AccountLockout?.RegisterFailure(user.Username);
+            user.FailedAttempts = AccountLockout?.GetFailureCount(user.Username) ?? (user.FailedAttempts + 1);
             SaveTo(_configPath, _users);
             return null;
         }
 
-        user.LastLoginAt = DateTime.Now;
+        // M7.3: LastLoginAt 持久化到 users.json，用 UTC（UI 显示侧 ToLocalTime）
+        user.LastLoginAt = DateTime.UtcNow;
         user.FailedAttempts = 0;
-        user.LockedUntil = null;
+        AccountLockout?.ResetCounter(user.Username);
         SaveTo(_configPath, _users);
         return user;
     }
@@ -162,7 +194,57 @@ public class UserService : IUserService
             if (user is null) return false;
             user.Salt = GenerateSalt();
             user.PasswordHash = string.IsNullOrEmpty(newPassword) ? string.Empty : Hash(newPassword, user.Salt);
+            user.PasswordChangedAt = DateTime.UtcNow;
             SaveTo(_configPath, _users);
+            return true;
+        }
+    }
+
+    public bool AddUser(string username, string password, UserRole role)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return false;
+        lock (_lock)
+        {
+            if (_users.Any(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase)))
+                return false;
+            _users.Add(CreateUser(username.Trim(), role, password ?? string.Empty));
+            SaveTo(_configPath, _users);
+            Log.Information("UserService: 已新增用户 {Username} 角色 {Role}", username, role);
+            return true;
+        }
+    }
+
+    public bool RemoveUser(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return false;
+        if (string.Equals(username, "admin", StringComparison.OrdinalIgnoreCase))
+        {
+            Log.Warning("UserService: 拒绝删除内置 admin 账号");
+            return false;
+        }
+        lock (_lock)
+        {
+            var user = _users.FirstOrDefault(u =>
+                string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+            if (user is null) return false;
+            _users.Remove(user);
+            SaveTo(_configPath, _users);
+            Log.Information("UserService: 已删除用户 {Username}", username);
+            return true;
+        }
+    }
+
+    public bool SetUserRole(string username, UserRole role)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return false;
+        lock (_lock)
+        {
+            var user = _users.FirstOrDefault(u =>
+                string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
+            if (user is null) return false;
+            user.Role = role;
+            SaveTo(_configPath, _users);
+            Log.Information("UserService: 用户 {Username} 角色改为 {Role}", username, role);
             return true;
         }
     }

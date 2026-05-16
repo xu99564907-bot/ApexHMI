@@ -102,6 +102,8 @@ public partial class MainViewModel
             OnPropertyChanged(nameof(ShiftRemainingText));
             // M11 IO 监控"近期变化"高亮 1.5s 后自动恢复
             RefreshIoMonitorRecentlyChangedFlags();
+            // M6.2: 子类（MainWindowViewModel）可挂钩用于刷新 Session 剩余时间等 200ms-cadence UI 状态
+            OnSubscriptionTimerTick();
             await AutoRefreshTickAsync();
         }
         catch (Exception ex)
@@ -109,6 +111,9 @@ public partial class MainViewModel
             Log.Error(ex, "SubscriptionTimer_Tick 异常");
         }
     }
+
+    /// <summary>M6.2: 子类挂钩，每个 SubscriptionTimer tick（约 200ms）调用一次。</summary>
+    protected virtual void OnSubscriptionTimerTick() { }
 
     private async void OpcUaBrowserRefreshTimer_Tick(object? sender, EventArgs e)
     {
@@ -131,6 +136,16 @@ public partial class MainViewModel
         RobotControlViewModel.Robot.Command.Speed = 50;
         RobotControlViewModel.Robot.Command.PointNum = 0;
         RobotControlViewModel.Robot.Command.ProductType = 1;
+    }
+
+    /// <summary>
+    /// M7.4: 测试专用 ctor — 跳过所有 WPF/Dispatcher/Seed 初始化，只让 Module ViewModel 能以本实例为 Shell 实例化。
+    /// 不要在生产代码调用。所有服务字段保持 null，调用任何使用它们的方法都会 NRE，这是设计意图（让测试只触发被测窄面）。
+    /// </summary>
+    protected MainViewModel(string testSentinel)
+    {
+        _ = testSentinel; // 仅作 ctor 标识符，避免与 protected default ctor 混淆
+        // 故意不调用 BuildNavigation / BindingOperations / DispatcherTimer / SeedXxx / _ = InitializeAsync()
     }
 
     private async Task InitializeAsync()

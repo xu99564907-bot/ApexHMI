@@ -1,0 +1,23 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.RoundButtonWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ApexHMI.Converters"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <UserControl.Resources>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+    </UserControl.Resources>
+    <Grid PreviewMouseLeftButtonDown="Button_PreviewMouseLeftButtonDown"
+          PreviewMouseLeftButtonUp="Button_PreviewMouseLeftButtonUp"
+          Cursor="Hand"
+          Background="Transparent">
+        <Ellipse Fill="{Binding Background, Converter={StaticResource StringToBrushConverter}}"
+                 Stroke="{Binding Background, Converter={StaticResource StringToBrushConverter}}"
+                 StrokeThickness="1"/>
+        <Button Command="{Binding ClickCommand}"
+                Background="Transparent" BorderThickness="0"
+                Foreground="{Binding Foreground, Converter={StaticResource StringToBrushConverter}}"
+                FontSize="13">
+            <TextBlock Text="{Binding Text}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Button>
+    </Grid>
+</UserControl>

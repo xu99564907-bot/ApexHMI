@@ -1,90 +1,87 @@
+#nullable enable
 using ApexHMI.ViewModels.Modules;
-using ApexHMI.ViewModels.Shell;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace ApexHMI.Tests.ViewModels;
 
+/// <summary>
+/// M7.4: Moq + TestShell 重写 — 不再走 Bootstrapper/WPF Application。
+/// 测试范围：Manual 模块的命令存在 / 与 Shell 命令的实例区别 / 集合委托 / 属性委托。
+/// </summary>
 public class ManualViewModelTests
 {
+    private static (TestShell shell, ManualViewModel manual) CreateSut()
+    {
+        var shell = new TestShell();
+        var manual = new ManualViewModel(shell);
+        return (shell, manual);
+    }
+
     [Fact]
     public void ManualModuleOwnsAll17Commands()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
-
-        Assert.NotNull(shell.Manual.ToggleDeviceCommand);
-        Assert.NotNull(shell.Manual.CylinderMoveToHomeCommand);
-        Assert.NotNull(shell.Manual.CylinderMoveToWorkCommand);
-        Assert.NotNull(shell.Manual.ToggleCylinderHomeMaskCommand);
-        Assert.NotNull(shell.Manual.ToggleCylinderWorkMaskCommand);
-        Assert.NotNull(shell.Manual.SetDebugModeCommand);
-        Assert.NotNull(shell.Manual.SetDryRunModeCommand);
-        Assert.NotNull(shell.Manual.SetBypassStationModeCommand);
-        Assert.NotNull(shell.Manual.SetManualModeCommand);
-        Assert.NotNull(shell.Manual.SetAutoModeCommand);
-        Assert.NotNull(shell.Manual.StartDeviceCommand);
-        Assert.NotNull(shell.Manual.StopDeviceCommand);
-        Assert.NotNull(shell.Manual.ResetAlarmFromHomeCommand);
-        Assert.NotNull(shell.Manual.ResetMotorFaultCommand);
-        Assert.NotNull(shell.Manual.PauseRobotCommand);
-        Assert.NotNull(shell.Manual.ResetRobotCommand);
-        Assert.NotNull(shell.Manual.ToggleAxisEnableCommand);
-        Assert.NotNull(shell.Manual.AxisAlarmResetCommand);
+        var (_, manual) = CreateSut();
+        Assert.NotNull(manual.ToggleDeviceCommand);
+        Assert.NotNull(manual.CylinderMoveToHomeCommand);
+        Assert.NotNull(manual.CylinderMoveToWorkCommand);
+        Assert.NotNull(manual.ToggleCylinderHomeMaskCommand);
+        Assert.NotNull(manual.ToggleCylinderWorkMaskCommand);
+        Assert.NotNull(manual.SetDebugModeCommand);
+        Assert.NotNull(manual.SetDryRunModeCommand);
+        Assert.NotNull(manual.SetBypassStationModeCommand);
+        Assert.NotNull(manual.SetManualModeCommand);
+        Assert.NotNull(manual.SetAutoModeCommand);
+        Assert.NotNull(manual.StartDeviceCommand);
+        Assert.NotNull(manual.StopDeviceCommand);
+        Assert.NotNull(manual.ResetAlarmFromHomeCommand);
+        Assert.NotNull(manual.ResetMotorFaultCommand);
+        Assert.NotNull(manual.PauseRobotCommand);
+        Assert.NotNull(manual.ResetRobotCommand);
+        Assert.NotNull(manual.ToggleAxisEnableCommand);
+        Assert.NotNull(manual.AxisAlarmResetCommand);
     }
 
     [Fact]
     public void ManualCommandsAreDistinctFromShell()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
-
-        Assert.NotSame(shell.ToggleDeviceCommand, shell.Manual.ToggleDeviceCommand);
-        Assert.NotSame(shell.CylinderMoveToHomeCommand, shell.Manual.CylinderMoveToHomeCommand);
-        Assert.NotSame(shell.CylinderMoveToWorkCommand, shell.Manual.CylinderMoveToWorkCommand);
-        Assert.NotSame(shell.SetDebugModeCommand, shell.Manual.SetDebugModeCommand);
-        Assert.NotSame(shell.SetDryRunModeCommand, shell.Manual.SetDryRunModeCommand);
-        Assert.NotSame(shell.SetBypassStationModeCommand, shell.Manual.SetBypassStationModeCommand);
-        Assert.NotSame(shell.SetManualModeCommand, shell.Manual.SetManualModeCommand);
-        Assert.NotSame(shell.SetAutoModeCommand, shell.Manual.SetAutoModeCommand);
-        Assert.NotSame(shell.StartDeviceCommand, shell.Manual.StartDeviceCommand);
-        Assert.NotSame(shell.StopDeviceCommand, shell.Manual.StopDeviceCommand);
-        Assert.NotSame(shell.ResetAlarmFromHomeCommand, shell.Manual.ResetAlarmFromHomeCommand);
-        Assert.NotSame(shell.ResetMotorFaultCommand, shell.Manual.ResetMotorFaultCommand);
-        Assert.NotSame(shell.PauseRobotCommand, shell.Manual.PauseRobotCommand);
-        Assert.NotSame(shell.ResetRobotCommand, shell.Manual.ResetRobotCommand);
-        Assert.NotSame(shell.ToggleAxisEnableCommand, shell.Manual.ToggleAxisEnableCommand);
-        Assert.NotSame(shell.AxisAlarmResetCommand, shell.Manual.AxisAlarmResetCommand);
+        var (shell, manual) = CreateSut();
+        Assert.NotSame(shell.ToggleDeviceCommand, manual.ToggleDeviceCommand);
+        Assert.NotSame(shell.CylinderMoveToHomeCommand, manual.CylinderMoveToHomeCommand);
+        Assert.NotSame(shell.CylinderMoveToWorkCommand, manual.CylinderMoveToWorkCommand);
+        Assert.NotSame(shell.SetDebugModeCommand, manual.SetDebugModeCommand);
+        Assert.NotSame(shell.SetDryRunModeCommand, manual.SetDryRunModeCommand);
+        Assert.NotSame(shell.SetBypassStationModeCommand, manual.SetBypassStationModeCommand);
+        Assert.NotSame(shell.SetManualModeCommand, manual.SetManualModeCommand);
+        Assert.NotSame(shell.SetAutoModeCommand, manual.SetAutoModeCommand);
+        Assert.NotSame(shell.StartDeviceCommand, manual.StartDeviceCommand);
+        Assert.NotSame(shell.StopDeviceCommand, manual.StopDeviceCommand);
+        Assert.NotSame(shell.ResetAlarmFromHomeCommand, manual.ResetAlarmFromHomeCommand);
+        Assert.NotSame(shell.ResetMotorFaultCommand, manual.ResetMotorFaultCommand);
+        Assert.NotSame(shell.PauseRobotCommand, manual.PauseRobotCommand);
+        Assert.NotSame(shell.ResetRobotCommand, manual.ResetRobotCommand);
+        Assert.NotSame(shell.ToggleAxisEnableCommand, manual.ToggleAxisEnableCommand);
+        Assert.NotSame(shell.AxisAlarmResetCommand, manual.AxisAlarmResetCommand);
     }
 
     [Fact]
     public void ManualModuleDelegatesCollections()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
-
-        Assert.Same(shell.ManualCylinderBlocks, shell.Manual.CylinderBlocks);
-        Assert.Same(shell.ManualAxisBlocks, shell.Manual.AxisBlocks);
+        var (shell, manual) = CreateSut();
+        Assert.Same(shell.ManualCylinderBlocks, manual.CylinderBlocks);
+        Assert.Same(shell.ManualAxisBlocks, manual.AxisBlocks);
     }
 
     [Fact]
     public void ManualModuleDelegatesCylinderProperties()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
-
-        // Read delegation
-        Assert.Equal(shell.CylinderHomeMaskEnabled, shell.Manual.CylinderHomeMaskEnabled);
-        Assert.Equal(shell.CylinderWorkMaskEnabled, shell.Manual.CylinderWorkMaskEnabled);
-
-        // Write delegation
-        shell.Manual.CylinderHomeMaskEnabled = true;
+        var (shell, manual) = CreateSut();
+        Assert.Equal(shell.CylinderHomeMaskEnabled, manual.CylinderHomeMaskEnabled);
+        Assert.Equal(shell.CylinderWorkMaskEnabled, manual.CylinderWorkMaskEnabled);
+        manual.CylinderHomeMaskEnabled = true;
         Assert.True(shell.CylinderHomeMaskEnabled);
-
-        shell.Manual.AxisJogDistance = "10.0";
+        manual.AxisJogDistance = "10.0";
         Assert.Equal("10.0", shell.AxisJogDistance);
-
-        shell.Manual.ManualWriteTagName = "Test.Tag";
+        manual.ManualWriteTagName = "Test.Tag";
         Assert.Equal("Test.Tag", shell.ManualWriteTagName);
     }
 }

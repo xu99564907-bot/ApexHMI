@@ -23,6 +23,15 @@ public interface IUserService
     /// <summary>修改某用户的密码。返回是否成功。</summary>
     bool ChangePassword(string username, string newPassword);
 
+    /// <summary>P10B: 新增用户。重名或参数不合法时返回 false。</summary>
+    bool AddUser(string username, string password, UserRole role);
+
+    /// <summary>P10B: 删除用户。用户不存在时返回 false；admin 账号禁止删除。</summary>
+    bool RemoveUser(string username);
+
+    /// <summary>P10B: 切换用户角色。用户不存在时返回 false。</summary>
+    bool SetUserRole(string username, UserRole role);
+
     /// <summary>立即把当前用户列表落盘（一般在 Authenticate 内部已自动落盘，仅在外部强制持久化时需要）。</summary>
     void Save();
 }

@@ -1,0 +1,273 @@
+Table 1-50 Properties
+
+Properties             RT Profes-          RT Ad-  Panel RT   Description
+                       sional              vanced  -
+AboveUpperLimitColor   RW                  -       -          Sets the color of the specified object for the "High
+(Page 490)                                                    limit violated" event.
+AcceptOnExit           RW                  -                  Specifies whether the input field is confirmed auto-
+(Page 491)                                                    matically when it is left.
+
+332                                                           WinCC Engineering V18 ­ Programming reference
+                                                               System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties          RT Profes-  RT Ad-         Panel RT  Description
+                    sional      vanced
+AcceptOnFull                                   -         Specifies whether the input field will be left and con-
+(Page 491)          RW          -                        firmed automatically when the defined number of
+                                               -         values has been entered.
+AdaptBorder (Page 498) RW       -                        Specifies whether the border of the object will be dy-
+                                               -         namically adapted to the text size.
+AllTagTypesAllowed  -           -              -         -
+                                                         Specifies whether the reason for operating this object
+AskOperationMotive  RW          -              R         is logged.
+                                                         Specifies the operating rights of the selected object in
+(Page 514)                                     RW        runtime.
+                                               -         Specifies the background color of the selected object.
+Authorization       R           R              -         Specifies the fill pattern of the selected object.
+                                                         Specifies the background color for flash state "Off".
+(Page 517)                                     -
+                                                         Specifies the background color for flash state "On".
+BackColor (Page 526) RW         RW             -
+                                                         Specifies whether the background of the selected ob-
+BackFillStyle (Page 531) RW     -              -         ject flashes in runtime.
+                                                         Specifies the flash rate of the background for the se-
+BackFlashingColorOff RW         -              -         lected object.
+                                                         Specifies the color for the "Low limit violated" event.
+(Page 533)                                     -
+                                                         Specifies the background color of the broken border
+BackFlashingColorOn RW          -              -         line for the selected object.
+                                               -         -
+(Page 534)                                               Specifies the border line color of the selected object
+                                               -         for the flash state "Off".
+BackFlashingEnabled RW          -                        Specifies the border line color of the selected object
+                                               -         for the flash state "On".
+(Page 535)                                               Specifies whether the border line of the selected ob-
+                                               -         ject flashes in runtime.
+BackFlashingRate    RW          -                        Specifies the flash rate of the border line for the se-
+                                               -         lected object.
+(Page 536)                                               Specifies the type of border lines for the selected ob-
+                                               -         ject.
+BelowLowerLimitColor RW         -              -         Specifies the line thickness of the selected object.
+                                               -         -
+(Page 545)                                     -         -
+                                               -         -
+BorderBackColor     RW          -                        Specifies whether an invalid input in this object is
+                                               -         deleted automatically.
+(Page 558)                                               Specifies whether the field entry is deleted as soon as
+                                               -         the I/O field is activated.
+BorderColor         -           -              -         -
+                                                         Specifies the shape of the corners of the specified
+BorderFlashingColorOff RW       -                        object.
+
+(Page 566)
+
+BorderFlashingColorOn RW        -
+
+(Page 567)
+
+BorderFlashingEnabled RW        -
+
+(Page 569)
+
+BorderFlashingRate  RW          -
+
+(Page 570)
+
+BorderStyle (Page 576) RW       -
+
+BorderWidth (Page 577) RW       -
+
+BorderWidth3D       -           -
+
+BottomMargin        -           -
+
+CanBeGrouped        -           -
+
+ClearOnError (Page 598) RW      -
+
+ClearOnFocus        RW          -
+(Page 598)
+
+CornerRadius        -           -
+
+CornerStyle (Page 635) RW       -
+
+WinCC Engineering V18 ­ Programming reference            333
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-  Panel RT  Description
+                        sional      vanced
+CursorControl           RW          -       -         Specifies whether the mouse cursor jumps to the next
+(Page 639)                                            field of the TAB sequence after leaving a field.
+DataFormat (Page 642)   RW          -       -         Specifies the display format of an I/O field.
+DeviceStyle             -           -       -         -
+EdgeStyle (Page 657)    RW          RW      RW        Specifies the line style of the selected object.
+EditOnFocus (Page 659)  RW          -       -         Specifies whether data input is immediately possible
+                                                      if the input field is selected using the <Tab> key.
+Enabled (Page 660)      RW          RW      RW        Specifies whether the selected object can be operat-
+                                                      ed in runtime.
+FieldLength             -           -       -         -
+                                            -         Specifies the color of the fill pattern for the selected
+FillPatternColor        RW          -                 object.
+                                            -         -
+(Page 685)                                  -         -
+                                            -         Specifies the border line color of the selected object
+FitToLargest            -           -                 for the flash state "Off".
+                                            -         Specifies the border line color of the selected object
+Flashing                -           -                 for the flash state "On".
+                                            -         Specifies whether the border line of the selected ob-
+FlashingColorOff        RW          -                 ject flashes in runtime.
+                                            -         -
+(Page 693)
+                                            -         Specifies the flash rate of the border line for the se-
+FlashingColorOn         RW          -                 lected object.
+                                            -         -
+(Page 695)                                  -         Specifies whether the text of the selected object is
+                                                      shown in bold.
+FlashingEnabled         RW          -       -         Specifies whether the text of the selected object is
+                                                      shown in italics.
+(Page 697)                                  -         Specifies the font of the selected object.
+                                            -         Specifies the font size of the text for the selected ob-
+FlashingOnLimitViola- -             -                 ject.
+                                            -         Specifies whether the text of the selected object is
+tion                                                  underlined.
+                                            RW        Specifies the font color of the text for the selected
+FlashingRate (Page 699) RW          -                 object.
+                                            -         Specifies the format of the output value.
+Font                    -           -
+                                            R         Specifies the height of the selected object.
+FontBold (Page 708)     RW          -       RW        Specifies the tooltip that is shown in Runtime as user
+                                                      help for the specified object.
+FontItalic (Page 708) RW            -       -         Specifies whether the input value or a * for each
+                                                      character is shown during the input.
+FontName (Page 709) RW              -       RW        Specifies the horizontal alignment of the text within
+                                                      the selected object.
+FontSize (Page 711)     RW          -       -         Specifies the input value.
+
+FontUnderline           RW          -
+
+(Page 711)
+
+ForeColor (Page 712) RW             RW
+
+FormatPattern           RW          -
+
+(Page 714)
+
+Height (Page 720)       RW          R
+
+HelpText (Page 724)     -           RW
+
+HiddenInput (Page 725) RW           -
+
+HorizontalAlignment RW              RW
+
+(Page 736)
+
+InputValue (Page 747) RW            -
+
+334                                                   WinCC Engineering V18 ­ Programming reference
+                                                       System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties         RT Profes-  RT Ad-          Panel RT  Description
+Layer (Page 764)   sional      vanced
+                                               RW        Specifies the layer in the screen that contains an ob-
+                   RW          RW                        ject.
+                                               RW        Specifies the value of the X coordinate of the selected
+Left (Page 770)    RW          RW                        object.
+                                               -         -
+LeftMargin         -           -               -         Specifies the shape of the line ends.
+
+LineEndShapeStyle  RW          -               -         -
+                                               -         -
+(Page 787)                                     -         Specifies whether, after operating this object, an
+                                                         alarm is output to the alarm system.
+LineWrap           -           -               -         Specifies the low limit for input values.
+                                               -         Specifies the field type of the selected object.
+Location           -           -               -         -
+                                               RW        Specifies the default for the value to be displayed.
+LogOperation       RW          -               -         -
+(Page 794)                                     -         -
+                                               -         Defines whether the object is grayed out when a bad
+LowerLimit (Page 795) RW       -                         quality code or tag status is detected.
+                                               -         -
+Mode (Page 824)    RW          -               -         -
+                                               -         -
+Name               -           -               -         -
+                                               -         -
+ProcessValue (Page 874) RW     RW              -         Specifies the text orientation of the selected object.
+
+RightMargin        -           -               RW        Specifies the tooltip text.
+                                               RW        Specifies the value of the Y coordinate of the object.
+ShiftDecimalPoint  -           -               -         -
+                                               -         Specifies the object transparency in percent.
+ShowBadTagState    RW          -
+                                               -         Specifies the unit of measurement.
+(Page 926)                                     -         Specifies the high limit for input values.
+                                               -         Specifies whether the colors defined in the global col-
+ShowLeadingZeros   -           -                         or scheme of the current design are to be used for this
+                                               -         object.
+Size               -           -                         Specifies whether the object is displayed with the
+                                               -         shading defined in the active design.
+StyleItem          -           -                         Specifies whether the violation of the configured
+                                               R         high and low limits for the object are highlighted in
+TabIndex           -           -                         color.
+                                               RW        Returns whether two-hand operation is enabled.
+TabIndexAlpha      -           -
+                                                         Specifies the vertical alignment of the text in the
+TextOrientation    RW          -                         specified object.
+
+(Page 1004)
+
+ToolTipText (Page 1082) RW     RW
+
+Top (Page 1083)    RW          RW
+
+TopMargin          -           -
+
+Transparency       RW          -
+(Page 1087)
+
+Unit (Page 1142)   RW          -
+
+UpperLimit (Page 1145) RW      -
+
+UseDesignColorSchema RW        -
+
+(Page 1148)
+
+UseDesignShadowSet- RW         -
+
+tings (Page 1150)
+
+UseTagLimitColors  RW          -
+
+(Page 1159)
+
+UseTwoHandOperation -          R
+
+(Page 1162)
+
+VerticalAlignment  RW          RW
+
+(Page 1200)
+
+WinCC Engineering V18 ­ Programming reference            335
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-     Panel RT  Description
+                      sional      vanced
+Visible (Page 1204)                          RW        Specifies whether the selected object is visible.
+Width (Page 1217)     RW          RW         R         Specifies the width of the object in pixels.
+
+                      RW          R
+
+Table 1-51  Methods

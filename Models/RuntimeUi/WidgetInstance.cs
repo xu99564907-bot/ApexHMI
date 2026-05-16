@@ -58,8 +58,30 @@ public partial class WidgetInstance : ObservableObject
     [ObservableProperty]
     private string? _requiredRole;
 
-    /// <summary>P2.5: 状态动画规则（Tag 值驱动属性变化）。</summary>
+    /// <summary>P7: Faceplate 实例化时使用的 Faceplate 版本号（仅当 TypeId 以 <c>faceplate:</c> 开头时有意义）。
+    /// <para>用于检测原 Faceplate 升级后实例是否需要同步。</para></summary>
+    [ObservableProperty]
+    private string? _faceplateVersion;
+
+    /// <summary>P2.5: 状态动画规则（Tag 值驱动属性变化）。
+    /// <para>P2-V2 之后保留为旧字段，迁移到 <see cref="Appearance"/> / <see cref="Visibility"/> / <see cref="Movement"/>。
+    /// 新模型为空时运行时仍 fallback 使用本列表（向后兼容）。</para></summary>
     public List<WidgetAnimation> Animations { get; set; } = new();
+
+    /// <summary>P2-V2: 外观动画（颜色 / 闪烁，单 widget 单个）。</summary>
+    public AppearanceAnimation? Appearance { get; set; }
+
+    /// <summary>P2-V2: 可见性动画（True/False/Range → 显示/隐藏/禁用）。</summary>
+    public VisibilityAnimation? Visibility { get; set; }
+
+    /// <summary>P2-V2: 移动动画（水平 / 垂直 / 直接 / 对角线，四选一）。</summary>
+    public MoveAnimation? Movement { get; set; }
+
+    /// <summary>P1: 事件名 → 该事件下顺序执行的动作步骤列表。
+    /// <para>事件名约定：click / press / release / activate / deactivate / valueChanged</para>
+    /// <para>旧字段 ActionType+ActionParam 保留，加载时自动迁移到 Events["click"]。</para>
+    /// </summary>
+    public Dictionary<string, List<ActionStep>> Events { get; set; } = new();
 
     /// <summary>通知 Properties 字典内容已变更（用于编辑器属性修改后即时刷新）。</summary>
     public void NotifyPropertiesChanged()

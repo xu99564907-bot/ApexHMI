@@ -1,25 +1,31 @@
-using ApexHMI.ViewModels.Shell;
-using Microsoft.Extensions.DependencyInjection;
+#nullable enable
+using ApexHMI.Interfaces;
+using ApexHMI.ViewModels.Modules;
+using Moq;
 using Xunit;
 
 namespace ApexHMI.Tests.ViewModels;
 
+/// <summary>
+/// M7.4: Moq + TestShell 重写。验证 Alarm 模块持有的命令独立于 Shell 命令实例。
+/// </summary>
 public class AlarmViewModelTests
 {
     [Fact]
     public void AlarmModuleOwnsAlarmPageCommands()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
+        var shell = new TestShell();
+        var alarmSvc = new Mock<IAlarmService>(MockBehavior.Loose).Object;
+        var alarm = new AlarmViewModel(shell, alarmSvc);
 
-        Assert.NotNull(shell.Alarm.AcknowledgeAllAlarmsCommand);
-        Assert.NotNull(shell.Alarm.ResetAllAlarmsCommand);
-        Assert.NotNull(shell.Alarm.SaveAlarmHistoryCommand);
-        Assert.NotNull(shell.Alarm.LoadAlarmHistoryCommand);
+        Assert.NotNull(alarm.AcknowledgeAllAlarmsCommand);
+        Assert.NotNull(alarm.ResetAllAlarmsCommand);
+        Assert.NotNull(alarm.SaveAlarmHistoryCommand);
+        Assert.NotNull(alarm.LoadAlarmHistoryCommand);
 
-        Assert.NotSame(shell.AcknowledgeAllAlarmsCommand, shell.Alarm.AcknowledgeAllAlarmsCommand);
-        Assert.NotSame(shell.ResetAllAlarmsCommand, shell.Alarm.ResetAllAlarmsCommand);
-        Assert.NotSame(shell.SaveAlarmHistoryCommand, shell.Alarm.SaveAlarmHistoryCommand);
-        Assert.NotSame(shell.LoadAlarmHistoryCommand, shell.Alarm.LoadAlarmHistoryCommand);
+        Assert.NotSame(shell.AcknowledgeAllAlarmsCommand, alarm.AcknowledgeAllAlarmsCommand);
+        Assert.NotSame(shell.ResetAllAlarmsCommand, alarm.ResetAllAlarmsCommand);
+        Assert.NotSame(shell.SaveAlarmHistoryCommand, alarm.SaveAlarmHistoryCommand);
+        Assert.NotSame(shell.LoadAlarmHistoryCommand, alarm.LoadAlarmHistoryCommand);
     }
 }

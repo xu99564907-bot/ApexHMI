@@ -1,0 +1,956 @@
+Table 1-60 Properties
+
+Properties             RT Profes-  RT Ad-       Panel RT  Description
+                       sional      vanced
+                                   -            -         -
+AllTagTypesAllowed     -           -            -         -
+
+ApplyProjectSettingsFor- -         -            -         Specifies the background color.
+DesignMode                         -            -         Specifies the line color.
+                                   -            -         Specifies the line thickness.
+BackColor (Page 526) RW            -            -         -
+                                   -            -         -
+BorderColor (Page 562) RW          -            -         Specifies the text to be displayed in the header.
+                                   -            -         Specifies whether the object can be closed in runtime.
+BorderWidth (Page 577) RW          -            -         Specifies whether the configured trend views are con-
+                                                          nected.
+Bounds                 -           -            -         Specifies the control design.
+
+CanBeGrouped           -           -            -         -
+                                   -            -         -
+Caption (Page 587)     RW          -            -         Specifies whether the directory for data export can be
+                                                          changed in runtime
+Closeable (Page 599) RW            -            -         Specifies the target directory for the exported run-
+                                                          time data.
+ConnectTrendWindows RW             -            -         Specifies the file extension of the export file.
+(Page 632)
+                                   -            -         Specifies the name of the target file for the exported
+ControlDesignMode      RW                                 runtime data.
+                                   -            -         Specifies whether the export file name can be
+(Page 634)                                                changed in runtime.
+                                   -            -         -
+Enabled                -           -            -         Specifies the assignment of ID number and export
+                                                          provider.
+ExportDelimiter        -           -            -         Specifies the export file format.
+
+ExportDirectoryChange- RW          -            -         Specifies the parameters of the selected format by
+able (Page 674)                                           means of the properties dialog.
+
+ExportDirectoryname RW
+(Page 675)
+
+ExportFileExtension    RW
+
+(Page 675)
+
+ExportFilename         RW
+
+(Page 676)
+
+ExportFilenameChange- RW
+able (Page 677)
+
+ExportFormat           -
+
+ExportFormatGuid       RW
+
+(Page 678)
+
+ExportFormatName       RW
+
+(Page 679)
+
+ExportParameters       RW
+
+(Page 680)
+
+360                                                       WinCC Engineering V18 ­ Programming reference
+                                                           System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-       Panel RT  Description
+                      sional      vanced
+ExportSelection       RW          -            -         Specifies which runtime data of the control is expor-
+(Page 681)                                               ted.
+ExportShowDialog      RW          -            -         Specifies whether the data export dialog is shown in
+(Page 681)                                               runtime.
+Font (Page 705)       RW          -            -         Specifies the font.
+GraphDirection        RW          -            -         Specifies at which border of the trend view the cur-
+(Page 717)                                               rent values are displayed.
+Height (Page 720)     RW          -            -         Specifies the height.
+Layer                 -           -            -         -
+Left (Page 770)       RW          -            -         Specifies the value of the X coordinate.
+LineColor (Page 786)  RW          -            -         Specifies the color of the window separation lines.
+LineWidth (Page 790)  RW          -            -         Specifies the line thickness.
+LoadDataImmediately   RW          -            -         Specifies whether the tag values are downloaded
+(Page 792)                                               from the logs for the time range to be displayed when
+                                               -         you call a screen.
+Location              -           -            -         -
+                                                         -
+MaximumNumberOfTi- -              -            -
+                                                         -
+meAxes                                         -
+                                                         -
+MaximumNumberOfVa- -              -            -
+                                                         -
+lueAxes                                        -
+                                                         Specifies whether the object can be moved in run-
+MinimumNumberOfTi- -              -            -         time.
+                                               -         -
+meAxes                                         -         -
+                                               -         -
+MinimumNumberOfVa- -              -            -         -
+                                               -         -
+lueAxes                                        -         Specifies start and stop of the updating.
+                                                         Specifies that an additional axis with percentage scal-
+Moveable (Page 825) RW            -            -         ing is shown in the trend view.
+                                                         Specifies the alignment of the percentage axis.
+Name                  -           -            -
+                                                         Specifies the font and line color of the percentage
+Object                -           -            -         axis.
+                                                         Specifies a print job that is created in the "Reports"
+OcxGuid               -           -            -         editor.
+                                                         Specifies whether online configurations are retained
+OcxState              -           -            -         after a screen change.
+                                                         Specifies the authorization required for online config-
+OcxStateForEs2Rt      -           -            -         uration in runtime.
+                                                         Specifies how online configurations of WinCC are re-
+Online (Page 839)     RW          -                      tained.
+
+PercentageAxis        RW          -
+
+(Page 862)
+
+PercentageAxisAlign- RW           -
+
+ment (Page 862)
+
+PercentageAxisColor   RW          -
+
+(Page 863)
+
+PrintJob (Page 873)   RW          -
+
+RTPersistence         RW          -
+(Page 888)
+
+RTPersistenceAuthoriza- RW        -
+
+tion (Page 889)
+
+RTPersistenceType     RW          -
+
+(Page 890)
+
+WinCC Engineering V18 ­ Programming reference            361
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+ShowRuler (Page 938)  sional      vanced  -
+                                          -         Specifies whether a scale division (help line) is dis-
+                      RW          -       -         played for the axis label.
+                                          -         Specifies whether rulers are also displayed in the time
+ShowRulerInAxis       RW          -       -         axes.
+                                          -         Specifies whether scroll bars are displayed.
+(Page 939)                                -
+                                          -         Specifies whether the lines defining the statistics
+ShowScrollbars        RW          -       -         range are displayed.
+                                          -         Specifies the style of the window border and window
+(Page 940)                                -         title for the object.
+                                          -         Specifies whether an icon is displayed below the val-
+ShowStatisticRuler    RW          -       -         ue axes.
+                                          -         -
+(Page 943)                                -         Specifies that the size of an object can be changed in
+                                          -         runtime.
+ShowTitle (Page 947) RW           -       -         Specifies the background color for status bars.
+                                          -
+ShowTrendIcon         RW          -       -         Creates a new, user-defined status bar element.
+
+(Page 949)                                -         Specifies whether the width of the selected status bar
+                                          -         element is set automatically.
+Size                  -           -       -         Specifies the number of configured status bar ele-
+                                          -         ments.
+Sizeable (Page 952)   RW          -                 Specifies the ID number and symbol assignment of a
+                                                    status bar element.
+StatusbarBackColor    RW          -                 References a status bar element with its element ID.
+
+(Page 959)                                          References a status bar element.
+
+StatusbarElementAdd RW            -                 Specifies the name of a status bar element referenced
+                                                    with "StatusbarElementIndex".
+(Page 960)                                          Removes the user-defined status bar element refer-
+                                                    enced with its name.
+StatusbarElementAuto- RW          -                 Specifies the new name of a user-defined status bar
+                                                    element referenced with "StatusbarElementIndex".
+Size (Page 961)                                     Specifies the position of an element referenced with
+                                                    "StatusbarElementIndex" in the status bar of the ob-
+StatusbarElementCount RW          -                 ject.
+                                                    -
+(Page 962)                                          Specifies the text of the selected status bar element.
+
+StatusbarElementIconId RW         -                 Specifies the tooltip text for the selected user-defined
+                                                    status bar element.
+(Page 963)                                          Specifies whether the configuration engineer has
+                                                    added the status bar element as a new user-defined
+StatusbarElementID    RW          -                 element.
+
+(Page 963)
+
+StatusbarElementIndex RW          -
+
+(Page 964)
+
+StatusbarElementName RW           -
+
+(Page 965)
+
+StatusbarElementRe- RW            -
+
+move (Page 966)
+
+StatusbarElementRe- RW            -
+
+name (Page 967)
+
+StatusbarElementRepos RW          -
+
+(Page 968)
+
+StatusbarElements     -           -
+
+StatusbarElementText RW           -
+
+(Page 969)
+
+StatusbarElementTool- RW          -
+
+tipText (Page 970)
+
+StatusbarElementUser- RW          -
+
+Defined (Page 970)
+
+362                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties             RT Profes-  RT Ad-      Panel RT  Description
+                       sional      vanced      -
+StatusbarElementVisi-                                    Specifies whether the status bar element referenced
+ble (Page 971)         RW          -           -         with "StatusbarElementIndex" is displayed in the ob-
+                                               -         ject.
+StatusbarElementWidth RW           -           -         Specifies the width of the referenced status bar ele-
+                                               -         ment in pixels.
+(Page 972)                                     -         Specifies the font of the texts in the status bar.
+                                               -
+StatusbarFont          RW          -           -         Specifies the color of the texts in the status bar.
+(Page 973)                                     -
+                                               -         Specifies whether tooltips are displayed for the ele-
+StatusbarFontColor     RW          -           -         ments of the status bar in runtime.
+                                               -         Specifies the default text in the status bar.
+(Page 974)                                     -
+                                               -         Specifies whether the background color of the status
+StatusbarShowTooltips RW           -           -         bar is shown.
+                                               -         Specifies whether the status bar of the control is dis-
+(Page 975)                                     -         played.
+                                               -         -
+StatusbarText          RW          -           -         -
+(Page 976)                                     -         -
+                                               -         Creates a new time axis. The newly created time axis
+StatusbarUseBackColor RW           -           -         is automatically referenced with "TimeAxisIndex".
+                                               -         Specifies the alignment of the time axis.
+(Page 976)                                     -
+                                                         Specifies the start time for the display of the selected
+StatusbarVisible       RW          -                     trend.
+                                                         Specifies the color of the time axis.
+(Page 977)
+                                                         Specifies the number of configured time axes.
+TabIndex               -           -
+                                                         Defines the date format for displaying the selected
+TabIndexAlpha          -           -                     time axis.
+                                                         Specifies the end time for the display of the selected
+TimeAxes               -           -                     trend.
+                                                         References a time axis.
+TimeAxisAdd (Page 1009) RW         -
+                                                         Specifies whether the color of the axis referenced
+TimeAxisAlignment      RW          -                     with "TimeAxisIndex" corresponds to the trend color.
+                                                         Specifies the label text for a time axis referenced with
+(Page 1010)                                              "TimeAxisIndex".
+                                                         Specifies the number of measurement points to be
+TimeAxisBeginTime      RW          -                     displayed for the selected time axis.
+                                                         Specifies the name of a time axis referenced with
+(Page 1011)                                              "TimeAxisIndex".
+                                                         Specifies that the time axis is updated continuously.
+TimeAxisColor          RW          -
+
+(Page 1011)
+
+TimeAxisCount          RW          -
+
+(Page 1012)
+
+TimeAxisDateFormat RW              -
+
+(Page 1013)
+
+TimeAxisEndTime        RW          -
+
+(Page 1013)
+
+TimeAxisIndex          RW          -
+
+(Page 1014)
+
+TimeAxisInTrendColor RW            -
+
+(Page 1014)
+
+TimeAxisLabel          RW          -
+
+(Page 1015)
+
+TimeAxisMeasurePoints RW           -
+
+(Page 1016)
+
+TimeAxisName           RW          -
+
+(Page 1016)
+
+TimeAxisOnline         RW          -
+
+(Page 1017)
+
+WinCC Engineering V18 ­ Programming reference            363
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+                      sional      vanced  -
+TimeAxisRangeType                         -         Defines the time range setting for the selected time
+(Page 1017)           RW          -       -         axis.
+                                          -         Removes a time axis referenced with its name.
+TimeAxisRemove        RW          -       -
+(Page 1018)                               -         Specifies the new name of a time axis referenced with
+                      RW          -       -         "TimeAxisIndex".
+TimeAxisRename                                      Specifies the position of a time axis referenced with
+(Page 1019)           RW          -       -         "TimeAxisIndex" in the trend diagram of the object.
+                                                    Specifies whether the selected time axis is shown
+TimeAxisRepos         RW          -       -         with date and time.
+(Page 1019)                               -         Specifies the format of the information along the
+                      RW          -       -         time axis for the selected trend.
+TimeAxisShowDate                          -         Specifies the time unit that defines the time range
+(Page 1020)           RW          -       -         together with the time factor "TimeAxisTimeRange-
+                                          -         Factor".
+TimeAxisTimeFormat                        -         Specifies the time factor that defines the time period
+(Page 1021)                               -         together with the time unit "TimeAxisTimeRange-
+                                          -         Base".
+TimeAxisTimeRange-                        -         Specifies the trend diagram in which the axis refer-
+Base (Page 1021)                          -         enced with "TimeAxisIndex" is displayed.
+                                          -         Specifies whether the time axis referenced with
+TimeAxisTimeRangeFac- RW          -       -         "TimeAxisIndex" is displayed in the object.
+                                          -         Specifies the time zone in which the time values are
+tor (Page 1022)                           -         displayed.
+                                                    Specifies the position of the toolbar.
+TimeAxisTrendWindow RW            -
+                                                    Specifies the background color of the toolbar.
+(Page 1022)
+                                                    Specifies whether the function linked to the button is
+TimeAxisVisible       RW          -                 activated in runtime.
+                                                    Creates a new user-defined button in the object's
+(Page 1023)                                         toolbar.
+                                                    Specifies the authorization for the selected key func-
+TimeBase (Page 1024) RW           -                 tion.
+                                                    Inserts a leading separator (vertical line) for the se-
+ToolbarAlignment      RW          -                 lected key function on the toolbar.
+                                                    Clicks a toolbar button.
+(Page 1059)
+                                                    Specifies the number of configured buttons in the
+ToolbarBackColor      RW          -                 toolbar.
+                                                    Specifies whether a user-defined toolbar button can
+(Page 1060)                                         be operated.
+                                                    Specifies the shortcut for the selected button of the
+ToolbarButtonActive   RW          -                 object.
+                                                    References a button with its ID.
+(Page 1061)
+                                                    References a button.
+ToolbarButtonAdd      RW          -
+
+(Page 1062)
+
+ToolbarButtonAuthoriza- RW        -
+
+tion (Page 1063)
+
+ToolbarButtonBe-      RW          -
+
+ginGroup (Page 1064)
+
+ToolbarButtonClick    RW          -
+
+(Page 1065)
+
+ToolbarButtonCount    RW          -
+
+(Page 1065)
+
+ToolbarButtonEnabled RW           -
+
+(Page 1066)
+
+ToolbarButtonHotKey RW            -
+
+(Page 1067)
+
+ToolbarButtonID       RW          -
+
+(Page 1068)
+
+ToolbarButtonIndex    RW          -
+
+(Page 1069)
+
+364                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-       Panel RT  Description
+                      sional      vanced       -
+ToolbarButtonLocked                                      Specifies whether the locked, pressed state of a user-
+(Page 1070)           RW          -            -         defined button referenced with "ToolbarButtonIndex"
+                                               -         is displayed.
+ToolbarButtonName     RW          -            -         Specifies the name of a user-defined button refer-
+                                               -         enced with "ToolbarButtonIndex".
+(Page 1071)                                    -         Removes a user-defined button referenced with its
+                                               -         name.
+ToolbarButtonRemove RW            -            -         Specifies the new name of a user-defined button ref-
+                                               -         erenced with "ToolbarButtonIndex".
+(Page 1071)                                    -         Specifies the position of a button referenced with
+                                               -         "ToolbarButtonIndex" in the toolbar of the object.
+ToolbarButtonRename RW            -            -         -
+                                               -         Specifies the tooltip text for the user-defined button
+(Page 1072)                                    -         in the toolbar.
+                                               -         Specifies whether the project engineer has added the
+ToolbarButtonRepos    RW          -            -         toolbar button as new user-defined button.
+                                               -         Specifies whether the button referenced with "Tool-
+(Page 1073)                                    -         barButtonIndex" is displayed in the toolbar.
+                                               -         Specifies whether the tooltips for the key functions
+ToolbarButtons        -           -            -         are displayed in runtime.
+                                               -         Specifies whether the background color for the tool-
+ToolbarButtonTooltip- RW          -            -         bar is shown.
+                                               -         Specifies whether the hotkeys are activated for but-
+Text (Page 1074)                               -         tons in the toolbar.
+                                               -         Specifies whether the toolbar of the control is dis-
+ToolbarButtonUserDe- RW           -                      played.
+                                                         Specifies the value of the Y coordinate.
+fined (Page 1075)                                        Creates a new trend.
+                                                         Specifies a tag that defines the start value of the trend
+ToolbarButtonVisible  RW          -                      data area.
+                                                         Specifies the start value of the trend data area.
+(Page 1076)
+                                                         Specifies a tag that defines the end value of the trend
+ToolbarShowTooltips RW            -                      data area.
+                                                         Specifies the end value of the trend data area.
+(Page 1078)
+                                                         Specifies how the automatic data range of the trend
+ToolbarUseBackColor RW            -                      data is determined.
+                                                         Specifies the color of a referenced trend in the trend
+(Page 1079)                                              view.
+                                                         Specifies the number of configured trends.
+ToolbarUseHotKeys     RW          -                      Specifies whether the point and fill colors of the trend
+                                                         are shown.
+(Page 1080)                                              Specifies whether the area below the trend is shown
+                                                         filled.
+ToolbarVisible        RW          -                      Defines the fill color of the trend.
+(Page 1081)
+
+Top (Page 1083)       RW          -
+
+TrendAdd (Page 1092) RW           -
+
+TrendAutoRangeBegin- RW           -
+
+TagName (Page 1092)
+
+TrendAutoRangeBegin- RW           -
+
+Value (Page 1093)
+
+TrendAutoRangeEnd- RW             -
+
+TagName (Page 1093)
+
+TrendAutoRangeEndVal- RW          -
+
+ue (Page 1094)
+
+TrendAutoRangeSource RW           -
+
+(Page 1095)
+
+TrendColor (Page 1096) RW         -
+
+TrendCount (Page 1097) RW         -
+
+TrendExtendedColorSet RW          -
+
+(Page 1098)
+
+TrendFill (Page 1098) RW          -
+
+TrendFillColor        RW          -
+(Page 1099)
+
+WinCC Engineering V18 ­ Programming reference            365
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-  Panel RT  Description
+                        sional      vanced  -
+TrendIndex (Page 1100)                      -         References a configured trend.
+TrendLabel (Page 1101)  RW          -       -         Defines the label text for a trend referenced with
+                                            -         "TrendIndex".
+                        RW          -       -         Specifies which line type is used for display of the
+                                            -         trend.
+TrendLineStyle          RW          -       -         Specifies how the trend is displayed.
+                                            -
+(Page 1102)                                           Specifies the line thickness of the selected trend in
+                                            -         pixels.
+TrendLineType           RW          -       -         Specifies the low limit of a tag that is displayed in the
+                                            -         object as a trend.
+(Page 1103)                                 -         Specifies the color that marks trend values which are
+                                            -         below the value of "TrendLowerLimit".
+TrendLineWidth          RW          -       -         Specifies whether "TrendLowerLimitColor" is used to
+                                            -         identify tag values which are less than the value of
+(Page 1103)                                 -         "TrendLowerLimit".
+                                            -         Specifies the name of a trend referenced with "Tren-
+TrendLowerLimit         RW          -       -         dIndex".
+                                            -         Specifies the color of the dots on the reference trend.
+(Page 1104)
+                                            -         Specifies how the trend points are displayed.
+TrendLowerLimitColor RW             -       -
+                                            -         Specifies the point width in pixels.
+(Page 1105)                                 -
+                                                      Specifies the data source for a selected trend.
+TrendLowerLimitColor- RW            -
+                                                      Specifies the provider CLSID of the data for a trend.
+ing (Page 1105)
+                                                      Removes a trend referenced with its name.
+TrendName (Page 1106) RW            -
+                                                      Specifies the new name of a trend referenced with
+TrendPointColor         RW          -                 "TrendIndex".
+                                                      Specifies the position of a trend referenced with
+(Page 1107)                                           "TrendIndex" in the trend window of the object.
+                                                      -
+TrendPointStyle         RW          -                 Specifies that the dialog for selecting the tag name
+                                                      for the data source of the value axis is displayed ini-
+(Page 1108)                                           tially in runtime.
+                                                      Specifies the name of the tag that supplies the value
+TrendPointWidth         RW          -                 axis with data.
+                                                      Specifies the time axis to be used for the selected
+(Page 1109)                                           trend.
+                                                      Specifies the trend window in which the selected
+TrendProvider           RW          -                 trend is shown.
+(Page 1109)                                           Specifies the color for values of uncertain status.
+
+TrendProviderCLSID      RW          -
+
+(Page 1110)
+
+TrendRemove             RW          -
+(Page 1111)
+
+TrendRename             RW          -
+(Page 1112)
+
+TrendRepos (Page 1113) RW           -
+
+Trends                  -           -
+
+TrendSelectTagName RW               -
+
+(Page 1113)
+
+TrendTagName            RW          -
+
+(Page 1115)
+
+TrendTimeAxis           RW          -
+
+(Page 1117)
+
+TrendTrendWindow        RW          -
+
+(Page 1119)
+
+TrendUncertainColor RW              -
+
+(Page 1119)
+
+366                                                   WinCC Engineering V18 ­ Programming reference
+                                                       System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-     Panel RT  Description
+                        sional      vanced     -
+TrendUncertainColoring  RW          -          -         Specifies that values of uncertain status are to be
+(Page 1120)                                    -         highlighted.
+TrendUpperLimit         RW          -          -         Specifies the high limit of a tag that is displayed in the
+(Page 1121)                                    -         specified object as a trend.
+TrendUpperLimitColor    RW          -          -         Specifies the color that marks trend values which are
+(Page 1121)                                    -         above the value of "TrendUpperLimit".
+TrendUpperLimitColor-   RW          -                    Specifies whether the selection frame is shown with
+ing (Page 1122)                                -         the color defined by the system.
+TrendValueAlign         -           -          -         -
+TrendValueAxis          RW          -          -         Specifies the value axis that is used for the trend se-
+(Page 1123)                                    -         lected.
+TrendValueUnit          RW          -          -         For the trend type "Display values", specifies a unit for
+(Page 1123)                                    -         the values that is then attached to the values to be
+                                               -         displayed, e.g. "%" or "°C".
+TrendVisible (Page 1124) RW         -          -         Specifies whether the trend referenced with ""Tren-
+                                                         dIndex" is displayed in the object.
+TrendWindowAdd          RW          -          -         Creates a new trend view.
+                                               -
+(Page 1125)                                    -         Specifies if the grid lines for the main scale are dis-
+                                               -         played.
+TrendWindowCoarse- RW               -          -         Specifies the color of the main grid for the referenced
+                                               -         diagram in the object.
+Grid (Page 1125)                               -         Specifies the number of configured trend diagrams in
+                                               -         the trend view.
+TrendWindowCoarse- RW               -                    Specifies whether grid lines are displayed for the sec-
+                                                         ondary scaling.
+GridColor (Page 1126)                                    Specifies the color of the secondary grid for the ref-
+                                                         erenced diagram in the object.
+TrendWindowCount        RW          -                    Specifies whether only the grid lines for the fore-
+                                                         ground trend are displayed in the selected trend win-
+(Page 1127)                                              dow.
+                                                         Specifies whether the grid lines for the main scaling
+TrendWindowFineGrid RW              -                    are displayed in the trend color.
+                                                         Specifies whether the horizontal grid lines are shown.
+(Page 1127)
+                                                         References a trend view. To access the properties of a
+TrendWindowFineGrid- RW             -                    trend view, you need to set "TrendWindowIndex".
+                                                         Specifies the name of a trend view referenced with
+Color (Page 1128)                                        "TrendWindowIndex".
+                                                         Removes a trend view referenced with its name.
+TrendWindowFore-        RW          -
+                                                         Specifies the new name of a trend view referenced
+groundTrendGrid                                          with "TrendWindowIndex".
+                                                         Specifies the position of a trend view referenced with
+(Page 1129)                                              "TrendWindowIndex".
+                                                         Specifies the color of the ruler.
+TrendWindowGridIn-      RW          -
+
+TrendColor (Page 1129)
+
+TrendWindowHorizon- RW              -
+
+talGrid (Page 1130)
+
+TrendWindowIndex        RW          -
+
+(Page 1131)
+
+TrendWindowName         RW          -
+
+(Page 1131)
+
+TrendWindowRemove RW                -
+
+(Page 1132)
+
+TrendWindowRename RW                -
+
+(Page 1132)
+
+TrendWindowRepos        RW          -
+
+(Page 1133)
+
+TrendWindowRulerCol- RW             -
+
+or (Page 1134)
+
+WinCC Engineering V18 ­ Programming reference            367
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+                      sional      vanced  -
+                                  -       -         Specifies the display layer of the ruler in the trend
+TrendWindowRulerLay- RW           -       -         view.
+er (Page 1135)                    -       -         Specifies the appearance of the ruler.
+                                  -       -
+TrendWindowRulerStyle RW          -       -         Specifies the thickness of the ruler in pixels.
+(Page 1135)                       -       -
+                                  -       -         -
+TrendWindowRuler-     RW          -       -         Specifies the range proportion of the referenced dia-
+                                  -       -         gram in the diagram area of the object.
+Width (Page 1136)                 -       -         Specifies the color of the statistics ruler.
+                                  -       -
+TrendWindows          -           -       -         Defines the graphical configurability of the lines for
+                                  -       -         specifying the statistics area in the trend window.
+TrendWindowSpacePor- RW           -       -         Specifies the line thickness of the statistics ruler.
+tion (Page 1137)                  -
+                                          -         Specifies whether the vertical grid lines are displayed.
+TrendWindowStatisti- RW
+cRulerColor (Page 1138)                   -         Specifies whether the trend view referenced with
+                                          -         "TrendWindowIndex" is displayed.
+TrendWindowStatisti- RW                   -         Specifies whether the "Name" or "Label" property is
+cRulerStyle (Page 1138)                   -         used as a designation for the trend in runtime.
+                                          -         -
+TrendWindowStatisti- RW                             Creates a new value axis.
+cRulerWidth (Page 1139)                   -
+                                          -         Specifies the alignment of the value axis.
+TrendWindowVertical- RW
+Grid (Page 1140)                                    Specifies whether the number of decimal places for a
+                                                    value axis referenced with "ValueAxisIndex" is set au-
+TrendWindowVisible    RW                            tomatically.
+                                                    Specifies whether the value range of a value axis ref-
+(Page 1140)                                         erenced with "ValueAxisIndex" is calculated automat-
+                                                    ically.
+UseTrendNameAsLabel RW                              Specifies the lower end of the value range of a value
+(Page 1162)                                         axis referenced with "ValueAxisIndex".
+                                                    Specifies the color of a value axis.
+ValueAxes             -
+                                                    Specifies the number of configured value axes.
+ValueAxisAdd          RW
+                                                    Specifies the upper end of the value range of a value
+(Page 1171)                                         axis referenced with "ValueAxisIndex".
+                                                    Specifies whether the values of a value axis refer-
+ValueAxisAlignment    RW                            enced with "ValueAxisIndex" are displayed in expo-
+                                                    nential notation.
+(Page 1171)                                         References a value axis.
+
+ValueAxisAutoPreci-   RW                            Specifies whether the color of the axis referenced
+                                                    with "ValueAxisIndex" corresponds to the trend color.
+sions (Page 1172)
+
+ValueAxisAutoRange    RW          -
+
+(Page 1173)
+
+ValueAxisBeginValue RW            -
+
+(Page 1173)
+
+ValueAxisColor        RW          -
+
+(Page 1174)
+
+ValueAxisCount        RW          -
+
+(Page 1175)
+
+ValueAxisEndValue     RW          -
+
+(Page 1175)
+
+ValueAxisExponential- RW          -
+
+Format (Page 1176)
+
+ValueAxisIndex        RW          -
+
+(Page 1176)
+
+ValueAxisInTrendColor RW          -
+
+(Page 1177)
+
+368                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-     Panel RT  Description
+                        sional      vanced     -
+ValueAxisLabel          RW          -          -         Defines the label text for a value axis referenced with
+(Page 1178)                                    -         "ValueAxisIndex".
+                        RW          -          -         Specifies the name of a value axis referenced with
+ValueAxisName                                  -         "ValueAxisIndex".
+(Page 1178)             RW          -          -         Specifies the number of displayed decimal places.
+                                               -
+ValueAxisPrecisions     RW          -          -         Removes a value axis referenced with its name.
+(Page 1179)                                    -
+                        RW          -          -         Specifies the new name of a value axis referenced
+ValueAxisRemove                                -         with "ValueAxisIndex".
+(Page 1179)             RW          -                    Specifies the position of a value axis referenced with
+                                                         "ValueAxisIndex".
+ValueAxisRename         RW          -                    Specifies the type of scaling for the value axis refer-
+(Page 1180)                                              enced with "ValueAxisIndex".
+                        RW          -                    Specifies the trend diagram in which the axis refer-
+ValueAxisRepos                                           enced with "ValueAxisIndex" is displayed.
+(Page 1180)             RW          -                    Specifies whether the value axis referenced with "Val-
+                                                         ueAxisIndex" is displayed in the object.
+ValueAxisScalingType    RW          -                    Specifies whether the selected object is visible.
+(Page 1181)             RW          -                    Specifies the width of the object in pixels.
+
+ValueAxisTrendWindow
+(Page 1182)
+
+ValueAxisVisible
+(Page 1182)
+
+Visible (Page 1204)
+
+Width (Page 1217)
+
+Table 1-61    Methods
+ Methods
+                        RT Profes-  RT Ad-     Panel RT  Description
+Activate (Page 1250)    sional      vanced     -
+                        Yes         -          -         Enables the permanent area or the root screen.
+ActivateDynamic         Yes         -          -
+(Page 1252)                                    -         Dynamically activates a trigger and the specified cycle
+                        Yes         -          -         for a property at runtime.
+AttachDB (Page 1256)
+                                               -         Executes the "Connect backup" key function of the
+CalculateStatistic      Yes         -          -         control.
+                                               -
+(Page 1257)                                    -         Executes the "Calculate statistics" key function of the
+                                                         f(t) trend view and the table view.
+DeactivateDynamic       Yes         -          -
+                                                         Deactivates the trigger of the "ActivateDynamic"
+(Page 1259)                                              method used for the specified property in/during run-
+                                                         time.
+DetachDB (Page 1262) Yes            -
+                                                         Executes the "Disconnect backup" key function of the
+Export (Page 1263)      Yes         -                    control.
+
+GetRulerData            Yes         -                    Executes the "Export log" or "Export data" key func-
+(Page 1281)                                              tion of the control.
+
+GetStatusbarElement Yes             -                    Returns the value of the called trend at the ruler po-
+                                                         sition.
+(Page 1289)
+                                                         Returns the element of the control status bar desig-
+GetStatusbarElement- Yes            -                    nated by name or index as "ICCAxStatusbarElement"
+                                                         type.
+Collection (Page 1296)
+                                                         Returns the list of all status bar elements of the con-
+                                                         trol as "ICCAxCollection" type.
+
+WinCC Engineering V18 ­ Programming reference            369
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Methods               RT Profes-  RT Ad-  Panel RT  Description
+                      sional      vanced  -
+                                          -         Returns the f(t) trend view time axis object that is
+GetTimeAxis (Page 1292) Yes       -       -         specified by name or index as "ICCAxTimeAxis" type.
+                                          -
+GetTimeAxisCollection Yes         -       -         Returns a list of all f(t) trend view time axis objects as
+                                                    "ICCAxCollection" type.
+(Page 1293)                               -
+                                          -         Returns the control toolbar button function designa-
+GetToolbarButton      Yes         -                 ted by name or index as "ICCAxToolbarButton" type.
+                                          -
+(Page 1297)                               -         Returns the list of all button functions of the control
+                                          -         toolbar as "ICCAxCollection" type.
+GetToolbarButtonCollec- Yes       -       -
+                                          -         Returns the f(t) or f(x) trend view trend designated by
+tion (Page 1298)                          -         name or index as "ICCAxTrend" or "ICCAxFunction-
+                                          -         Trend" type.
+GetTrend (Page 1300) Yes          -       -
+                                          -         Returns the list of all trends of the f(t) or f(x) trend
+GetTrendCollection    Yes         -       -         view as "ICCAxCollection" type.
+                                          -
+(Page 1301)                               -         Returns the trend window object of the f(t) or f(x)
+                                          -         trend view designated by name or index as "ICCAx-
+GetTrendWindow        Yes         -       -         TrendWindow" type.
+                                          -
+(Page 1302)                               -         Returns the list of all trend window objects of the f(t)
+                                          -         or f(x) trend views as "ICCAxCollection" type.
+GetTrendWindowCollec- Yes         -
+                                                    Returns the f(t) trend view value axis object that is
+tion (Page 1303)                                    specified by name or index as "ICCAxValueAxis" type.
+
+GetValueAxis          Yes         -                 Returns a list of all f(t) trend view value axis objects as
+(Page 1304)                                         "ICCAxCollection" type.
+
+GetValueAxisCollection Yes        -                 Executes the "Move axes area" button function of the
+                                                    f(t) and f(x) trend views.
+(Page 1305)
+                                                    Executes the "First line" button function of the con-
+MoveAxis (Page 1318) Yes          -                 trol.
+
+MoveRuler             Yes         -                 Executes the "Last data record" button function of the
+                                                    control.
+MoveToFirst (Page 1318) Yes       -
+                                                    Executes the "Next data record" button function of
+MoveToLast (Page 1320) Yes        -                 the control.
+
+MoveToNext (Page 1321) Yes        -                 Executes the "Previous data record" button function
+                                                    of the control.
+MoveToPrevious        Yes         -
+                                                    Executes the "Next trend" button function of the f(t)
+(Page 1323)                                         and f(x) trend views.
+
+NextTrend (Page 1325) Yes         -                 Executes the "Original view" button function of the
+                                                    f(t) and f(x) trend views.
+OneToOneView          Yes         -
+                                                    Executes the "Previous trend" button function of the
+(Page 1325)                                         f(t) and f(x) trend views.
+
+PreviousTrend         Yes         -                 Executes the "Print" button function of the control.
+(Page 1327)
+                                                    Executes the "Help" button function of the control.
+Print (Page 1327)     Yes         -
+                                                    Executes the "Relative axis" button function of the f(t)
+ShowHelp (Page 1348) Yes          -                 trend view.
+
+ShowPercentageAxis Yes            -                 Executes the "Configuration dialog" button function
+                                                    of the control.
+(Page 1352)
+                                                    Executes the "Select data connection" button func-
+ShowPropertyDialog    Yes         -                 tion of the control.
+
+(Page 1352)
+
+ShowTagSelection      Yes         -
+
+(Page 1356)
+
+370                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Methods               RT Profes-  RT Ad-       Panel RT  Description
+                      sional      vanced       -
+ShowTimeSelection     Yes         -            -         Executes the "Select time range" button function of
+(Page 1357)                                    -         the control.
+ZoomArea (Page 1365)  Yes         -            -         Executes the "Zoom area" button function of the f(t)
+                                               -         and f(x) trend views.
+ZoomInOut (Page 1366) Yes         -            -         Executes the "Zoom +/-" button function of the f(t)
+                                                         and f(x) trend views.
+ZoomInOutTime         Yes         -                      Executes the "Zoom time axis +/-" button function of
+                                                         the f(t) trend view.
+(Page 1366)                                              Executes the "Zoom value axis +/-" button function of
+                                                         the f(t) trend view.
+ZoomInOutValues       Yes         -                      Executes the "Move trend area" button function of
+                                                         the f(t) and f(x) trend views.
+(Page 1367)
+
+ZoomMove (Page 1368) Yes          -
+
+OptionGroup
+Description
+
+                        6FUHHQV
+                         6FUHHQ
+
+                      6FUHHQ,WHPV
+                      6FUHHQ,WHP
+

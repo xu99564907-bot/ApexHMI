@@ -1,0 +1,34 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.SwitchWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ApexHMI.Converters"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}"
+             IsEnabled="{Binding IsEnabledByOperator}">
+    <UserControl.Resources>
+        <conv:StringToBrushConverter x:Key="StringToBrushConverter"/>
+        <conv:BoolToFontWeightConverter x:Key="BoolToFontWeight"/>
+        <conv:BoolToFontStyleConverter x:Key="BoolToFontStyle"/>
+        <conv:BoolToTextDecorationsConverter x:Key="BoolToTextDecorations"/>
+        <conv:BorderStyleVisibilityConverter x:Key="BorderStyleBrush"/>
+    </UserControl.Resources>
+    <Button Command="{Binding ClickCommand}"
+            PreviewMouseLeftButtonDown="Switch_PreviewMouseLeftButtonDown"
+            PreviewMouseLeftButtonUp="Switch_PreviewMouseLeftButtonUp"
+            Background="{Binding CurrentColor, Converter={StaticResource StringToBrushConverter}}"
+            BorderThickness="{Binding BorderWidthValue}"
+            Padding="{Binding PaddingThickness}"
+            FontFamily="{Binding FontFamilyName}"
+            FontWeight="{Binding FontBold, Converter={StaticResource BoolToFontWeight}}"
+            FontStyle="{Binding FontItalic, Converter={StaticResource BoolToFontStyle}}"
+            Cursor="Hand">
+        <Button.BorderBrush>
+            <MultiBinding Converter="{StaticResource BorderStyleBrush}">
+                <Binding Path="BorderColor"/>
+                <Binding Path="BorderStyleName"/>
+            </MultiBinding>
+        </Button.BorderBrush>
+        <TextBlock Text="{Binding CurrentText}" Foreground="White"
+                   TextDecorations="{Binding FontUnderline, Converter={StaticResource BoolToTextDecorations}}"
+                   VerticalAlignment="Center" HorizontalAlignment="Center" FontWeight="SemiBold"/>
+    </Button>
+</UserControl>

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using ApexHMI.Models.RuntimeUi;
 
 namespace ApexHMI.Services.RuntimeUi;
 
@@ -18,7 +20,16 @@ public sealed class DesignModeWidgetDataContext : IWidgetDataContext
 
     public object? Shell { get; }
 
+    /// <summary>P7B: 顶层设计画布无 Faceplate 上下文。</summary>
+    public IReadOnlyDictionary<string, string>? CurrentFaceplateProperties => null;
+
     public void RegisterValueCallback(string tagId, Action<string> callback)
+    {
+        // 设计模式无实时数据
+    }
+
+    /// <summary>M3.1: 设计模式无实时质量推送。</summary>
+    public void RegisterValueCallback(string tagId, Action<string, TagQuality> callback)
     {
         // 设计模式无实时数据
     }

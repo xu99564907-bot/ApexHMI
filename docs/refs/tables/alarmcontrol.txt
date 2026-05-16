@@ -1,0 +1,1104 @@
+Table 1-1 Properties
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+                      sional      vanced
+AllFilters                                -         -
+AllFiltersForHitlist  -           -       -         -
+AllServer (Page 510)  -           -       -         Specifies whether the alarms of all available servers
+                      RW          -                 are displayed.
+                                          -         -
+AllTagTypesAllowed    -           -       -         Specifies whether the project settings are applied
+                                                    from the "HMI alarms" editor.
+ApplyProjectSettings  RW          -       -         -
+
+(Page 513)                                -         -
+                                          -         -
+ApplyProjectSettingsFor- -        -       -         Specifies whether empty columns are shown if the
+                                                    control is wider than the configured columns.
+DesignMode                                -         Specifies whether empty rows are shown if the con-
+                                                    trol is longer than the number of configured rows.
+AssignedFilters       -           -       -         Specifies how the alarm window reacts when new
+                                                    alarms appear.
+AssignedHitlistFilters -          -       -         Specifies whether the colors defined by the system
+                                                    are used as the selection colors for cells and rows.
+AutoCompleteColumns RW            -       -         Specifies whether the selection frame is shown with
+                                                    the color defined by the system.
+(Page 519)                                -         Specifies the background color of the selected object.
+                                          -         -
+AutoCompleteRows      RW          -       -         -
+                                          -         Specifies the line thickness of the selected object.
+(Page 519)                                -         -
+
+AutoScroll (Page 521) RW          -
+
+AutoSelectionColors   RW          -
+
+(Page 521)
+
+AutoSelectionRectColor RW         -
+
+(Page 522)
+
+BackColor (Page 526) RW           -
+
+Blocks                -           -
+
+BorderColor           -           -
+
+BorderWidth (Page 577) RW         -
+
+Bounds                -           -
+
+238                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties           RT Profes-  RT Ad-        Panel RT  Description
+                     sional      vanced
+CanBeGrouped                                   -         -
+Caption (Page 587)   -           -             -         Specifies the text that is displayed in the header of the
+                                                         selected object.
+                     RW          -             -         Specifies whether the contents of the cells are abbre-
+                                                         viated if the cells are too narrow.
+CellCut (Page 591)   RW          -             -         Specifies the bottom margin of the table cells.
+
+CellSpaceBottom      RW          -             -         Specifies the left indent used in the table cells.
+
+(Page 592)                                     -         Specifies the right indent used in the table cells.
+
+CellSpaceLeft        RW          -             -         Specifies the top margin of the table cells.
+(Page 593)
+                                               -         Specifies whether the object can be closed in runtime.
+CellSpaceRight       RW          -             -         Specifies whether you can change the width of the
+                                                         columns.
+(Page 593)                                     -         -
+                                               -         Enables the display of column scroll bars.
+CellSpaceTop         RW          -
+(Page 594)                                     -         Specifies the type of column title alignment.
+
+Closeable (Page 599) RW          -             -         Specifies whether the column header is displayed.
+                                               -         Specifies the style of the control.
+ColumnResize         RW          -
+(Page 616)                                     -         -
+                                               -         -
+Columns              -           -             -         Specifies an SQL statement as default for alarm fil-
+                                                         ters.
+ColumnScrollbar      RW          -             -         Specifies the type of sorting.
+                                               -         Specifies the type of sorting.
+(Page 617)                                     -         Specifies a column by which the alarm view is sorted
+                                                         initially by default.
+ColumnTitleAlignment RW          -             -         Specifies the diagnostics context.
+
+(Page 627)                                     -         Specifies whether alarms whose view was sup-
+                                                         pressed are displayed.
+ColumnTitles (Page 628) RW       -             -         Specifies the action to be executed in runtime by
+                                                         double-clicking on a message line.
+ControlDesignMode    RW          -             -         Specifies whether the selected object can be operat-
+                                                         ed in runtime.
+(Page 634)                                     -         -
+                                               -         Specifies whether the data export directory can be
+DefaultFilterEom     -           -                       changed in runtime.
+                                               -         Specifies the target directory for the exported run-
+DefaultHitListFilterEom -        -                       time data.
+
+DefaultMsgFilterSQL  RW          -
+
+(Page 645)
+
+DefaultSort (Page 646) RW        -
+
+DefaultSort2 (Page 646) RW       -
+
+DefaultSort2Column   RW          -
+
+(Page 647)
+
+DiagnosticsContext   RW          -
+
+(Page 648)
+
+DisplayOptions       RW          -
+
+(Page 653)
+
+DoubleClickAction    RW          -
+
+(Page 655)
+
+Enabled (Page 660)   RW          -
+
+ExportDelimiter      -           -
+
+ExportDirectoryChange- RW        -
+
+able (Page 674)
+
+ExportDirectoryname RW           -
+
+(Page 675)
+
+WinCC Engineering V18 ­ Programming reference            239
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties             RT Profes-  RT Ad-  Panel RT  Description
+                       sional      vanced  -
+ExportFileExtension    RW          -       -         Specifies the file extension of the export file. Only the
+(Page 675)                                 -         "csv" file extension is currently supported.
+                       RW          -       -         Specifies the name of the target file for the exported
+ExportFilename                             -         runtime data.
+(Page 676)             RW          -       -         Specifies whether the export file name can be
+                                           -         changed in runtime.
+ExportFilenameChange-  -           -       -         -
+able (Page 677)        RW          -       -         Specifies the assignment of ID number and export
+                                           -         provider.
+ExportFormat           RW          -       -         Specifies the export file format. Only the "csv" file for-
+                                           -         mat is currently available for the export.
+ExportFormatGuid       RW          -       -         Specifies the parameters of the selected format by
+(Page 678)                                 -         means of the properties dialog.
+                       RW          -       -         Specifies which runtime data of the control is expor-
+ExportFormatName                           -         ted.
+(Page 679)             RW          -       -         Specifies whether the data export dialog is shown in
+                                           -         runtime.
+ExportParameters       -           -                 -
+(Page 680)             -           -       -         -
+                       -           -       -         -
+ExportSelection        RW          -       -         Specifies the font.
+(Page 681)             RW          -                 Specifies the color for the grid lines.
+                                           -
+ExportShowDialog       RW          -                 Specifies the width of the separation lines in pixels.
+(Page 681)                                 -
+                       RW          -       -         Specifies the height of the selected object.
+FillPattern            -           -       -         -
+                       RW          -                 Transfers the selected alarm text block from the list of
+FillPatternColor                                     available alarm blocks to the list of selected alarm
+                                                     blocks.
+Filter                                               Specifies the number of alarm text blocks displayed in
+                                                     the hit list in Runtime.
+Font (Page 705)                                      References an alarm text block that is selected for the
+                                                     hit list.
+GridLineColor                                        Shows the name of the alarm text block from the hit
+(Page 717)                                           list, which is referenced by means of the "HitlistCo-
+                                                     lumnIndex" property.
+GridLineWidth                                        Cuts the marked alarm text block from the list of se-
+(Page 719)                                           lected alarm blocks and pastes it into the list of exist-
+                                                     ing alarm blocks.
+Height (Page 720)                                    Changes the sorting order of the alarm blocks.
+
+Hitlist                                              Specifies the sorting order in the hit list for the alarm
+                                                     text block that is referenced in "HitlistColumnIndex".
+HitlistColumnAdd                                     Defines the sorting order of the alarm text block ref-
+(Page 727)                                           erenced in "HitlistColumnIndex" in the hit list.
+
+HitlistColumnCount     RW          -
+
+(Page 727)
+
+HitlistColumnIndex     RW          -
+
+(Page 728)
+
+HitlistColumnName      RW          -
+
+(Page 729)
+
+HitlistColumnRemove RW             -
+
+(Page 729)
+
+HitlistColumnRepos     RW          -
+
+(Page 730)
+
+HitlistColumnSort      RW          -
+
+(Page 730)
+
+HitlistColumnSortIndex RW          -
+
+(Page 731)
+
+240                                                  WinCC Engineering V18 ­ Programming reference
+                                                      System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-     Panel RT  Description
+                        sional      vanced     -
+HitlistColumnVisible    RW          -          -         Specifies a list with the selected alarm text blocks of
+(Page 732)                                     -         the hit list which are used in the control in Runtime.
+HitlistDefaultSort      RW          -          -
+(Page 732)                                     -         Sets the default sorting order in the table columns of
+HitlistFilter           -           -                    the hit list.
+HitlistMaxSourceItems   RW          -          -
+(Page 733)                                     -         -
+HitlistMaxSourceItems-  RW          -
+Warn (Page 734)                                -         Sets the maximum number of data records from the
+                                                         alarm log that are to be used to create the hit list.
+HitListRelTime          RW          -          -
+                                               -         Specifies whether a warning should be given if the
+(Page 734)                                     -         maximum number of data records that is defined in
+                                               -         "HitlistMaxSourceItems" is reached.
+HitListRelTimeFactor    RW          -          -
+                                               -         Sets a time range for the statistics.
+(Page 735)                                     -
+                                               -         Specifies the time factor that together with time type
+HitlistRelTimeFactor-   RW          -          -         "HitlistRelTimeFactorType" determines the time peri-
+                                               -         od for which the statistics of the hit list is created.
+Type (Page 735)                                -
+                                                         Specifies the time type which, alongside the time fac-
+HorizontalGridLines     RW          -          -         tor "HitlistRelativeTimeFactor", determines the time
+                                               -         period in which the statistics of the hit list will be
+(Page 737)                                     -         created.
+                                               -
+IconSpace (Page 740) RW             -          -         Specifies whether horizontal separating lines are dis-
+                                               -         played.
+IsActive                -           -
+                                                         Specifies the spacing between icons and text in the
+Layer (Page 764)        RW          -                    table cells.
+
+Left (Page 770)         RW          -                    -
+
+LineBackgroundColor -               -                    Specifies the layer in the screen that contains an ob-
+                                                         ject.
+LineColor (Page 786) RW             -
+                                                         Specifies the value of the X coordinate of the object.
+LineStyle               -           -
+                                                         -
+LineWidth (Page 790) RW             -
+                                                         Specifies the color of the window separation lines.
+Location                -           -
+                                                         -
+LongTermArchiveCon- RW              -
+                                                         Specifies the line thickness of the selected object.
+sistency (Page 795)
+                                                         -
+MessageBlockAlign-      RW          -
+                                                         Specifies how alarms are displayed in the alarm view
+ment (Page 801)                                          when the "Historical alarm list (long-term)" is config-
+                                                         ured.
+MessageBlockAutoPreci- RW           -
+                                                         Sets the mode of alignment for the table contents of
+sions (Page 802)                                         the selected alarm block.
+
+MessageBlockCaption RW              -                    Enables automatic setting of the number of decimal
+                                                         places.
+(Page 803)
+                                                         Specifies the caption of the column header in the
+MessageBlockCount       RW          -                    alarm view for the selected alarm text block.
+
+(Page 803)                                               Specifies the number of existing alarm text blocks
+                                                         that are available for the alarm list and hit list.
+MessageBlockDateFor- RW             -
+                                                         Specifies the date format for displaying the alarms.
+mat (Page 804)
+                                                         Specifies the exponential notation for visualization of
+MessageBlockExponen- RW             -                    the values of a selected alarm block.
+
+tialFormat (Page 804)
+
+WinCC Engineering V18 ­ Programming reference            241
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-  Panel RT  Description
+                        sional      vanced  -
+MessageBlockFlashOn     RW          -       -         Enables flashing of the selected alarm block in Run-
+(Page 805)              RW          -       -         time when an alarm appears.
+                        RW          -       -
+MessageBlockHideText    RW          -       -         Enables the textual display of the content of the se-
+(Page 806)              RW          -       -         lected alarm block.
+                        RW          -       -
+MessageBlockHideTitle-  RW          -       -         Specifies textual display of the caption of the selected
+Text (Page 806)         RW          -       -         alarm block.
+                        RW          -       -
+MessageBlockId          RW          -                 Specifies the assignment of ID number and alarm text
+(Page 807)                                  -         block in the alarm view.
+                                            -
+MessageBlockIndex                           -         References an existing alarm text block.
+(Page 808)                                  -
+                                                      Enables the display of the selected alarm block with
+MessageBlockLeading-                        -         leading zeroes.
+Zeros (Page 808)                            -
+                                            -         Specifies the length of the selected alarm block based
+MessageBlockLength                                    on the number of characters.
+(Page 809)                                  -
+                                            -         Specifies the name for the selected alarm text block.
+MessageBlockName                            -
+(Page 809)                                            Specifies the number of decimal places for the values
+                                            -         of the selected alarm block.
+MessageBlockPrecisions
+(Page 810)                                            Existing alarm blocks are blocks that are available for
+                                                      use in the control in Runtime for the alarm list or hit
+MessageBlockSelected                                  list.
+(Page 810)
+                                                      Specifies whether to display both the date and time in
+MessageBlockShowDate RW             -                 the "Time" alarm text block.
+
+(Page 811)                                            Enables the display of the content of the selected
+                                                      alarm block as icon.
+MessageBlockShowIcon RW             -
+                                                      Specifies textual display of the caption of the selected
+(Page 812)                                            alarm block.
+
+MessageBlockShowTi- RW              -                 Specifies naming of the selected alarm text block by
+                                                      means of a text ID that was taken from the text li-
+tleIcon (Page 812)                                    brary.
+
+MessageBlockTextId      RW          -                 Specifies the format for the time or period used to
+                                                      display the alarms.
+(Page 813)
+                                                      Specifies the number of existing alarm text blocks
+MessageBlockTimeFor- RW             -                 that are available for the alarm list and hit list.
+
+mat (Page 813)                                        Adds the selected alarm text block from the list of
+                                                      available alarm blocks to the list of selected alarm
+MessageBlockType        RW          -                 blocks.
+
+(Page 814)                                            Specifies the number of selected alarm text blocks
+                                                      displayed in the alarm list in Runtime.
+MessageColumnAdd        RW          -
+                                                      References an alarm text block selected for the alarm
+(Page 815)                                            list.
+
+MessageColumnCount RW               -                 Specifies the name of the alarm text block in the
+                                                      alarm list which is referenced with the "MessageCo-
+(Page 815)                                            lumnIndex" property.
+
+MessageColumnIndex RW               -                 Cuts the marked alarm text block from the list of se-
+                                                      lected alarm blocks and pastes it into the list of exist-
+(Page 816)                                            ing alarm blocks.
+
+MessageColumnName RW                -
+
+(Page 817)
+
+MessageColumnRe-        RW          -
+
+move (Page 817)
+
+242                                                   WinCC Engineering V18 ­ Programming reference
+                                                       System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-       Panel RT  Description
+                      sional      vanced       -
+MessageColumnRepos    RW          -            -         Specifies the order of the alarm text blocks.
+(Page 818)                                     -
+MessageColumnSort     RW          -            -         Specifies the sorting order for the alarm text block
+(Page 818)                                     -         that is referenced in "MessageColumnIndex".
+MessageColumnSortIn-  RW          -            -
+dex (Page 819)                                 -         Defines the sorting order of the alarm text block ref-
+MessageColumnVisible  RW          -            -         erenced in "MessageColumnIndex".
+(Page 820)                                     -
+MessageListType       RW          -            -         Specifies whether alarm text blocks are displayed in
+(Page 820)                                     -         the alarm view.
+Moveable (Page 825)   RW          -            -
+                                               -         This setting defines which alarm list contents are dis-
+MsgFilterSQL          RW          -            -         played when screen opens.
+(Page 826)                                     -
+                                               -         Specifies whether the window can be moved in Run-
+Name                  -           -                      time.
+                                               -
+Object                -           -                      Specifies one or several SQL statements for user-de-
+                                               -         fined selection of the alarms.
+OcxGuid               -           -            -
+                                                         -
+OcxState              -           -            -
+                                                         -
+OcxStateForEs2Rt      -           -            -
+                                                         -
+OperatorAlarms        -           -            -
+                                                         -
+OperatorMessageId     RW          -            -
+                                                         -
+(Page 841)
+                                                         -
+OperatorMessageIndex RW           -
+                                                         Specifies the assignment of ID number and trigger
+(Page 842)                                               event in the alarm view.
+
+OperatorMessageName RW            -                      References an operator message event.
+
+(Page 842)                                               Specifies the name which is referenced with the "Op-
+                                                         eratorMessageIndex" event in message events for op-
+OperatorMessageNum- RW            -                      erator messages.
+
+ber (Page 843)                                           Specifies a message number for the operator mes-
+                                                         sage of the selected message event if you do not use
+OperatorMessageSelec- RW          -                      the operator message of WinCC.
+
+ted (Page 843)                                           Activates the message events in the list that trigger
+                                                         operator messages.
+OperatorMessage-      RW          -
+                                                         Specifies a alarm text block of the operated message
+Source1 (Page 844)                                       to be added to "Process value block 1" of the operator
+                                                         message configured here.
+OperatorMessage-      RW          -
+                                                         Specifies a alarm text block of the operated message
+Source10 (Page 850)                                      to be added to "Process value block 10" of the opera-
+                                                         tor message configured here.
+OperatorMessage-      RW          -
+                                                         Specifies a alarm text block of the operated message
+Source2 (Page 845)                                       to be added to "Process value block 2" of the operator
+                                                         message configured here.
+OperatorMessage-      RW          -
+                                                         Specifies a alarm text block of the operated message
+Source3 (Page 845)                                       to be added to "Process value block 3" of the operator
+                                                         message configured here.
+OperatorMessage-      RW          -
+                                                         Specifies a alarm text block of the operated message
+Source4 (Page 846)                                       to be added to "Process value block 4" of the operator
+                                                         message configured here.
+
+WinCC Engineering V18 ­ Programming reference            243
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+                      sional      vanced  -
+OperatorMessage-                                    Specifies a alarm text block of the operated message
+Source5 (Page 847)    RW          -       -         to be added to "Process value block 5" of the operator
+                                                    message configured here.
+OperatorMessage-      RW          -       -
+                                                    Specifies a alarm text block of the operated message
+Source6 (Page 847)                        -         to be added to "Process value block 6" of the operator
+                                                    message configured here.
+OperatorMessage-      RW          -       -
+                                                    Specifies a alarm text block of the operated message
+Source7 (Page 848)                        -         to be added to "Process value block 7" of the operator
+                                          -         message configured here.
+OperatorMessage-      RW          -       -
+                                          -         Specifies a alarm text block of the operated message
+Source8 (Page 849)                        -         to be added to "Process value block 8" of the operator
+                                          -         message configured here.
+OperatorMessage-      RW          -       -
+                                          -         Specifies a alarm text block of the operated message
+Source9 (Page 849)                        -         to be added to "Process value block 9" of the operator
+                                          -         message configured here.
+OperatorMessageSour- RW           -       -
+                                          -         Specifies the format of the source content to be trans-
+ceType1 (Page 851)                        -         ferred.
+                                          -
+OperatorMessageSour- RW           -       -         Specifies the format of the source content to be trans-
+                                          -         ferred.
+ceType10 (Page 857)                       -
+                                          -         Specifies the format of the source content to be trans-
+OperatorMessageSour- RW           -                 ferred.
+
+ceType2 (Page 851)                                  Specifies the format of the source content to be trans-
+                                                    ferred.
+OperatorMessageSour- RW           -
+                                                    Specifies the format of the source content to be trans-
+ceType3 (Page 852)                                  ferred.
+
+OperatorMessageSour- RW           -                 Specifies the format of the source content to be trans-
+                                                    ferred.
+ceType4 (Page 853)
+                                                    Specifies the format of the source content to be trans-
+OperatorMessageSour- RW           -                 ferred.
+
+ceType5 (Page 853)                                  Specifies the format of the source content to be trans-
+                                                    ferred.
+OperatorMessageSour- RW           -
+                                                    Specifies the format of the source content to be trans-
+ceType6 (Page 854)                                  ferred.
+
+OperatorMessageSour- RW           -                 Specifies the format of the source content to be trans-
+                                                    ferred.
+ceType7 (Page 855)
+                                                    Enables paging in the historical alarm list (long-term).
+OperatorMessageSour- RW           -
+                                                    Defines the number of alarm shown per page when
+ceType8 (Page 855)                                  paging the historical alarm list (long-term).
+
+OperatorMessageSour- RW           -                 Specifies a print job that is created in the "Reports"
+                                                    editor.
+ceType9 (Page 856)
+                                                    Specifies whether row scroll bars are displayed.
+PageMode (Page 858) RW            -
+                                                    Specifies the type of row header alignment.
+PageModeMessage-      RW          -
+                                                    Specifies that row headers will be displayed.
+Number (Page 859)
+                                                    Specifies how online configurations of WinCC are re-
+PrintJob (Page 873)   RW          -                 tained.
+
+RowScrollbar (Page 886) RW        -                 Specifies the authorization required for online config-
+                                                    uration in runtime.
+RowTitleAlignment     RW          -
+
+(Page 886)
+
+RowTitles (Page 887) RW           -
+
+RTPersistence         RW          -
+(Page 888)
+
+RTPersistenceAuthoriza- RW        -
+
+tion (Page 889)
+
+244                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-     Panel RT  Description
+                        sional      vanced     -
+RTPersistenceType       RW          -          -         Specifies how online configurations of WinCC are re-
+(Page 890)              RW          -          -         tained.
+                        RW          -          -         Specifies the background color of the selected cell.
+SelectedCellColor       RW          -          -
+(Page 906)              RW          -          -         Specifies the font color of the selected cell.
+                        RW          -          -
+SelectedCellForeColor   RW          -          -         Specifies the background color of the selected row.
+(Page 907)              RW          -          -
+                        RW          -          -         Specifies the font color of the selected row.
+SelectedRowColor        RW          -          -
+(Page 909)              RW          -          -         Specifies the background color of the selected table
+                        RW          -          -         header.
+SelectedRowForeColor    RW          -          -         Specifies the font color of the selected table header.
+(Page 909)              RW          -          -
+                        RW          -          -         Specifies whether selection colors are used for cells or
+SelectedTitleColor      RW          -          -         rows.
+(Page 911)              RW          -          -         Specifies whether a selection frame is used for the
+                                               -         selected cells or rows.
+SelectedTitleForeColor                         -         Specifies the color of the selection rectangle in the
+(Page 912)                                     -         alarm window if SelectionType equals "1".
+                                               -         Specifies the line width of the selection rectangle in
+SelectionColoring                              -         the alarm window if SelectionType equals "1".
+(Page 914)                                     -         Specifies the number of lines you can mark.
+
+SelectionRect                                            Specifies the servers of a distributed system that form
+(Page 916)                                               the data source for the alarm view.
+                                                         Specifies whether the sorting button is shown above
+SelectionRectColor                                       the vertical scroll bar.
+(Page 917)                                               Specifies whether the sorting icon is displayed.
+
+SelectionRectWidth                                       Specifies whether a sort index is displayed.
+(Page 917)
+                                                         Specifies the representation of the control's window
+SelectionType                                            title.
+(Page 918)                                               -
+                                                         Specifies that the size of an object can be changed in
+ServerNames                                              runtime.
+(Page 923)                                               Specifies how the sorting order can be changed by
+                                                         mouse click.
+ShowSortButton                                           Specifies the background color for status bars.
+(Page 941)
+                                                         Creates a new, user-defined status bar element.
+ShowSortIcon
+(Page 942)                                               Specifies whether the width of the selected status bar
+                                                         element is set automatically.
+ShowSortIndex                                            Specifies the number of configurable status bar ele-
+(Page 942)                                               ments.
+
+ShowTitle (Page 947)
+
+Size                    -           -
+
+Sizeable (Page 952)     RW          -
+
+SortSequence            RW          -
+(Page 954)
+
+StatusbarBackColor      RW          -
+
+(Page 959)
+
+StatusbarElementAdd RW              -
+
+(Page 960)
+
+StatusbarElementAuto- RW            -
+
+Size (Page 961)
+
+StatusbarElementCount RW            -
+
+(Page 962)
+
+WinCC Engineering V18 ­ Programming reference            245
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-  Panel RT  Description
+                        sional      vanced  -
+StatusbarElementIconId  RW          -       -         Specifies the ID number and symbol assignment of a
+(Page 963)                                  -         status bar element.
+StatusbarElementID      RW          -       -         Specifies the ID number of the selected status bar
+(Page 963)                                  -         element.
+StatusbarElementIndex   RW          -       -         Specifies the reference for a status bar element.
+(Page 964)
+StatusbarElementName    RW          -       -         Specifies the object name of the selected status bar
+(Page 965)                                  -         element.
+StatusbarElementRe-     RW          -       -         Removes the selected user-defined status bar ele-
+move (Page 966)                             -         ment.
+StatusbarElementRe-     RW          -       -         Changes the name of the user-defined status bar el-
+name (Page 967)                                       ement that is referenced by the "StatusbarElementIn-
+                                            -         dex" property.
+StatusbarElementRepos RW            -       -         Specifies the index of an element in the status bar of
+                                            -         the display and operating object.
+(Page 968)                                  -         -
+                                            -         Specifies the text of the selected status bar element.
+StatusbarElements       -           -       -
+                                            -         Specifies the tooltip text for the selected user-defined
+StatusbarElementText RW             -       -         status bar element.
+                                            -         Specifies whether the configuration engineer has
+(Page 969)                                  -         added the status bar element as a new user-defined
+                                            -         element.
+StatusbarElementTool- RW            -       -         Specifies whether the referenced element of the sta-
+                                            -         tus bar element is displayed in Runtime.
+tipText (Page 970)                                    Specifies the width of the referenced status bar ele-
+                                                      ment in pixels.
+StatusbarElementUser- RW            -                 Specifies the font of the texts in the status bar.
+
+Defined (Page 970)                                    Specifies the color of the texts in the status bar.
+
+StatusbarElementVisi- RW            -                 Specifies whether tooltips are displayed for the ele-
+                                                      ments of the status bar in runtime.
+ble (Page 971)                                        Specifies the default text in the status bar.
+
+StatusbarElementWidth RW            -                 Specifies whether the background color of the status
+                                                      bar is shown.
+(Page 972)                                            Specifies whether the status bar of the control is dis-
+                                                      played.
+StatusbarFont           RW          -                 -
+(Page 973)                                            -
+                                                      Specifies the background color of the table rows in
+StatusbarFontColor      RW          -                 the object.
+                                                      Specifies the second background color of the rows.
+(Page 974)                                            Specifies the text color used in the table cells of the
+                                                      object.
+StatusbarShowTooltips RW            -
+
+(Page 975)
+
+StatusbarText           RW          -
+(Page 976)
+
+StatusbarUseBackColor RW            -
+
+(Page 976)
+
+StatusbarVisible        RW          -
+
+(Page 977)
+
+TabIndex                -           -
+
+TabIndexAlpha           -           -
+
+TableColor (Page 988) RW            -
+
+TableColor2 (Page 989) RW           -
+
+TableForeColor          RW          -
+
+(Page 990)
+
+246                                                   WinCC Engineering V18 ­ Programming reference
+                                                       System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-       Panel RT  Description
+                      sional      vanced       -
+TableForeColor2       RW          -            -         Specifies the second text color used in the table cells
+(Page 991)                                     -         of the object.
+TimeBase (Page 1024)  RW          -            -         Specifies the time zone in which the time values are
+                                               -         displayed.
+TitleColor (Page 1045) RW         -            -         Specifies the background color of the table header.
+                                               -         Specifies whether the content of the fields in a title
+TitleCut (Page 1046)  RW          -            -         bar is to be shortened if the column is too narrow.
+                                               -         Specifies the color for the dark side of the 3D shading
+TitleDarkShadowColor RW           -            -         for column and row headers in the object table.
+                                               -         Specifies the text color for the table column and row
+(Page 1047)                                    -         headers of the object.
+                                               -         Specifies the color of the separation lines in the title
+TitleForeColor        RW          -            -         bar of the table.
+(Page 1047)                                    -         Specifies the color for the light side of the 3D shading
+                                               -         for table column and row headers of the object.
+TitleGridLineColor    RW          -            -         Specifies how sorting by column header is triggered.
+                                               -         Specifies whether a shading color is used for the table
+(Page 1048)                                    -         header.
+                                               -         Specifies the position of the toolbar.
+TitleLightShadowColor RW          -            -
+                                               -         Specifies the background color of the toolbar.
+(Page 1049)                                    -
+                                               -         Specifies whether the function linked to the button is
+TitleSort (Page 1050) RW          -                      activated in runtime.
+                                                         Creates a new user-defined button in the object's
+TitleStyle (Page 1051) RW         -                      toolbar.
+                                                         Shows the authorization for the selected button func-
+ToolbarAlignment      RW          -                      tion.
+                                                         Inserts a leading separator (vertical line) for the se-
+(Page 1059)                                              lected key function on the toolbar.
+                                                         Clicks a toolbar button.
+ToolbarBackColor      RW          -
+                                                         Specifies the number of buttons in the toolbar.
+(Page 1060)
+                                                         Specifies whether a user-defined toolbar button can
+ToolbarButtonActive   RW          -                      be operated.
+                                                         Specifies the shortcut for the selected button of the
+(Page 1061)                                              object.
+                                                         Specifies the key function via your unique ID number.
+ToolbarButtonAdd      RW          -
+                                                         References a button function.
+(Page 1062)
+                                                         Enables/disables display of the locked, pressed state
+ToolbarButtonAuthoriza- RW        -                      for a user-defined toolbar button.
+                                                         Specifies the name of the selected user-defined but-
+tion (Page 1063)                                         ton.
+
+ToolbarButtonBe-      RW          -
+
+ginGroup (Page 1064)
+
+ToolbarButtonClick    RW          -
+
+(Page 1065)
+
+ToolbarButtonCount    RW          -
+
+(Page 1065)
+
+ToolbarButtonEnabled RW           -
+
+(Page 1066)
+
+ToolbarButtonHotKey RW            -
+
+(Page 1067)
+
+ToolbarButtonID       RW          -
+
+(Page 1068)
+
+ToolbarButtonIndex    RW          -
+
+(Page 1069)
+
+ToolbarButtonLocked RW            -
+
+(Page 1070)
+
+ToolbarButtonName     RW          -
+
+(Page 1071)
+
+WinCC Engineering V18 ­ Programming reference            247
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-    Panel RT  Description
+                      sional      vanced    -
+ToolbarButtonRemove   RW          -         -         Removes the selected user-defined button.
+(Page 1071)
+ToolbarButtonRename   RW          -         -         Specifies the name of the user-defined toolbar button
+(Page 1072)                                 -         that is being referenced via the "ToolbarButtonIndex"
+                                            -         property.
+ToolbarButtonRepos    RW          -         -
+                                            -         Specifies the position of a referenced button in the
+(Page 1073)                                 -         object's toolbar.
+                                            -
+ToolbarButtons        -           -         -         -
+                                            -
+ToolbarButtonTooltip- RW          -         -         Specifies the tooltip text for the user-defined button
+                                            -         in the toolbar.
+Text (Page 1074)                            -
+                                            -         Specifies whether the project engineer has added the
+ToolbarButtonUserDe- RW           -         -         toolbar button as new user-defined button.
+                                            -
+fined (Page 1075)                           -         Specifies whether the button is displayed in the tool-
+                                                      bar.
+ToolbarButtonVisible  RW          -
+                                                      Specifies whether the tooltips for the key functions
+(Page 1076)                                           are displayed in runtime.
+
+ToolbarShowTooltips RW            -                   Specifies whether the background color for the tool-
+                                                      bar is shown.
+(Page 1078)
+                                                      Specifies whether the hotkeys for the button func-
+ToolbarUseBackColor RW            -                   tions are activated in Runtime.
+
+(Page 1079)                                           Specifies whether the toolbar of the control is dis-
+                                                      played.
+ToolbarUseHotKeys     RW          -
+                                                      Specifies the value of the Y coordinate of the selected
+(Page 1080)                                           object.
+
+ToolbarVisible        RW          -                   Specifies whether the agreed colors of the message
+(Page 1081)                                           classes are displayed.
+
+Top (Page 1083)       RW          -                   Specifies whether a selection color is used for the
+                                                      headers of selected table cells.
+UseMessageColor       RW          -
+                                                      Specifies whether a second row color is used for the
+(Page 1154)                                           representation of the table.
+
+UseSelectedTitleColor RW          -                   Specifies whether vertical separation lines are dis-
+                                                      played.
+(Page 1156)
+                                                      Specifies whether the selected object is visible.
+UseTableColor2        RW          -
+                                                      Specifies the width of the object in pixels.
+(Page 1158)
+
+VerticalGridLines     RW          -
+
+(Page 1201)
+
+Visible (Page 1204)   RW          -
+
+Width (Page 1217)     RW          -
+
+Table 1-2    Methods
+ Methods
+                      RT Professio- RT Ad-  Panel RT  Description
+
+                      nal         vanced    -         Enables the permanent area or the root screen.
+                                            -         Dynamically activates a trigger and the specified cy-
+Activate (Page 1250)  Yes         -         -         cle for a property at runtime.
+                                            -         Executes the "Connect backup" key function of the
+ActivateDynamic       Yes         -                   control.
+(Page 1252)                                           Executes the "Copy lines" key function of the control.
+                      Yes         -
+AttachDB (Page 1256)
+
+CopyRows (Page 1257) Yes          -
+
+248                                                   WinCC Engineering V18 ­ Programming reference
+                                                       System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Methods                 RT Professio- RT Ad-   Panel RT  Description
+                                               -
+DeactivateDynamic       nal  vanced                      Deactivates the trigger of the "ActivateDynamic"
+(Page 1259)                                    -         method used for the specified property in/during run-
+                        Yes  -                 -         time.
+                                               -
+DetachDB (Page 1262) Yes     -                           Executes the "Disconnect backup" key function of the
+                                               -         control.
+Export (Page 1263)      Yes  -                 -
+                                                         Executes the "Export log" or "Export data" key func-
+GetHitlistColumn        Yes  -                 -         tion of the control.
+                                               -
+(Page 1267)                                              Returns the column object of the alarm view hit list
+                                               -         designated by name or index as "ICCAxMessageCol-
+GetHistlistColumnCol- Yes    -                 -         umn" type.
+
+lection (Page 1265)                            -         Returns the list of all column objects of the alarm
+                                               -         view hit list as "ICCAxCollection" type.
+GetMessageBlock         Yes  -                 -
+                                               -         Returns the alarm text block object of the alarm view
+(Page 1268)                                    -         designated by name or index as "ICCAxMessage-
+                                                         Block" type.
+GetMessageBlockCollec- Yes   -                 -
+                                                         Returns the list of all alarm text block objects of the
+tion (Page 1269)                               -         alarm view as "ICCAxCollection" type.
+                                               -
+GetMessageColumn        Yes  -                           Returns the column object of the alarm view desig-
+                                               -         nated by name or index as "ICCAxMessageColumn"
+(Page 1270)                                    -         type.
+
+GetMessageColumnCol- Yes     -                           Returns the list of all column objects of the alarm
+                                                         view as "ICCAxCollection" type.
+lection (Page 1271)
+                                                         Returns the operator message object of the alarm
+GetOperatorMessage Yes       -                           view designated by name or index as "ICCAxOpera-
+                                                         torMessage" type.
+(Page 1272)
+                                                         Returns the list of all operator message objects of the
+GetOperatorMessage- Yes      -                           alarm view as "ICCAxCollection" type.
+
+Collection (Page 1273)                                   Returns the row object defined by its row number in
+                                                         the table-based controls as "ICCAxDataRow" type.
+GetRow (Page 1274)      Yes  -
+                                                         Returns the list of all row objects of the table-based
+GetRowCollection        Yes  -                           controls as "ICCAxDataRowCollection" type.
+
+(Page 1276)                                              Returns the selected row object of a table-based con-
+                                                         trol as "ICCAxDataRow" type.
+GetSelectedRow          Yes  -
+                                                         Returns the selected row objects of a table-based
+(Page 1282)                                              control as type "ICCAxDataRow" for multiple selec-
+                                                         tion.
+GetSelectedRows         Yes  -
+                                                         Returns the element of the control's status bar des-
+(Page 1283)                                              ignated by name or index as "ICCAxStatusbarEle-
+                                                         ment" type.
+GetStatusbarElement Yes      -
+                                                         Returns the list of all status bar elements of the con-
+(Page 1289)                                              trol as "ICCAxCollection" type.
+
+GetStatusbarElement- Yes     -                           Returns the button function designated by name or
+                                                         index on the control toolbar as "ICCAxToolbarButton"
+Collection (Page 1290)                                   type.
+
+GetToolbarButton        Yes  -                           Returns the list of all button functions of the control
+                                                         toolbar as "ICCAxCollection" type.
+(Page 1297)
+                                                         Executes the "Hide alarm" button function of the
+GetToolbarButtonCollec- Yes  -                           alarm view.
+
+tion (Page 1298)
+
+HideAlarm (Page 1314) Yes    -
+
+WinCC Engineering V18 ­ Programming reference            249
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Methods                RT Professio- RT Ad-  Panel RT  Description
+LockAlarm (Page 1317)                        -
+                       nal    vanced         -         Executes the "Disable alarm" button function of the
+                                             -         alarm view.
+                       Yes    -              -
+                                             -         Executes the "Loop in alarm" button function of the
+LoopInAlarm (Page 1317) Yes   -              -         alarm view.
+                                             -
+MoveToFirstLine        Yes    -              -         Executes the "First alarm" button function of the
+                                             -         alarm view.
+(Page 1319)                                  -
+                                             -         Executes the "First page" button function of the alarm
+MoveToFirstPage        Yes    -              -         view.
+                                             -
+(Page 1319)                                  -         Executes the "Last alarm" button function of the
+                                             -         alarm view.
+MoveToLastLine         Yes    -              -
+                                             -         Executes the "Last page" button function of the alarm
+(Page 1320)                                  -         view.
+                                             -
+MoveToLastPage         Yes    -              -         Executes the "Next alarm" button function of the
+                                             -         alarm view.
+(Page 1321)                                  -
+                                             -         Executes the "Next page" button function of the
+MoveToNextLine         Yes    -              -         alarm view.
+                                             -
+(Page 1322)                                            Executes the "Previous alarm" button function of the
+                                                       alarm view.
+MoveToNextPage         Yes    -
+                                                       Executes the "Previous page" button function of the
+(Page 1322)                                            alarm view.
+
+MoveToPreviousLine     Yes    -                        Executes the "Print" button function of the control.
+
+(Page 1323)                                            Executes the "Alarm annunciator acknowledgment"
+                                                       button function of the alarm view.
+MoveToPreviousPage Yes        -
+                                                       Executes the "Single acknowledgment" button func-
+(Page 1324)                                            tion of the alarm view.
+
+Print (Page 1327)      Yes    -                        Executes the "Group acknowledgment" button func-
+                                                       tion of the alarm view.
+QuitHorn (Page 1328) Yes      -
+                                                       Selects all rows in a table-based control.
+QuitSelected (Page 1328) Yes  -
+                                                       Selects a specific row in a table-based control.
+QuitVisible (Page 1329) Yes   -
+                                                       Executes the "Comment dialog" button function of
+SelectAll (Page 1342) Yes     -                        the alarm view.
+
+SelectRow (Page 1343) Yes     -                        Executes the "Display options dialog" button function
+                                                       of the alarm view.
+ShowComment            Yes    -
+                                                       Executes the "Emergency acknowledgment" button
+(Page 1346)                                            function of the alarm view.
+
+ShowDisplayOptionsDia- Yes    -                        Executes the "Help" button function of the control.
+
+log (Page 1347)                                        Executes the "List of alarm to hide" button function of
+                                                       the alarm view.
+ShowEmergencyQuit- Yes        -
+                                                       Executes the "Hit list" button function of the alarm
+Dialog (Page 1347)                                     view.
+
+ShowHelp (Page 1348) Yes      -                        Executes the "About dialog" button function of the
+                                                       alarm view.
+ShowHideList           Yes    -
+(Page 1348)                                            Executes the "Lock dialog" button function of the
+                                                       alarm view.
+ShowHitList (Page 1349) Yes   -
+                                                       Executes the "Lock list" button function of the alarm
+ShowInfoText           Yes    -                        view.
+(Page 1349)
+
+ShowLockDialog         Yes    -
+
+(Page 1350)
+
+ShowLockList           Yes    -
+(Page 1350)
+
+250                                                    WinCC Engineering V18 ­ Programming reference
+                                                        System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Methods              RT Professio- RT Ad-      Panel RT  Description
+                                               -
+                     nal     vanced            -         Executes the "Historical alarm list (long-term)" button
+                                               -         function of the alarm view.
+ShowLongTermArch- Yes        -                 -
+                                               -         Executes the "Alarm list" button function of the alarm
+iveList (Page 1351)                            -         view.
+                                               -
+ShowMessageList      Yes     -                 -         Executes the "Configuration dialog" button function
+                                               -         of the control.
+(Page 1351)                                    -
+                                               -         Executes the "Selection dialog" button function of the
+ShowPropertyDialog   Yes     -                           alarm view.
+
+(Page 1352)                                              Executes the "Historical alarm list (short-term)" but-
+                                                         ton function of the alarm view.
+ShowSelectionDialog Yes      -
+                                                         Executes the "Sorting dialog" button function of the
+(Page 1354)                                              alarm view.
+
+ShowShortTermArch- Yes       -                           Executes the "Timebase dialog" button function of
+                                                         the alarm view.
+iveList (Page 1355)
+                                                         Executes the "Unhide alarm" button function of the
+ShowSortDialog       Yes     -                           alarm view.
+
+(Page 1356)                                              Executes the "Unlock alarm" button function of the
+                                                         alarm view.
+ShowTimebaseDialog Yes       -
+                                                         Removes all selections from the cells of a table-based
+(Page 1357)                                              control.
+
+UnhideAlarm          Yes     -                           Removes the selections from a specific cell of a table-
+(Page 1360)                                              based control.
+
+UnlockAlarm (Page 1360) Yes  -
+
+UnselectAll (Page 1361) Yes  -
+
+UnselectRow (Page 1361) Yes  -
+
+AlarmView
+
+Description
+
+                       6FUHHQV
+                        6FUHHQ
+
+                     6FUHHQ,WHPV
+                     6FUHHQ,WHP
+
+WinCC Engineering V18 ­ Programming reference            251
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+

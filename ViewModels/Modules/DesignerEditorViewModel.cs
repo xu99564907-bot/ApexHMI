@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ApexHMI.Models;
@@ -27,13 +28,12 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private readonly IProjectEditorService _projectEditor;
     private readonly IWidgetEditorService _widgetEditor;
     private readonly RuntimeProjectService _runtimeProjectService;
-    private readonly WidgetBlockGenerator _blockGenerator;
     private readonly PlcVariableImportService _plcVariableImport;
     private readonly EditStack _editStack = new();
     private bool _suppressEditRecording;
 
     /// <summary>从 PLC Device.Application.xml 加载的变量表（与 Shell.Tags 并列；非空时作为绑定首选）。</summary>
-    public ObservableCollection<TagItem> PlcTags { get; } = new();
+    public ApexHMI.Common.BulkObservableCollection<TagItem> PlcTags { get; } = new();
 
     /// <summary>当前 PLC 变量文件路径（成功导入后回显）。</summary>
     [ObservableProperty]
@@ -55,6 +55,57 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
     [ObservableProperty]
     private int _gridSize = 8;
+
+    // ========== 画布缩放 ==========
+    public double[] ZoomOptions { get; } = new[] { 0.5, 0.75, 1.0, 1.25, 1.5, 2.0 };
+
+    [ObservableProperty]
+    private double _canvasZoom = 1.0;
+
+    [ObservableProperty]
+    private string _fitButtonText = "适应窗口";
+
+    [ObservableProperty]
+    private bool _isFitToWindow;
+
+    private double? _zoomBeforeFit;
+    private bool _isApplyingFit;
+
+    partial void OnCanvasZoomChanged(double value)
+    {
+        if (value < 0.1) { CanvasZoom = 0.1; return; }
+        if (value > 4.0) { CanvasZoom = 4.0; return; }
+        if (IsFitToWindow && !_isApplyingFit)
+        {
+            IsFitToWindow = false;
+            _zoomBeforeFit = null;
+            FitButtonText = "适应窗口";
+        }
+    }
+
+    public void ApplyFitToWindow(double fitZoom)
+    {
+        _isApplyingFit = true;
+        try
+        {
+            _zoomBeforeFit = CanvasZoom;
+            CanvasZoom = fitZoom;
+        }
+        finally { _isApplyingFit = false; }
+        IsFitToWindow = true;
+        FitButtonText = $"恢复 {(_zoomBeforeFit ?? 1.0) * 100:0}%";
+    }
+
+    public void RestoreFromFit()
+    {
+        if (_zoomBeforeFit is null) return;
+        _isApplyingFit = true;
+        try { CanvasZoom = _zoomBeforeFit.Value; }
+        finally { _isApplyingFit = false; }
+        IsFitToWindow = false;
+        _zoomBeforeFit = null;
+        FitButtonText = "适应窗口";
+    }
 
     /// <summary>对齐到网格（仅当 SnapToGrid=true 时生效）。</summary>
     public double SnapValue(double v)
@@ -306,48 +357,90 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>设计模式数据上下文（无 OPC UA 推送，但暴露 Shell 供业务 widget 取真实数据）。</summary>
     public IWidgetDataContext DesignModeContext { get; }
 
-    /// <summary>工具箱控件类型列表（与 WidgetEditorService.DefaultProperties 对齐）。</summary>
-    public static readonly IReadOnlyList<string> ToolboxTypes = new[]
+    /// <summary>工具箱固定分组（基本对象 / 元素 / 控件），不随工程变化。</summary>
+    private static readonly IReadOnlyList<ToolboxGroup> _staticToolboxGroups = new[]
     {
-        // 基础控件
-        "text", "bool-lamp", "numeric-readonly", "button", "page-button",
-        // 业务复合控件（手动操作）
-        "manual-cylinder-block", "manual-axis-block", "manual-robot-block", "manual-stopper-block",
-        // 业务控件（数据/报警）
-        "alarm-list", "opc-tag-value",
-        // 旧通用工业控件
-        "motor", "alarm-banner"
+        new ToolboxGroup("基本对象", new[]
+        {
+            new ToolboxItem("text",         "文本",       "FormatText"),
+            new ToolboxItem("rectangle",    "矩形",       "RectangleOutline"),
+            new ToolboxItem("ellipse",      "椭圆",       "EllipseOutline"),
+            new ToolboxItem("line",         "直线",       "VectorLine"),
+            new ToolboxItem("polyline",     "折线",       "VectorPolyline"),
+            new ToolboxItem("polygon",      "多边形",     "VectorPolygon"),
+            new ToolboxItem("graphic-view", "图形视图",   "ImageOutline"),
+            new ToolboxItem("io-numeric",   "数字 I/O",   "Numeric"),
+            new ToolboxItem("io-symbolic",  "符号 I/O",   "FormatListBulleted"),
+            new ToolboxItem("io-graphic",   "图形 I/O",   "ImageMultiple"),
+            new ToolboxItem("datetime",     "日期时间",   "Clock"),
+        }),
+        new ToolboxGroup("元素", new[]
+        {
+            new ToolboxItem("button",        "按钮",       "GestureTap"),
+            new ToolboxItem("switch",        "开关",       "ToggleSwitch"),
+            new ToolboxItem("round-button",  "圆形按钮",   "CircleSlice8"),
+            new ToolboxItem("bar",           "棒图",       "ChartBar"),
+            new ToolboxItem("gauge",         "量规",       "GaugeFull"),
+            new ToolboxItem("slider",        "滑块",       "SlideVariant"),
+            new ToolboxItem("scrollbar",     "滚动条",     "ArrowExpandVertical"),
+            new ToolboxItem("clock",         "时钟",       "ClockOutline"),
+            new ToolboxItem("combobox",      "组合框",     "FormDropdown"),
+            new ToolboxItem("listbox",       "列表框",     "ViewList"),
+            new ToolboxItem("checkbox",      "复选框",     "CheckboxOutline"),
+            new ToolboxItem("optiongroup",   "单选",       "RadioboxMarked"),
+        }),
+        // P5 高级控件
+        new ToolboxGroup("控件", new[]
+        {
+            new ToolboxItem("trend-view",     "趋势视图",   "ChartLine"),
+            new ToolboxItem("alarm-view",     "报警视图",   "BellOutline"),
+            new ToolboxItem("table-view",     "表格视图",   "Table"),
+            new ToolboxItem("screen-window",  "画面窗口",   "WindowMaximize"),
+            // P8A 配方视图
+            new ToolboxItem("recipe-view",    "配方视图",   "BookCogOutline"),
+            // P8B 用户视图
+            new ToolboxItem("user-view",      "用户视图",   "AccountMultipleOutline"),
+            // P8C 系统诊断
+            new ToolboxItem("diagnostic-view","系统诊断",   "Stethoscope"),
+            // P8D 报警指示器
+            new ToolboxItem("alarm-indicator","报警指示器", "AlertCircle"),
+            // P8E 状态强制（调试）
+            new ToolboxItem("status-force",   "状态强制",   "Pencil"),
+        }),
+        // P9 媒体/分析
+        new ToolboxGroup("媒体/分析", new[]
+        {
+            new ToolboxItem("html-browser",  "HTML 浏览器", "Web"),
+            new ToolboxItem("pdf-view",      "PDF 视图",    "FilePdfBox"),
+            new ToolboxItem("media-player",  "媒体播放器",  "Movie"),
+            new ToolboxItem("xy-trend",      "XY 趋势",     "ChartScatterPlot"),
+            new ToolboxItem("report-view",   "报表视图",    "FileChartOutline"),
+        }),
     };
 
-    /// <summary>工具箱分组定义（绑到 DesignerEditorView 的折叠分组列表）。</summary>
-    public static readonly IReadOnlyList<ToolboxGroup> ToolboxGroups = new[]
+    /// <summary>P7D: 工具箱分组定义，动态拼接基础分组 + "我的 Faceplate"。</summary>
+    public IReadOnlyList<ToolboxGroup> ToolboxGroups
     {
-        new ToolboxGroup("基础控件", new[]
+        get
         {
-            new ToolboxItem("text",             "文本",       "FormatText"),
-            new ToolboxItem("bool-lamp",        "指示灯",     "Lightbulb"),
-            new ToolboxItem("numeric-readonly", "数值显示",   "Numeric"),
-            new ToolboxItem("button",           "按钮",       "GestureTap"),
-            new ToolboxItem("page-button",      "页面跳转",   "PageNext"),
-        }),
-        new ToolboxGroup("手动操作", new[]
-        {
-            new ToolboxItem("manual-cylinder-block", "气缸",   "Piston"),
-            new ToolboxItem("manual-axis-block",     "轴",     "AxisArrow"),
-            new ToolboxItem("manual-robot-block",    "机械手", "Robot"),
-            new ToolboxItem("manual-stopper-block",  "挡停",   "StopCircle"),
-        }),
-        new ToolboxGroup("数据 / 报警", new[]
-        {
-            new ToolboxItem("alarm-list",    "报警列表", "BellAlert"),
-            new ToolboxItem("opc-tag-value", "Tag 值",   "Tag"),
-        }),
-        new ToolboxGroup("通用工业控件", new[]
-        {
-            new ToolboxItem("motor",         "电机",     "Engine"),
-            new ToolboxItem("alarm-banner",  "报警条",   "AlertBox"),
-        }),
-    };
+            var groups = new List<ToolboxGroup>(_staticToolboxGroups);
+            var fpLib = Document?.Faceplates;
+            if (fpLib is not null && fpLib.Faceplates.Count > 0)
+            {
+                var items = new List<ToolboxItem>();
+                foreach (var fp in fpLib.Faceplates)
+                {
+                    var name = fp.IsBuiltIn ? $"[内置] {fp.Name}" : fp.Name;
+                    items.Add(new ToolboxItem($"faceplate:{fp.Id}", name, fp.IconKind));
+                }
+                groups.Add(new ToolboxGroup("我的 Faceplate", items));
+            }
+            return groups;
+        }
+    }
+
+    /// <summary>P7D: Document 切换或 Faceplate 库变化时调用，刷新工具箱。</summary>
+    public void RefreshFaceplateToolbox() => OnPropertyChanged(nameof(ToolboxGroups));
 
     public sealed class ToolboxGroup
     {
@@ -373,7 +466,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         IProjectEditorService projectEditor,
         IWidgetEditorService widgetEditor,
         RuntimeProjectService runtimeProjectService,
-        WidgetBlockGenerator blockGenerator,
         IWidgetViewFactory widgetViewFactory,
         PlcVariableImportService plcVariableImport)
         : base(shell, "画布设计")
@@ -381,7 +473,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         _projectEditor = projectEditor;
         _widgetEditor = widgetEditor;
         _runtimeProjectService = runtimeProjectService;
-        _blockGenerator = blockGenerator;
         _plcVariableImport = plcVariableImport;
         WidgetViewFactory = widgetViewFactory;
         DesignModeContext = new DesignModeWidgetDataContext(shell);
@@ -395,9 +486,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         };
         shell.RegisterDirtySource(() => IsDirty);
 
+        _autoSaveTimer.Tick += (_, _) =>
+        {
+            _autoSaveTimer.Stop();
+            if (IsDirty) SaveCommand.Execute(null);
+        };
+
         InitDocument();
         // 启动时自动尝试从当前 PLC 工程目录加载一次变量表（失败静默）
-        TryAutoLoadPlcVariables();
+        // 用 Dispatcher.BeginInvoke + Background 优先级，让窗口先显示出来再加载
+        System.Windows.Application.Current?.Dispatcher.BeginInvoke(
+            new Action(TryAutoLoadPlcVariables),
+            System.Windows.Threading.DispatcherPriority.Background);
         // PLC 程序保存目录变更时（Shell.GitPullVm.GitTargetFolder）自动重新加载
         Shell.PropertyChanged += (_, e) =>
         {
@@ -408,22 +508,89 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>启动 / GitTargetFolder 变更时静默加载；找不到文件不弹错。</summary>
     public void TryAutoLoadPlcVariables()
     {
+        // 优先用上次手动导入保存的设置（路径 + OP 选择）
+        var saved = _plcVariableImport.LoadSettings();
+        if (saved != null && !string.IsNullOrWhiteSpace(saved.FilePath) && System.IO.File.Exists(saved.FilePath))
+        {
+            ISet<string>? ops = saved.SelectedOps is { Count: > 0 }
+                ? new HashSet<string>(saved.SelectedOps, StringComparer.Ordinal)
+                : null;
+            LoadPlcVariablesSilent(saved.FilePath, ops);
+            return;
+        }
+        // 回退：从 PLC 程序保存目录自动查找
         var path = _plcVariableImport.ResolveDefaultPath(Shell.GitTargetFolder);
         if (string.IsNullOrEmpty(path)) return;
-        LoadPlcVariablesFrom(path);
+        LoadPlcVariablesSilent(path!, null);
     }
 
-    private void LoadPlcVariablesFrom(string path)
+    private void LoadPlcVariablesSilent(string path, ISet<string>? selectedOps)
     {
-        var tags = _plcVariableImport.LoadFromFile(path);
-        PlcTags.Clear();
-        foreach (var t in tags) PlcTags.Add(t);
+        PlcVariableStatus = "正在加载…";
+        var ui = System.Threading.SynchronizationContext.Current;
+        Task.Run(() =>
+        {
+            try
+            {
+                return _plcVariableImport.LoadFromFile(path, selectedOps);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "DesignerEditor: 静默加载 PLC 变量失败 path={Path}", path);
+                return (IReadOnlyList<TagItem>)Array.Empty<TagItem>();
+            }
+        }).ContinueWith(t =>
+        {
+            var tags = t.Result;
+            ApplyLoadedTags(path, tags, selectedOps, "静默");
+        }, ui is null ? TaskScheduler.Default : TaskScheduler.FromCurrentSynchronizationContext());
+    }
+
+    private void ApplyLoadedTags(string path, IReadOnlyList<TagItem> tags, ISet<string>? selectedOps, string mode)
+    {
+        // 批量替换：一次 Reset 事件，避免 N 次 Add 的级联通知
+        PlcTags.ReplaceAll(tags);
         PlcVariableFilePath = path;
         PlcVariableStatus = tags.Count > 0
             ? $"已加载 {tags.Count} 个变量"
             : "未解析到变量";
         OnPropertyChanged(nameof(AvailableTags));
-        Log.Information("DesignerEditor: 加载 PLC 变量 path={Path} count={Count}", path, tags.Count);
+        Log.Information("DesignerEditor: {Mode}加载 PLC 变量 path={Path} count={Count} ops={Ops}",
+            mode, path, tags.Count, selectedOps is null ? "ALL" : string.Join(",", selectedOps));
+    }
+
+    private void LoadPlcVariablesFrom(string path, bool silent = false)
+    {
+        ISet<string>? selectedOps = null;
+        if (!silent)
+        {
+            var topGroups = _plcVariableImport.ScanTopGroups(path);
+            if (topGroups.Count > 0)
+            {
+                var dlg = new ApexHMI.Views.Dialogs.PlcVariableOpFilterDialog(topGroups)
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow
+                };
+                if (dlg.ShowDialog() != true) return;
+                selectedOps = dlg.SelectedOps;
+                if (selectedOps is null || selectedOps.Count == 0)
+                {
+                    PlcVariableStatus = "未选择任何工位，已取消导入";
+                    return;
+                }
+            }
+        }
+
+        PlcVariableStatus = "正在加载…";
+        var capturedOps = selectedOps;
+        var ui = System.Threading.SynchronizationContext.Current;
+        Task.Run(() => _plcVariableImport.LoadFromFile(path, capturedOps))
+            .ContinueWith(t =>
+            {
+                var tags = t.Result;
+                ApplyLoadedTags(path, tags, capturedOps, "手动");
+                if (tags.Count > 0) _plcVariableImport.SaveSettings(path, capturedOps);
+            }, ui is null ? TaskScheduler.Default : TaskScheduler.FromCurrentSynchronizationContext());
     }
 
     /// <summary>"重新导入 PLC 变量"按钮：从 GitTargetFolder 找 Device.Application.xml 并解析。</summary>
@@ -436,7 +603,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
             PlcVariableStatus = "未找到 Device.Application.xml（请在「PLC 程序保存目录」中设置）";
             return;
         }
-        LoadPlcVariablesFrom(path!);
+        LoadPlcVariablesFrom(path!, silent: false);
     }
 
     /// <summary>"浏览 XML 文件"命令：手动选择一个 Device.Application.xml。</summary>
@@ -445,20 +612,30 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     {
         var dlg = new Microsoft.Win32.OpenFileDialog
         {
-            Filter = "PLC 变量表 (Device.Application.xml)|Device.Application.xml|XML 文件 (*.xml)|*.xml",
+            Filter = "PLC 变量表 (*.Device.Application.xml)|*Device.Application.xml|XML 文件 (*.xml)|*.xml",
             Title = "选择 PLC 变量表 XML",
         };
         var initial = Shell.GitTargetFolder;
         if (!string.IsNullOrWhiteSpace(initial) && System.IO.Directory.Exists(initial))
             dlg.InitialDirectory = initial;
-        if (dlg.ShowDialog() == true) LoadPlcVariablesFrom(dlg.FileName);
+        if (dlg.ShowDialog() == true) LoadPlcVariablesFrom(dlg.FileName, silent: false);
     }
 
     /// <summary>当前画布是否有未保存改动（G7 切页确认依据）。</summary>
     [ObservableProperty]
     private bool _isDirty;
 
-    partial void OnIsDirtyChanged(bool value) => Shell.NotifyDirtyStateChanged();
+    private readonly DispatcherTimer _autoSaveTimer = new() { Interval = TimeSpan.FromMilliseconds(800) };
+
+    partial void OnIsDirtyChanged(bool value)
+    {
+        Shell.NotifyDirtyStateChanged();
+        if (value)
+        {
+            _autoSaveTimer.Stop();
+            _autoSaveTimer.Start();
+        }
+    }
 
     // ========== 工程文档 ==========
 
@@ -483,8 +660,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// <summary>设计器画布渲染项：模型 + 预创建的真容视图（避免 XAML 中即时调用工厂引发卡死）。</summary>
     public ObservableCollection<DesignerWidgetItem> CurrentWidgetItems { get; } = new();
 
-    /// <summary>当前选中控件的属性列表，绑定到属性编辑器 ItemsControl。</summary>
+    /// <summary>当前选中控件的属性列表，绑定到属性编辑器 ItemsControl（旧 fallback 通道）。</summary>
     public ObservableCollection<WidgetPropertyItem> CurrentWidgetProperties { get; } = new();
+
+    /// <summary>P7.5B: Schema-driven 属性编辑器组（按 Category 分组）。
+    /// 若 schema 找不到，则该集合为空，UI 回退到旧 <see cref="CurrentWidgetProperties"/>。</summary>
+    public ObservableCollection<PropertyCategoryGroup> GroupedPropertyEditors { get; } = new();
+
+    /// <summary>P7.5B: 当前选中控件是否有 Schema（控制 schema 面板 vs fallback 显隐）。</summary>
+    public bool HasSchemaForSelectedWidget => GroupedPropertyEditors.Count > 0;
+
+    /// <summary>P7.5B: HasSchemaForSelectedWidget 的反值（XAML 绑定用，BooleanToVisibilityConverter 不支持 Invert 参数）。</summary>
+    public bool HasNoSchemaForSelectedWidget => !HasSchemaForSelectedWidget;
 
     /// <summary>已订阅 PropertyChanged 的 widget → 处理器映射，便于解订避免内存泄漏。</summary>
     private readonly Dictionary<WidgetInstance, PropertyChangedEventHandler> _widgetHandlers = new();
@@ -557,33 +744,47 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     /// 可用 Tag 列表：PLC 变量表（Device.Application.xml）非空时优先使用，
     /// 否则回退到 Shell.Tags（OPC UA 在线变量 + 演示数据）。
     /// </summary>
-    public IEnumerable<TagItem> AvailableTags => PlcTags.Count > 0 ? (IEnumerable<TagItem>)PlcTags : Shell.Tags;
+    public IEnumerable<TagItem> AvailableTags => PlcTags.Count > 0
+        ? (IEnumerable<TagItem>)PlcTags
+        : Shell.Tags.Where(t => !string.Equals(t.Group, "Imported", StringComparison.Ordinal));
 
-    /// <summary>
-    /// 当前选中 widget 的可用设备名列表（按 TypeId 自动从 Shell 取真实设备）。
-    /// 用于属性面板 deviceName 下拉框。
-    /// </summary>
-    public IEnumerable<string> AvailableDeviceNames
+    /// <summary>「页面跳转」可选目标：固定段名 + 工程内用户页面。</summary>
+    public IEnumerable<NavigateTarget> NavigateTargets
     {
         get
         {
-            if (SelectedWidget?.TypeId is null) return Enumerable.Empty<string>();
-            return SelectedWidget.TypeId.ToLowerInvariant() switch
+            var fixedTargets = new (string Title, string Key)[]
             {
-                "cylinder" or "manual-cylinder-block" =>
-                    Shell.ManualCylinderBlockCards.Select(c =>
-                        string.IsNullOrWhiteSpace(c.DisplayName) ? $"Cyl{c.CylinderIndex}" : c.DisplayName),
-                "axis" or "manual-axis-block" =>
-                    Shell.ManualAxisBlockCards.Select(a =>
-                        string.IsNullOrWhiteSpace(a.DisplayName) ? $"Axis{a.AxisIndex}" : a.DisplayName),
-                "stopper" or "manual-stopper-block" =>
-                    Shell.Tags
-                        .Where(t => t.Name?.IndexOf("stopper", System.StringComparison.OrdinalIgnoreCase) >= 0)
-                        .Select(t => t.Name),
-                _ => Enumerable.Empty<string>(),
+                ("主界面",          "主界面"),
+                ("监控",            "监控"),
+                ("手动操作",        "手动操作"),
+                ("参数设定",        "参数设定"),
+                ("报警画面",        "报警画面"),
+                ("配方管理",        "配方管理"),
+                ("登录",            "登录"),
+                ("画布设计",        "画布设计"),
+                ("运行页面",        "运行页面"),
             };
+            foreach (var (t, k) in fixedTargets)
+                yield return new NavigateTarget { DisplayName = t, RouteKey = k, Group = "固定页" };
+            if (Document is not null)
+                foreach (var p in Document.Pages)
+                    yield return new NavigateTarget { DisplayName = p.Title, RouteKey = p.RouteKey, Group = "用户页" };
         }
     }
+
+    public sealed class NavigateTarget
+    {
+        public string DisplayName { get; init; } = string.Empty;
+        public string RouteKey { get; init; } = string.Empty;
+        public string Group { get; init; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 当前选中 widget 的可用设备名列表（P0 清洗后仅基础控件，永远为空）。
+    /// 保留属性以兼容现有 XAML 绑定。
+    /// </summary>
+    public IEnumerable<string> AvailableDeviceNames => Enumerable.Empty<string>();
 
     // ========== 选中页切换 ==========
 
@@ -639,8 +840,115 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }
 
         OnPropertyChanged(nameof(CurrentBindingTagId));
+        OnPropertyChanged(nameof(WriteAddress));
+        OnPropertyChanged(nameof(WriteValue));
         OnPropertyChanged(nameof(AvailableDeviceNames));
         RefreshAnimationsList();
+        RefreshCurrentEventSteps();
+        NotifyAnimationSelectionChanged();
+        // P7D: 刷新 Faceplate 接口属性面板
+        RefreshFaceplateInterfaceArgs();
+        // P7.5B: 刷新 Schema-driven 属性编辑器
+        RefreshGroupedPropertyEditors();
+    }
+
+    /// <summary>P7.5B: 根据 SelectedWidget 的 TypeId 重建 schema-driven 属性面板分组。
+    /// <para>找不到 schema 时清空集合，UI 回退到旧 fallback。</para>
+    /// <para>P10E: 多选时，若所有选中 widget TypeId 相同，则在交集 Schema 上编辑；
+    /// 值一致时显示原值；不一致时显示 "—— 多个值 ——"，写入会应用到全部选中。</para>
+    /// </summary>
+    private void RefreshGroupedPropertyEditors()
+    {
+        GroupedPropertyEditors.Clear();
+        if (SelectedWidget is null)
+        {
+            OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
+            OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+            return;
+        }
+
+        var schema = ApexHMI.Services.RuntimeUi.WidgetSchemaCatalog.Lookup(SelectedWidget.TypeId);
+        if (schema is null)
+        {
+            OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
+            OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+            return;
+        }
+
+        // P10E: 多选场景：只有所有 widget TypeId 一致才走多选共编辑路径
+        var multi = SelectedWidgets.Count > 1
+                    && SelectedWidgets.All(w => string.Equals(w.TypeId, SelectedWidget.TypeId, StringComparison.OrdinalIgnoreCase));
+
+        var groupOrder = new List<string>();
+        var groups = new Dictionary<string, List<PropertyEditorVM>>();
+        foreach (var desc in schema.Properties)
+        {
+            string value;
+            if (multi)
+            {
+                // 计算所有选中 widget 该 key 的值集合
+                var distinct = SelectedWidgets
+                    .Select(w => w.Properties.TryGetValue(desc.Key, out var x) ? (x ?? desc.DefaultValue) : desc.DefaultValue)
+                    .Distinct(StringComparer.Ordinal)
+                    .Take(2)
+                    .ToList();
+                value = distinct.Count == 1 ? (distinct[0] ?? string.Empty) : "—— 多个值 ——";
+            }
+            else
+            {
+                value = SelectedWidget.Properties.TryGetValue(desc.Key, out var v) ? v : desc.DefaultValue;
+            }
+            var editor = new PropertyEditorVM(desc, value ?? string.Empty, OnSchemaEditorChanged);
+            if (!groups.TryGetValue(desc.Category, out var list))
+            {
+                list = new List<PropertyEditorVM>();
+                groups[desc.Category] = list;
+                groupOrder.Add(desc.Category);
+            }
+            list.Add(editor);
+        }
+
+        foreach (var cat in groupOrder)
+            GroupedPropertyEditors.Add(new PropertyCategoryGroup(cat, groups[cat]));
+
+        OnPropertyChanged(nameof(HasSchemaForSelectedWidget));
+        OnPropertyChanged(nameof(HasNoSchemaForSelectedWidget));
+    }
+
+    /// <summary>P7.5B: schema 编辑器 Value 变化 → 写入 widget。
+    /// P10E: 多选共编辑场景下应用到全部选中（仅当 TypeId 一致）。</summary>
+    private void OnSchemaEditorChanged(string key, string? value)
+    {
+        // 忽略 "—— 多个值 ——" 占位写回
+        if (string.Equals(value, "—— 多个值 ——", StringComparison.Ordinal)) return;
+
+        if (SelectedWidgets.Count > 1
+            && SelectedWidget is not null
+            && SelectedWidgets.All(w => string.Equals(w.TypeId, SelectedWidget.TypeId, StringComparison.OrdinalIgnoreCase)))
+        {
+            MarkPageEdited();
+            // 快照每个 widget 的原值，用于 undo
+            var widgets = SelectedWidgets.ToList();
+            var oldValues = widgets.ToDictionary(
+                w => w,
+                w => w.Properties.TryGetValue(key, out var old) ? old : null);
+
+            Action doIt = () =>
+            {
+                foreach (var w in widgets)
+                    _widgetEditor.UpdateProperty(w, key, value);
+            };
+            Action undoIt = () =>
+            {
+                foreach (var w in widgets)
+                    _widgetEditor.UpdateProperty(w, key, oldValues[w]);
+            };
+            doIt();
+            _editStack.Execute(new ApexHMI.Services.RuntimeUi.ActionEdit($"批量修改 {key} ({widgets.Count} 控件)", undoIt, doIt));
+            OnPropertyChanged(nameof(CanUndo));
+            return;
+        }
+        UpdateWidgetProperty(key, value);
     }
 
     private void OnWidgetPropertyItemChanged(object? sender, PropertyChangedEventArgs e)
@@ -730,6 +1038,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (SelectedPage is null || string.IsNullOrWhiteSpace(typeId)) return;
 
         var widget = _widgetEditor.AddWidget(SelectedPage, typeId, 40, 40);
+        ApplyFaceplateDefaultsIfNeeded(widget);
         CurrentWidgets.Add(widget);
         AddWidgetItem(widget);
         SelectedWidget = widget;
@@ -738,6 +1047,50 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         _editStack.Execute(new AddWidgetEdit(_widgetEditor, SelectedPage, widget));
         OnPropertyChanged(nameof(CanUndo));
         Log.Information("DesignerEditor: 已添加控件 typeId={TypeId} id={Id}", typeId, widget.Id);
+    }
+
+    /// <summary>P7D: 若新建的控件是 faceplate:<id>，应用 Faceplate 默认尺寸 + 接口属性默认值 + 版本号。</summary>
+    private void ApplyFaceplateDefaultsIfNeeded(WidgetInstance widget)
+    {
+        if (widget.TypeId is not { Length: > 10 } tid) return;
+        if (!tid.StartsWith("faceplate:", StringComparison.OrdinalIgnoreCase)) return;
+        var fpId = tid.Substring("faceplate:".Length);
+        var fp = Document?.Faceplates?.Faceplates.FirstOrDefault(f => string.Equals(f.Id, fpId, StringComparison.Ordinal));
+        if (fp is null) return;
+        widget.Width = fp.DefaultWidth;
+        widget.Height = fp.DefaultHeight;
+        foreach (var def in fp.InterfaceProperties)
+        {
+            if (!widget.Properties.ContainsKey(def.Key))
+                widget.Properties[def.Key] = def.DefaultValue ?? string.Empty;
+        }
+        widget.FaceplateVersion = fp.Version;
+        widget.NotifyPropertiesChanged();
+    }
+
+    /// <summary>变量拖放生成控件：在指定坐标添加 typeId 控件，并预填 variable 属性 = tagName。</summary>
+    public WidgetInstance? AddWidgetWithVariable(string typeId, string tagName, double x, double y)
+    {
+        if (SelectedPage is null || string.IsNullOrWhiteSpace(typeId)) return null;
+        var widget = _widgetEditor.AddWidget(SelectedPage, typeId, x, y);
+        if (!string.IsNullOrWhiteSpace(tagName))
+        {
+            // 大多数 P3/P4 控件用 Properties["variable"] 作读地址；同时设置 Binding.TagId 兼容基础控件
+            widget.Properties["variable"] = tagName;
+            _widgetEditor.UpdateBinding(widget, new BindingSpec
+            {
+                TagId = tagName,
+                AccessMode = BindingAccessMode.Subscribe,
+                DataType = "String"
+            });
+            widget.NotifyPropertiesChanged();
+        }
+        CurrentWidgets.Add(widget);
+        AddWidgetItem(widget);
+        SelectedWidget = widget;
+        MarkPageEdited();
+        Log.Information("DesignerEditor: 变量拖放添加控件 typeId={TypeId} tag={Tag}", typeId, tagName);
+        return widget;
     }
 
     [RelayCommand]
@@ -752,6 +1105,7 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (!double.TryParse(parts[2], out var y)) y = 40;
 
         var widget = _widgetEditor.AddWidget(SelectedPage, typeId, x, y);
+        ApplyFaceplateDefaultsIfNeeded(widget);
         CurrentWidgets.Add(widget);
         AddWidgetItem(widget);
         SelectedWidget = widget;
@@ -799,6 +1153,18 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
 
         var oldValue = SelectedWidget.Properties.TryGetValue(key, out var existing) ? existing : null;
         _widgetEditor.UpdateProperty(SelectedWidget, key, value);
+
+        // P7.5B: 同步 schema-driven 编辑器值（防止外部修改时 UI 不刷新）
+        foreach (var grp in GroupedPropertyEditors)
+        {
+            foreach (var ed in grp.Items)
+            {
+                if (string.Equals(ed.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    ed.SetValueSilent(value ?? string.Empty);
+                }
+            }
+        }
 
         // 同步 CurrentWidgetProperties 以保持 UI 一致（防止递归）
         var item = CurrentWidgetProperties.FirstOrDefault(p => p.Key == key);
@@ -873,7 +1239,49 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     public string? CurrentBindingTagId
     {
         get => SelectedWidget?.Binding?.TagId;
-        set => UpdateWidgetBinding(value);
+        set
+        {
+            UpdateWidgetBinding(value);
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>写入动作（write-bool/int/float）的地址部分。底层存到 <c>ActionParam</c>，格式 <c>addr|value</c>。</summary>
+    public string WriteAddress
+    {
+        get
+        {
+            var s = SelectedWidget?.ActionParam ?? string.Empty;
+            var i = s.IndexOf('|');
+            return i < 0 ? s : s.Substring(0, i);
+        }
+        set
+        {
+            if (SelectedWidget is null) return;
+            var v = WriteValue;
+            SelectedWidget.ActionParam = string.IsNullOrEmpty(v) ? (value ?? string.Empty) : $"{value}|{v}";
+            MarkPageEdited();
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>写入动作（write-bool/int/float）的值部分（True/False/整数/浮点）。</summary>
+    public string WriteValue
+    {
+        get
+        {
+            var s = SelectedWidget?.ActionParam ?? string.Empty;
+            var i = s.IndexOf('|');
+            return i < 0 ? string.Empty : s.Substring(i + 1);
+        }
+        set
+        {
+            if (SelectedWidget is null) return;
+            var a = WriteAddress;
+            SelectedWidget.ActionParam = string.IsNullOrEmpty(value) ? a : $"{a}|{value}";
+            MarkPageEdited();
+            OnPropertyChanged();
+        }
     }
 
     /// <summary>打开 Tag 浏览器对话框，选中后写入当前控件绑定。</summary>
@@ -892,31 +1300,62 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     private void AddAnimation()
     {
         if (SelectedWidget is null) return;
+        var widget = SelectedWidget;
         var a = new WidgetAnimation { TagId = "", Op = "true", TargetProperty = "background", TargetValue = "#EF4444" };
-        SelectedWidget.Animations.Add(a);
-        CurrentAnimations.Add(a);
+
+        Action doIt = () =>
+        {
+            widget.Animations.Add(a);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Add(a);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        Action undoIt = () =>
+        {
+            widget.Animations.Remove(a);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Remove(a);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        doIt();
         MarkPageEdited();
-        // 重建 view 让动画注册生效
-        var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, SelectedWidget));
-        if (item is not null) item.View = BuildWidgetView(SelectedWidget);
+        _editStack.Execute(new ActionEdit("新增动画行", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     [RelayCommand]
     private void RemoveAnimation(WidgetAnimation? anim)
     {
         if (anim is null || SelectedWidget is null) return;
-        SelectedWidget.Animations.Remove(anim);
-        CurrentAnimations.Remove(anim);
+        var widget = SelectedWidget;
+        var index = widget.Animations.IndexOf(anim);
+        if (index < 0) return;
+
+        Action doIt = () =>
+        {
+            widget.Animations.Remove(anim);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Remove(anim);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        Action undoIt = () =>
+        {
+            widget.Animations.Insert(Math.Min(index, widget.Animations.Count), anim);
+            if (ReferenceEquals(widget, SelectedWidget)) CurrentAnimations.Insert(Math.Min(index, CurrentAnimations.Count), anim);
+            var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, widget));
+            if (item is not null) item.View = BuildWidgetView(widget);
+        };
+        doIt();
         MarkPageEdited();
-        var item = CurrentWidgetItems.FirstOrDefault(i => ReferenceEquals(i.Model, SelectedWidget));
-        if (item is not null) item.View = BuildWidgetView(SelectedWidget);
+        _editStack.Execute(new ActionEdit("删除动画行", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
     }
 
     [RelayCommand]
     private void OpenTagBrowser()
     {
         if (SelectedWidget is null) return;
-        var dlg = new ApexHMI.Views.Dialogs.TagBrowserDialog(PlcTags.Count > 0 ? PlcTags : (System.Collections.Generic.IEnumerable<TagItem>)Shell.Tags)
+        var dlg = new ApexHMI.Views.Dialogs.TagBrowserDialog(AvailableTags)
         {
             Owner = System.Windows.Application.Current.MainWindow
         };
@@ -954,6 +1393,243 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         if (SelectedWidget is null) return;
         SelectedWidget.ActionType = actionType;
         SelectedWidget.ActionParam = actionParam;
+    }
+
+    // ========== P1 事件 Tab ==========
+
+    /// <summary>左侧 6 个事件入口（按钮控件实际只走 click/press/release，其余事件保留扩展）。</summary>
+    public ObservableCollection<EventEntryViewModel> AvailableEvents { get; } = new()
+    {
+        new() { EventId = "click",        DisplayName = "单击"      },
+        new() { EventId = "press",        DisplayName = "按下"      },
+        new() { EventId = "release",      DisplayName = "释放"      },
+        new() { EventId = "activate",     DisplayName = "激活"      },
+        new() { EventId = "deactivate",   DisplayName = "取消激活"  },
+        new() { EventId = "valueChanged", DisplayName = "数值更改"  },
+    };
+
+    /// <summary>当前选中的事件名。</summary>
+    [ObservableProperty]
+    private string _selectedEventName = "click";
+
+    /// <summary>当前事件下的动作步骤集合（绑定到事件 Tab 右栏 ListBox）。</summary>
+    public ObservableCollection<ActionStepViewModel> CurrentEventSteps { get; } = new();
+
+    partial void OnSelectedEventNameChanged(string value) => RefreshCurrentEventSteps();
+
+    /// <summary>当前选中事件入口（用于左列高亮）。</summary>
+    public EventEntryViewModel? CurrentEventEntry =>
+        AvailableEvents.FirstOrDefault(e => e.EventId == SelectedEventName);
+
+    /// <summary>把当前选中 widget+event 下的 ActionStep 列表刷到 VM 集合，并更新徽章计数。</summary>
+    private void RefreshCurrentEventSteps()
+    {
+        CurrentEventSteps.Clear();
+        var w = SelectedWidget;
+        if (w is not null && w.Events.TryGetValue(SelectedEventName, out var steps))
+        {
+            foreach (var s in steps)
+                CurrentEventSteps.Add(new ActionStepViewModel(s));
+        }
+        RefreshEventEntryBadges();
+        OnPropertyChanged(nameof(CurrentEventEntry));
+    }
+
+    /// <summary>刷新左列每个事件入口的动作数徽章 + 选中态。</summary>
+    private void RefreshEventEntryBadges()
+    {
+        var w = SelectedWidget;
+        foreach (var ev in AvailableEvents)
+        {
+            ev.StepCount = (w is not null && w.Events.TryGetValue(ev.EventId, out var lst))
+                ? lst.Count : 0;
+            ev.IsSelected = ev.EventId == SelectedEventName;
+        }
+    }
+
+    /// <summary>切换当前选中事件。</summary>
+    [RelayCommand]
+    private void SelectEvent(string? eventId)
+    {
+        if (string.IsNullOrEmpty(eventId)) return;
+        SelectedEventName = eventId!;
+    }
+
+    /// <summary>新建动作：弹系统函数选择对话框，将选中函数加入当前事件链尾。</summary>
+    [RelayCommand]
+    private void AddAction()
+    {
+        if (SelectedWidget is null) return;
+        var dlg = new ApexHMI.Views.Dialogs.SystemFunctionPickerDialog
+        {
+            Owner = System.Windows.Application.Current?.MainWindow
+        };
+        if (dlg.ShowDialog() != true || string.IsNullOrEmpty(dlg.SelectedFunctionId)) return;
+
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        var step = new ActionStep { FunctionId = dlg.SelectedFunctionId! };
+
+        Action doIt = () =>
+        {
+            EnsureEventList(widget, eventName).Add(step);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            if (widget.Events.TryGetValue(eventName, out var steps))
+            {
+                steps.Remove(step);
+                if (steps.Count == 0) widget.Events.Remove(eventName);
+            }
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
+        MarkPageEdited();
+        _editStack.Execute(new ActionEdit("新增事件动作", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
+    }
+
+    /// <summary>从当前事件链中删除指定动作步骤。</summary>
+    [RelayCommand]
+    private void DeleteAction(ActionStepViewModel? stepVm)
+    {
+        if (stepVm is null || SelectedWidget is null) return;
+        if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        var step = stepVm.Model;
+        var index = steps.IndexOf(step);
+        if (index < 0) return;
+
+        Action doIt = () =>
+        {
+            if (widget.Events.TryGetValue(eventName, out var s))
+            {
+                s.Remove(step);
+                if (s.Count == 0) widget.Events.Remove(eventName);
+            }
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            var s = EnsureEventList(widget, eventName);
+            s.Insert(Math.Min(index, s.Count), step);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
+        MarkPageEdited();
+        _editStack.Execute(new ActionEdit("删除事件动作", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
+    }
+
+    /// <summary>当前事件链中上移指定动作（同时上移 model 与 VM 集合）。</summary>
+    [RelayCommand]
+    private void MoveActionUp(ActionStepViewModel? stepVm)
+    {
+        if (stepVm is null || SelectedWidget is null) return;
+        if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
+        var idx = steps.IndexOf(stepVm.Model);
+        if (idx <= 0) return;
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        Action doIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx <= 0 || idx >= s.Count) return;
+            (s[idx - 1], s[idx]) = (s[idx], s[idx - 1]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx <= 0 || idx >= s.Count) return;
+            (s[idx], s[idx - 1]) = (s[idx - 1], s[idx]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
+        MarkPageEdited();
+        _editStack.Execute(new ActionEdit("动作上移", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
+    }
+
+    /// <summary>当前事件链中下移指定动作。</summary>
+    [RelayCommand]
+    private void MoveActionDown(ActionStepViewModel? stepVm)
+    {
+        if (stepVm is null || SelectedWidget is null) return;
+        if (!SelectedWidget.Events.TryGetValue(SelectedEventName, out var steps)) return;
+        var idx = steps.IndexOf(stepVm.Model);
+        if (idx < 0 || idx >= steps.Count - 1) return;
+        var widget = SelectedWidget;
+        var eventName = SelectedEventName;
+        Action doIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx < 0 || idx >= s.Count - 1) return;
+            (s[idx + 1], s[idx]) = (s[idx], s[idx + 1]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        Action undoIt = () =>
+        {
+            if (!widget.Events.TryGetValue(eventName, out var s)) return;
+            if (idx < 0 || idx >= s.Count - 1) return;
+            (s[idx], s[idx + 1]) = (s[idx + 1], s[idx]);
+            if (ReferenceEquals(widget, SelectedWidget)) RefreshCurrentEventSteps();
+            SyncLegacyFromEvents();
+        };
+        doIt();
+        MarkPageEdited();
+        _editStack.Execute(new ActionEdit("动作下移", undoIt, doIt));
+        OnPropertyChanged(nameof(CanUndo));
+    }
+
+    private static List<ActionStep> EnsureEventList(WidgetInstance w, string eventName)
+    {
+        if (!w.Events.TryGetValue(eventName, out var steps))
+            w.Events[eventName] = steps = new List<ActionStep>();
+        return steps;
+    }
+
+    /// <summary>把 Events["click"] 的第一个 step 反向同步回旧 ActionType/ActionParam，
+    /// 让旧 Expander UI 与新事件 Tab 在 click 单动作场景下数据保持一致。
+    /// 多动作场景下旧 Expander 只反映第一个动作（提示用户走新 Tab）。</summary>
+    private void SyncLegacyFromEvents()
+    {
+        var w = SelectedWidget;
+        if (w is null) return;
+        if (w.Events.TryGetValue("click", out var steps) && steps.Count > 0)
+        {
+            var first = steps[0];
+            w.ActionType = first.FunctionId;
+            w.ActionParam = first.Args.TryGetValue("address", out var a) ? a
+                : first.Args.TryGetValue("routeKey", out var r) ? r
+                : first.Args.TryGetValue("text", out var t) ? t
+                : first.Args.TryGetValue("value", out var v) ? v
+                : string.Empty;
+            // write-bool/int/float 需要 addr|value 合并
+            if (first.FunctionId is "write-bool" or "write-int" or "write-float")
+            {
+                first.Args.TryGetValue("address", out var addr);
+                first.Args.TryGetValue("value", out var val);
+                w.ActionParam = string.IsNullOrEmpty(val) ? (addr ?? "") : $"{addr}|{val}";
+            }
+        }
+        else
+        {
+            // click 链为空 → 清空旧字段
+            w.ActionType = null;
+            w.ActionParam = null;
+        }
+        OnPropertyChanged(nameof(WriteAddress));
+        OnPropertyChanged(nameof(WriteValue));
     }
 
     // ========== B-08: 主题 ==========
@@ -1062,108 +1738,6 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         OnPropertyChanged(nameof(RedoDescription));
     }
 
-    // ========== 批量生成功能块 ==========
-
-    /// <summary>可选的功能块类型列表。</summary>
-    public IReadOnlyList<string> BatchBlockTypes => WidgetBlockGenerator.BlockTypes;
-
-    /// <summary>功能块中文名称映射，用于 UI 显示。</summary>
-    public IReadOnlyDictionary<string, string> BatchBlockTypeLabels => WidgetBlockGenerator.BlockTypeLabels;
-
-    [ObservableProperty]
-    private string _batchBlockType = "cylinder";
-
-    [ObservableProperty]
-    private string _batchNamePrefix = "CYL";
-
-    [ObservableProperty]
-    private int _batchCount = 3;
-
-    [ObservableProperty]
-    private double _batchStartX = 40;
-
-    [ObservableProperty]
-    private double _batchStartY = 40;
-
-    [ObservableProperty]
-    private bool _batchLayoutHorizontal = true;
-
-    partial void OnBatchBlockTypeChanged(string value)
-    {
-        // 自动更新默认前缀
-        BatchNamePrefix = value.ToUpperInvariant() switch
-        {
-            "CYLINDER" => "CYL",
-            "MOTOR"    => "MOT",
-            "AXIS"     => "AXIS",
-            "ROBOT"    => "ROB",
-            "STOPPER"  => "STP",
-            _          => value.ToUpperInvariant()[..Math.Min(3, value.Length)]
-        };
-    }
-
-    [RelayCommand]
-    private void BatchGenerate()
-    {
-        if (SelectedPage is null)
-        {
-            Log.Warning("DesignerEditor: 批量生成失败，未选中页面");
-            return;
-        }
-
-        var count = Math.Max(1, Math.Min(BatchCount, 50));
-        var deviceNames = ResolveBatchDeviceNames(BatchBlockType, count);
-
-        var generated = _blockGenerator.GenerateForDevices(
-            SelectedPage,
-            BatchBlockType,
-            deviceNames,
-            BatchStartX,
-            BatchStartY,
-            BatchLayoutHorizontal);
-
-        foreach (var w in generated)
-        {
-            CurrentWidgets.Add(w);
-            AddWidgetItem(w);
-        }
-
-        if (generated.Count > 0)
-        {
-            SelectedWidget = generated[0];
-            MarkPageEdited();
-        }
-
-        Log.Information("DesignerEditor: 批量生成 {Count} 个 {BlockType} 功能块", generated.Count, BatchBlockType);
-    }
-
-    /// <summary>
-    /// 解析批量生成时使用的设备名列表。
-    /// 优先从 Shell 取真实设备（IO 已导入时），否则用 前缀+序号 占位名。
-    /// </summary>
-    private IReadOnlyList<string> ResolveBatchDeviceNames(string blockType, int desiredCount)
-    {
-        var fromShell = blockType.ToLowerInvariant() switch
-        {
-            "cylinder" => Shell.ManualCylinderBlockCards.Select(c =>
-                string.IsNullOrWhiteSpace(c.DisplayName) ? $"Cyl{c.CylinderIndex}" : c.DisplayName).ToList(),
-            "axis"     => Shell.ManualAxisBlockCards.Select(a =>
-                string.IsNullOrWhiteSpace(a.DisplayName) ? $"Axis{a.AxisIndex}" : a.DisplayName).ToList(),
-            _ => new List<string>()
-        };
-
-        if (fromShell.Count > 0)
-        {
-            return fromShell.Take(desiredCount).ToList();
-        }
-
-        // 占位命名
-        var prefix = string.IsNullOrWhiteSpace(BatchNamePrefix) ? "DEV" : BatchNamePrefix;
-        var list = new List<string>();
-        for (int i = 0; i < desiredCount; i++) list.Add($"{prefix}{i + 1}");
-        return list;
-    }
-
     // ========== 保存 / 发布 ==========
 
     [RelayCommand]
@@ -1204,6 +1778,64 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
         }
     }
 
+    /// <summary>P10D: 导出当前工程为 zip 包。</summary>
+    [RelayCommand]
+    private void ExportProjectZip()
+    {
+        try
+        {
+            _runtimeProjectService.Save(Document);
+            var srcDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "projects", "_sample");
+            var projectJson = System.IO.Path.Combine(srcDir, "project.json");
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "导出工程到 zip",
+                Filter = "ApexHMI 工程包 (*.apexpkg.zip)|*.apexpkg.zip|Zip 文件 (*.zip)|*.zip",
+                FileName = (Document?.ProjectName ?? "project") + ".apexpkg.zip",
+            };
+            if (dlg.ShowDialog() != true) return;
+            var pkg = new ApexHMI.Services.ProjectPackageService();
+            pkg.Export(projectJson, dlg.FileName);
+            SaveStatus = $"已导出  {DateTime.Now:HH:mm:ss}";
+            Shell.ShowPopup("导出工程", $"已导出到：\n{dlg.FileName}", "Info");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "DesignerEditor: 导出工程 zip 失败");
+            Shell.ShowPopup("导出失败", ex.Message, "Error");
+        }
+    }
+
+    /// <summary>P10D: 从 zip 包导入工程（替换当前 _sample 目录），导入后刷新运行时。</summary>
+    [RelayCommand]
+    private async Task ImportProjectZipAsync()
+    {
+        try
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "导入工程 zip",
+                Filter = "ApexHMI 工程包 (*.apexpkg.zip;*.zip)|*.apexpkg.zip;*.zip",
+            };
+            if (dlg.ShowDialog() != true) return;
+            if (!Shell.RequestConfirmation("导入工程", "导入将覆盖当前工程，确认继续？")) return;
+            var targetDir = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "projects", "_sample");
+            var pkg = new ApexHMI.Services.ProjectPackageService();
+            pkg.Import(dlg.FileName, targetDir);
+            // 让 RuntimeProjectService 重新读盘
+            _runtimeProjectService.Load(System.IO.Path.Combine(targetDir, "project.json"));
+            if (Shell is MainWindowViewModel mvm)
+                await mvm.PublishProjectAsync();
+            SaveStatus = $"已导入  {DateTime.Now:HH:mm:ss}";
+            Shell.ShowPopup("导入工程", "导入完成。", "Info");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "DesignerEditor: 导入工程 zip 失败");
+            Shell.ShowPopup("导入失败", ex.Message, "Error");
+        }
+    }
+
     /// <summary>预览：保存当前工程并切到 Tab 10 加载当前编辑页（不影响运行模式 IsRuntimeMode）。</summary>
     [RelayCommand]
     private async Task PreviewAsync()
@@ -1231,6 +1863,179 @@ public partial class DesignerEditorViewModel : ModuleViewModelBase
     {
         // 共享运行时已加载的 ProjectDocument 实例（InitializeDynamicRuntime 先于此方法执行）
         Document = _runtimeProjectService.Current ?? _runtimeProjectService.LoadDefault();
+        // P6: 确保资源节点存在（旧工程加载兜底；ProjectMigration 也会做同样的事）
+        Document.Styles ??= new StyleDefinitions();
+        Document.Styles.EnsureDefaults();
+        Document.Texts ??= new TextResources();
+        Document.Texts.EnsureDefaults();
+        Document.Library ??= new ProjectLibrary();
+        Document.Lists ??= new ListResources();
+        // P7: Faceplate 库默认空集合
+        Document.Faceplates ??= new FaceplateLibrary();
+        DesignerContext.Document = Document;
         SelectedPage = Document.Pages.FirstOrDefault();
+        // P7D: 通知工具箱刷新（"我的 Faceplate"分组）
+        RefreshFaceplateToolbox();
+    }
+
+    // ========== P6 资源编辑入口 ==========
+
+    /// <summary>P6A: 打开全局样式编辑器（色板 + 字体）。</summary>
+    [RelayCommand]
+    private void OpenStyleEditor()
+    {
+        Document.Styles ??= new StyleDefinitions();
+        Document.Styles.EnsureDefaults();
+        var dlg = new ApexHMI.Views.Dialogs.StyleEditorDialog(Document.Styles)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        dlg.ShowDialog();
+    }
+
+    /// <summary>P6B: 打开多语言文本资源编辑器。</summary>
+    [RelayCommand]
+    private void OpenTextEditor()
+    {
+        Document.Texts ??= new TextResources();
+        Document.Texts.EnsureDefaults();
+        var dlg = new ApexHMI.Views.Dialogs.TextResourceDialog(Document.Texts)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        dlg.ShowDialog();
+        // 强制刷新当前语言下拉项
+        OnPropertyChanged(nameof(AvailableLanguages));
+    }
+
+    /// <summary>P6B: 当前设计/运行时语言。绑定到顶部语言下拉。</summary>
+    public string CurrentLanguage
+    {
+        get => DesignerContext.CurrentLanguage;
+        set
+        {
+            if (DesignerContext.CurrentLanguage == value) return;
+            DesignerContext.CurrentLanguage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    /// <summary>P6B: 工程支持的语言列表（绑定到顶部语言 ComboBox）。</summary>
+    public System.Collections.Generic.IEnumerable<string> AvailableLanguages
+        => Document?.Texts?.SupportedLanguages ?? new System.Collections.ObjectModel.ObservableCollection<string> { "zh-CN" };
+
+    /// <summary>P6C: 把当前选中的 widget 保存到项目库。</summary>
+    [RelayCommand]
+    private void SaveSelectedToProjectLibrary()
+    {
+        if (SelectedWidget is null) return;
+        Document.Library ??= new ProjectLibrary();
+        var clone = LibraryService.CloneWidget(SelectedWidget);
+        Document.Library.Assets.Add(new LibraryAsset
+        {
+            Name = $"{SelectedWidget.TypeId}_{System.DateTime.Now:HHmmss}",
+            Category = "通用",
+            Widget = clone,
+        });
+        SaveStatus = "已存入项目库";
+        OnPropertyChanged(nameof(ProjectLibraryAssets));
+    }
+
+    /// <summary>P6C: 把当前选中的 widget 保存到全局库（跨工程共享）。</summary>
+    [RelayCommand]
+    private void SaveSelectedToGlobalLibrary()
+    {
+        if (SelectedWidget is null) return;
+        var clone = LibraryService.CloneWidget(SelectedWidget);
+        GlobalLibraryService.Instance.AddAsset(new LibraryAsset
+        {
+            Name = $"{SelectedWidget.TypeId}_{System.DateTime.Now:HHmmss}",
+            Category = "通用",
+            Widget = clone,
+        });
+        SaveStatus = "已存入全局库";
+        OnPropertyChanged(nameof(GlobalLibraryAssets));
+    }
+
+    /// <summary>P6C: 项目库资产列表（绑定到工具箱"我的库"分组）。</summary>
+    public System.Collections.ObjectModel.ObservableCollection<LibraryAsset> ProjectLibraryAssets
+        => Document?.Library?.Assets ?? new System.Collections.ObjectModel.ObservableCollection<LibraryAsset>();
+
+    /// <summary>P6C: 全局库资产列表（绑定到工具箱"全局库"分组）。</summary>
+    public System.Collections.ObjectModel.ObservableCollection<LibraryAsset> GlobalLibraryAssets
+        => GlobalLibraryService.Instance.Library.Assets;
+
+    /// <summary>P6C: 从库面板插入一个资产到当前页面（指定位置）。</summary>
+    public void InsertLibraryAsset(LibraryAsset asset, double x, double y)
+    {
+        if (SelectedPage is null) return;
+        var w = LibraryService.CloneWidget(asset.Widget);
+        w.X = SnapValue(x);
+        w.Y = SnapValue(y);
+        SelectedPage.Widgets.Add(w);
+        AddWidgetItem(w);
+        SelectSingleWidget(w);
+    }
+
+    /// <summary>P6C: 从项目库中移除资产。</summary>
+    [RelayCommand]
+    private void RemoveProjectLibraryAsset(LibraryAsset? asset)
+    {
+        if (asset is null || Document.Library is null) return;
+        Document.Library.Assets.Remove(asset);
+    }
+
+    /// <summary>P6C: 从全局库中移除资产。</summary>
+    [RelayCommand]
+    private void RemoveGlobalLibraryAsset(LibraryAsset? asset)
+    {
+        if (asset is null) return;
+        GlobalLibraryService.Instance.RemoveAsset(asset);
+        OnPropertyChanged(nameof(GlobalLibraryAssets));
+    }
+
+    // ========== P6D 符号库 ==========
+
+    /// <summary>P6D: 内置工业符号按 Category 分组，绑定到左栏 ItemsControl。</summary>
+    public System.Collections.Generic.IReadOnlyList<SymbolGroup> SymbolGroups { get; } =
+        SymbolLibrary.Groups().Select(g => new SymbolGroup(g.Key, g.ToList())).ToList();
+
+    /// <summary>P6D: 把符号库一项插入当前页面（生成 graphic-view widget + iconKind 属性）。</summary>
+    public void InsertSymbol(IndustrialSymbol symbol, double x, double y)
+    {
+        if (SelectedPage is null) return;
+        var w = new WidgetInstance
+        {
+            TypeId = "graphic-view",
+            X = SnapValue(x),
+            Y = SnapValue(y),
+            Width = 64,
+            Height = 64,
+        };
+        w.Properties["iconKind"] = symbol.IconKind;
+        w.Properties["iconColor"] = "#1E40AF";
+        SelectedPage.Widgets.Add(w);
+        AddWidgetItem(w);
+        SelectSingleWidget(w);
+    }
+
+    public sealed class SymbolGroup
+    {
+        public SymbolGroup(string title, System.Collections.Generic.IReadOnlyList<IndustrialSymbol> items)
+        { Title = title; Items = items; }
+        public string Title { get; }
+        public System.Collections.Generic.IReadOnlyList<IndustrialSymbol> Items { get; }
+    }
+
+    /// <summary>P6E: 打开文本/图形列表资源编辑器。</summary>
+    [RelayCommand]
+    private void OpenListEditor()
+    {
+        Document.Lists ??= new ListResources();
+        var dlg = new ApexHMI.Views.Dialogs.ListResourceDialog(Document.Lists)
+        {
+            Owner = Application.Current?.MainWindow,
+        };
+        dlg.ShowDialog();
     }
 }

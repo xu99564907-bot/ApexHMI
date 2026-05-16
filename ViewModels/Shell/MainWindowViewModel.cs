@@ -21,8 +21,15 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private readonly IWidgetViewFactory _widgetFactory;
     private readonly IProjectEditorService _projectEditorService;
     private readonly IWidgetEditorService _widgetEditorService;
-    private readonly WidgetBlockGenerator _widgetBlockGenerator;
-    private readonly ManualPageAutoGenerator _manualPageAutoGenerator;
+    private readonly SimulationService _simulationService;
+    private readonly IAuditService _auditService;
+    private readonly RecipeJobCoordinator _recipeJobCoordinator;
+    private readonly SessionManager _sessionManager;
+    private readonly PasswordPolicy _passwordPolicy;
+    private readonly AccountLockoutService _accountLockout;
+
+    /// <summary>M3.2: 默认 PLC 写入确认超时 = 3 秒。</summary>
+    private static readonly System.TimeSpan WriteConfirmTimeout = System.TimeSpan.FromSeconds(3);
 
     public MainWindowViewModel(
         IOpcUaService opcUaService,
@@ -45,11 +52,15 @@ public sealed partial class MainWindowViewModel : MainViewModel
         RuntimeDataBindingService dataBindingService,
         IProjectEditorService projectEditorService,
         IWidgetEditorService widgetEditorService,
-        WidgetBlockGenerator widgetBlockGenerator,
-        ManualPageAutoGenerator manualPageAutoGenerator,
         IUserService userService,
         PlcVariableImportService plcVariableImportService,
-        IProductionCountService productionCountService)
+        IProductionCountService productionCountService,
+        SimulationService simulationService,
+        IAuditService auditService,
+        RecipeJobCoordinator recipeJobCoordinator,
+        SessionManager sessionManager,
+        PasswordPolicy passwordPolicy,
+        AccountLockoutService accountLockout)
         : base(
             opcUaService,
             csvImportService,
@@ -72,8 +83,38 @@ public sealed partial class MainWindowViewModel : MainViewModel
         _widgetFactory = widgetFactory;
         _projectEditorService = projectEditorService;
         _widgetEditorService = widgetEditorService;
-        _widgetBlockGenerator = widgetBlockGenerator;
-        _manualPageAutoGenerator = manualPageAutoGenerator;
+        _simulationService = simulationService;
+        _auditService = auditService;
+        _recipeJobCoordinator = recipeJobCoordinator;
+        _sessionManager = sessionManager;
+        _passwordPolicy = passwordPolicy;
+        _accountLockout = accountLockout;
+        // M5.2: 订阅会话超时事件 → 强制注销 + 提示
+        _sessionManager.SessionExpired += OnSessionExpired;
+        // M5.2: 在角色变化时联动会话管理器（登入 / 注销）
+        this.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(LoginUser))
+            {
+                var user = LoginUser;
+                if (string.IsNullOrEmpty(user) || user == "操作员")
+                {
+                    _sessionManager.Logout();
+                }
+                else
+                {
+                    _sessionManager.Login(user);
+                }
+                OnPropertyChanged(nameof(SessionRemainingText));
+            }
+        };
+        // M3.2/M4.3: 把内存 sink 注入到 AuditService —— 后端（CSV 或 SQLite）+ 内存 OperationAudits 同时收到记录
+        Action<string, string, string, string> sink = (action, target, result, detail) => AddAudit(action, target, result, detail);
+        switch (_auditService)
+        {
+            case AuditServiceSqlite sqlite: sqlite.AttachMemorySink(sink); break;
+            case AuditService csv: csv.AttachMemorySink(sink); break;
+        }
 
         Home = new HomeViewModel(this);
         Monitor = new MonitorViewModel(this);
@@ -92,7 +133,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
 
         // 先初始化运行时（LoadDefault 设置 Current），再让编辑器共享同一 ProjectDocument
         InitializeDynamicRuntime();
-        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetBlockGenerator, _widgetFactory, plcVariableImportService);
+        DesignerEditor = new DesignerEditorViewModel(this, _projectEditorService, _widgetEditorService, runtimeProjectService, _widgetFactory, plcVariableImportService);
         Designer = new DesignerViewModel(this);
     }
 
@@ -110,10 +151,6 @@ public sealed partial class MainWindowViewModel : MainViewModel
     public CountViewModel Count { get; }
 
     public DynamicPageHostViewModel RuntimePage { get; private set; } = null!;
-
-    /// <summary>专用于 Tab 3 「手动操作」的 DynamicPageHost；独立于 Tab 10，
-    /// 这样手动子页签切换不会污染 Tab 10 当前页。</summary>
-    public DynamicPageHostViewModel ManualPage { get; private set; } = null!;
 
     public ProjectDocument? RuntimeProject => _runtimeProjectService.Current;
 
@@ -168,80 +205,178 @@ public sealed partial class MainWindowViewModel : MainViewModel
         }
     }
 
+    /// <summary>M5.2: 公开会话/策略/锁定服务供子 ViewModel 反射访问 + 状态栏绑定。</summary>
+    public SessionManager SessionManager => _sessionManager;
+    public PasswordPolicy PasswordPolicy => _passwordPolicy;
+    public AccountLockoutService AccountLockout => _accountLockout;
+    public RecipeJobCoordinator RecipeJobCoordinator => _recipeJobCoordinator;
+    public RuntimeDataBindingService DataBindingService => _dataBindingService;
+    public IAuditService AuditService => _auditService;
+
+    /// <summary>M5.2: 顶部状态栏可绑定的"距会话超时 X 分钟"。</summary>
+    public string SessionRemainingText
+    {
+        get
+        {
+            var r = _sessionManager.Remaining;
+            if (_sessionManager.CurrentUser is null) return string.Empty;
+            if (r <= TimeSpan.Zero) return "会话已超时";
+            return r.TotalMinutes >= 1
+                ? $"距会话超时 {(int)r.TotalMinutes} 分钟"
+                : $"距会话超时 {(int)r.TotalSeconds} 秒";
+        }
+    }
+
+    /// <summary>M6.2: Session 状态栏前景色。剩余 ≤ WarnThreshold 时变橙色。</summary>
+    public string SessionRemainingForeground
+    {
+        get
+        {
+            if (_sessionManager.CurrentUser is null) return "#64748B";
+            var r = _sessionManager.Remaining;
+            if (r <= TimeSpan.Zero) return "#DC2626"; // red — expired
+            if (r <= _sessionManager.WarnThreshold) return "#EA580C"; // orange — warn
+            return "#047857"; // green — healthy
+        }
+    }
+
+    /// <summary>M6.2: Session 状态栏徽标可见性 — 仅登录后显示。</summary>
+    public System.Windows.Visibility SessionRemainingVisibility =>
+        _sessionManager.CurrentUser is null
+            ? System.Windows.Visibility.Collapsed
+            : System.Windows.Visibility.Visible;
+
+    /// <summary>M6.2: 状态栏每 tick 主动刷新 Session 剩余时间显示。</summary>
+    internal void TickSessionRemaining()
+    {
+        OnPropertyChanged(nameof(SessionRemainingText));
+        OnPropertyChanged(nameof(SessionRemainingForeground));
+        OnPropertyChanged(nameof(SessionRemainingVisibility));
+    }
+
+    /// <summary>M6.3: 登录后执行密码策略 + 过期检查。</summary>
+    protected override void OnAfterLogin(ApexHMI.Models.UserAccount account, string enteredPassword)
+    {
+        try
+        {
+            // 1) 当前密码是否符合策略？不符合 → 强制改密
+            var validation = _passwordPolicy.Validate(account.Username, enteredPassword);
+            if (!validation.IsValid)
+            {
+                System.Windows.MessageBox.Show(
+                    "您的当前密码不符合最新密码策略：\n - " + string.Join("\n - ", validation.Errors)
+                    + "\n\n请立即修改密码。",
+                    "密码不符策略", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                ForceChangePassword(account.Username, "登录后强制改密 — 当前密码不符策略");
+                return;
+            }
+
+            // 2) 过期检查
+            var state = _passwordPolicy.CheckExpiration(account.PasswordChangedAt);
+            if (state == PasswordExpirationState.Expired)
+            {
+                System.Windows.MessageBox.Show(
+                    $"您的密码已超过 {_passwordPolicy.Config.MaxAgeDays} 天未修改，已过期。\n请立即设置新密码。",
+                    "密码已过期", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                ForceChangePassword(account.Username, "登录后强制改密 — 密码过期");
+            }
+            else if (state == PasswordExpirationState.NearExpiry)
+            {
+                var remaining = _passwordPolicy.RemainingDays(account.PasswordChangedAt);
+                SystemMessage = $"密码将在 {Math.Max(0, remaining)} 天后过期，建议尽快修改";
+                System.Windows.MessageBox.Show(
+                    $"您的密码将在 {Math.Max(0, remaining)} 天后过期。建议在过期前主动到 用户管理 修改密码。",
+                    "密码即将过期", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Log.Warning(ex, "M6.3 OnAfterLogin policy check 异常");
+        }
+    }
+
+    private void ForceChangePassword(string username, string reason)
+    {
+        while (true)
+        {
+            var dlg = new ApexHMI.ViewModels.Runtime.PasswordPromptWindow(username)
+            {
+                Title = $"强制修改密码 — {username}",
+            };
+            var ok = dlg.ShowDialog();
+            if (ok != true)
+            {
+                // 用户取消 → 注销
+                System.Windows.MessageBox.Show("必须设置新密码才能继续使用系统。已自动注销。",
+                    "未修改密码", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                LogoutCommand.Execute(null);
+                return;
+            }
+            var newPwd = dlg.PasswordText;
+            var r = _passwordPolicy.Validate(username, newPwd);
+            if (!r.IsValid)
+            {
+                System.Windows.MessageBox.Show(
+                    "新密码不符合策略：\n - " + string.Join("\n - ", r.Errors),
+                    "请重新输入", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                continue;
+            }
+            var userSvc = _userService;
+            if (userSvc.ChangePassword(username, newPwd))
+            {
+                _passwordPolicy.RecordPasswordChange(username, newPwd);
+                _ = _auditService.LogOperationAsync(username, "force-change-password", username, true, reason);
+                System.Windows.MessageBox.Show("密码修改成功，请记住新密码。", "密码已更新");
+                SystemMessage = "密码已更新";
+                return;
+            }
+            System.Windows.MessageBox.Show("密码修改失败，请重试。", "错误",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+        }
+    }
+
+    private DateTime _lastSessionTickAt;
+
+    /// <summary>M6.2: 重写 SubscriptionTimer 钩子 — 每秒刷新一次 Session 状态栏（200ms tick 节流）。</summary>
+    protected override void OnSubscriptionTimerTick()
+    {
+        var now = DateTime.UtcNow;
+        if ((now - _lastSessionTickAt).TotalMilliseconds < 950) return;
+        _lastSessionTickAt = now;
+        TickSessionRemaining();
+    }
+
+    private void OnSessionExpired(string user)
+    {
+        // SessionManager 的 DispatcherTimer 已在 UI 线程触发
+        System.Windows.Application.Current?.Dispatcher.Invoke(() =>
+        {
+            SystemMessage = "会话超时，请重新登录";
+            try { _ = _auditService.LogOperationAsync(user, "session-expired", user, true, $"timeout={_sessionManager.Timeout.TotalMinutes:F0}min"); } catch { }
+            LogoutCommand.Execute(null);
+            System.Windows.MessageBox.Show(
+                $"用户 {user} 已无操作 {_sessionManager.Timeout.TotalMinutes:F0} 分钟，会话超时已自动注销。请重新登录。",
+                "会话超时", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            OnPropertyChanged(nameof(SessionRemainingText));
+        });
+    }
+
     /// <summary>P3.4 运行时全屏：true 时主窗口隐藏导航/状态栏，仅显示 DynamicPageHost。</summary>
     [ObservableProperty]
     private bool _isRuntimeFullScreen;
 
+    /// <summary>P10F 离线模拟模式开关。开启时 SimulationService 注入假数据。</summary>
+    [ObservableProperty]
+    private bool _isSimulationMode;
+
+    partial void OnIsSimulationModeChanged(bool value)
+    {
+        if (value) _simulationService.Start();
+        else _simulationService.Stop();
+    }
+
     [RelayCommand]
     private void ToggleRuntimeFullScreen() => IsRuntimeFullScreen = !IsRuntimeFullScreen;
-
-    /// <summary>
-    /// Tab 3 「手动操作」是否使用设计器布局（路径 B）。
-    /// true：显示 ManualPage DynamicPageHost，按子页签加载 manual.* 页面，
-    ///       内容来自 IO 导入自动生成或用户编辑后的 ProjectDocument。
-    /// false（默认）：显示原有硬编码 ManualView UI。
-    /// </summary>
-    [ObservableProperty]
-    private bool _useDesignerManualLayout;
-
-    /// <summary>当前 Tab 3 子页签 → 对应 manual.* 页面 RouteKey 的映射。</summary>
-    private static string ResolveManualRouteKey(string subSection) => subSection switch
-    {
-        "气缸" => Services.RuntimeUi.ManualPageAutoGenerator.CylindersRouteKey,
-        "轴"   => Services.RuntimeUi.ManualPageAutoGenerator.AxesRouteKey,
-        "机械手" => Services.RuntimeUi.ManualPageAutoGenerator.RobotsRouteKey,
-        "挡停" => Services.RuntimeUi.ManualPageAutoGenerator.StoppersRouteKey,
-        _ => string.Empty
-    };
-
-    /// <summary>根据当前手动子页签加载对应的 manual.* 页到 ManualPage（设计器布局开关下使用）。</summary>
-    internal async Task LoadManualPageForCurrentSubSectionAsync()
-    {
-        if (!UseDesignerManualLayout) return;
-        var routeKey = ResolveManualRouteKey(CurrentManualSubSection);
-        if (string.IsNullOrEmpty(routeKey)) return;
-
-        var project = _runtimeProjectService.Current;
-        if (project is null) return;
-
-        var page = project.Pages.FirstOrDefault(p =>
-            string.Equals(p.RouteKey, routeKey, StringComparison.OrdinalIgnoreCase));
-        if (page is null) return;
-
-        ManualPage.LoadPage(page);
-        await _dataBindingService.AttachAsync(ManualPage);
-    }
-
-    partial void OnUseDesignerManualLayoutChanged(bool value)
-    {
-        if (value)
-            _ = LoadManualPageForCurrentSubSectionAsync();
-    }
-
-    /// <summary>
-    /// IO 导入后调用：自动生成/刷新 manual.* 系列页面，并保存工程。
-    /// </summary>
-    internal void RegenerateManualPages()
-    {
-        var project = _runtimeProjectService.Current;
-        if (project is null) return;
-        try
-        {
-            _manualPageAutoGenerator.GenerateAll(
-                project,
-                ManualCylinderBlockCards,
-                ManualAxisBlockCards,
-                RobotControlViewModel is not null,
-                Tags);
-            _runtimeProjectService.Save(project);
-            RefreshTopNavUserPages();
-            Log.Information("MainWindowViewModel: 手动页面已根据 IO 重新生成");
-        }
-        catch (System.Exception ex)
-        {
-            Log.Error(ex, "RegenerateManualPages 失败");
-        }
-    }
 
     [RelayCommand]
     private async Task NavigateToUserPage(string? routeKey)
@@ -280,10 +415,8 @@ public sealed partial class MainWindowViewModel : MainViewModel
     private void InitializeDynamicRuntime()
     {
         RuntimePage = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
-        ManualPage  = new DynamicPageHostViewModel(_widgetFactory, HandleRuntimeAction, this);
         // 顶部页面标签栏：点击切换 Tab 10 当前页
         RuntimePage.RequestLoadPage = key => _ = NavigateToRuntimePageAsync(key);
-        ManualPage.RequestLoadPage  = key => _ = NavigateToRuntimePageAsync(key);
         var project = _runtimeProjectService.LoadDefault();
         var defaultPage = project.Pages.FirstOrDefault(p =>
             string.Equals(p.RouteKey, project.DefaultPageRouteKey, StringComparison.OrdinalIgnoreCase))
@@ -300,7 +433,14 @@ public sealed partial class MainWindowViewModel : MainViewModel
         switch (actionType)
         {
             case "navigate":
-                _ = NavigateToRuntimePageAsync(actionParam);
+                {
+                    // 优先匹配工程内用户页（按 RouteKey）；否则当作固定段名（主界面/手动操作/参数设定...）
+                    var project = _runtimeProjectService.Current;
+                    var isUserPage = project?.Pages.Any(p =>
+                        string.Equals(p.RouteKey, actionParam, StringComparison.OrdinalIgnoreCase)) == true;
+                    if (isUserPage) _ = NavigateToRuntimePageAsync(actionParam);
+                    else NavigateCommand.Execute(actionParam);
+                }
                 break;
             case "write-bool":
                 _ = HandleWriteBoolAsync(actionParam);
@@ -310,6 +450,9 @@ public sealed partial class MainWindowViewModel : MainViewModel
                 break;
             case "write-float":
                 _ = HandleWriteFloatAsync(actionParam);
+                break;
+            case "write-string":
+                _ = HandleWriteStringAsync(actionParam);
                 break;
             case "show-dialog":
                 System.Windows.MessageBox.Show(actionParam, "提示");
@@ -322,7 +465,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
         var parts = actionParam.Split('|');
         if (parts.Length >= 2 && bool.TryParse(parts[1], out var boolValue))
         {
-            await _dataBindingService.WriteAsync(parts[0], boolValue);
+            await WriteWithConfirmAndAuditAsync(parts[0], boolValue, "write-bool");
         }
     }
 
@@ -330,7 +473,7 @@ public sealed partial class MainWindowViewModel : MainViewModel
     {
         var parts = actionParam.Split('|');
         if (parts.Length >= 2 && int.TryParse(parts[1], out var v))
-            await _dataBindingService.WriteAsync(parts[0], v);
+            await WriteWithConfirmAndAuditAsync(parts[0], v, "write-int");
     }
 
     private async Task HandleWriteFloatAsync(string actionParam)
@@ -340,7 +483,49 @@ public sealed partial class MainWindowViewModel : MainViewModel
                 System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture,
                 out var v))
-            await _dataBindingService.WriteAsync(parts[0], v);
+            await WriteWithConfirmAndAuditAsync(parts[0], v, "write-float");
+    }
+
+    /// <summary>P10C: 字符串写入。actionParam 格式：tag|value（value 内允许含 | 时取首段后剩余全部）。</summary>
+    private async Task HandleWriteStringAsync(string actionParam)
+    {
+        if (string.IsNullOrEmpty(actionParam)) return;
+        var idx = actionParam.IndexOf('|');
+        if (idx <= 0 || idx >= actionParam.Length - 1) return;
+        var tag = actionParam.Substring(0, idx);
+        var value = actionParam.Substring(idx + 1);
+        await WriteWithConfirmAndAuditAsync(tag, value, "write-string");
+    }
+
+    /// <summary>
+    /// M3.2: 统一 PLC 写入入口 — 同步等待确认 + 超时 + 失败 SystemMessage + 审计。
+    /// 替换 fire-and-forget；WinCC 真实行为是写完才返回。
+    /// </summary>
+    private async Task WriteWithConfirmAndAuditAsync(string tagId, object value, string actionLabel)
+    {
+        _sessionManager.KeepAlive(); // M5.2: 写 PLC 算用户活动
+        var result = await _dataBindingService.WriteAsyncWithConfirm(tagId, value, WriteConfirmTimeout);
+        var detail = $"value={value} elapsedMs={result.Elapsed.TotalMilliseconds:F0}" +
+                     (result.Success ? string.Empty :
+                      result.TimedOut ? " timeout" :
+                      $" err={result.ErrorMessage}");
+
+        if (!result.Success)
+        {
+            SystemMessage = result.TimedOut
+                ? $"写入超时：{tagId}（{WriteConfirmTimeout.TotalSeconds:F0}s）"
+                : $"写入失败：{tagId} {result.ErrorMessage}";
+            Log.Warning("Write 失败 tag={Tag} value={Value} detail={Detail}", tagId, value, detail);
+        }
+
+        try
+        {
+            await _auditService.LogOperationAsync(LoginUser, actionLabel, tagId, result.Success, detail);
+        }
+        catch (System.Exception ex)
+        {
+            Log.Debug(ex, "审计写入失败 tag={Tag}", tagId);
+        }
     }
 
     internal async Task NavigateToRuntimePageAsync(string routeKey)

@@ -45,7 +45,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private readonly TrendHistoryService _trendHistoryService;
     private readonly GitPullService _gitPullService;
     private readonly GeneratedArtifactSyncService _generatedArtifactSyncService;
-    private readonly IUserService _userService;
+    protected readonly IUserService _userService;
     private readonly DispatcherTimer _subscriptionTimer;
     private readonly DispatcherTimer _opcUaBrowserRefreshTimer;
     private readonly object _ioTableRowsSync = new();
@@ -805,7 +805,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>当前账号的最近一次成功登录时间，用于 LoginView 显示。</summary>
     public string LastLoginText =>
         CurrentAccount?.LastLoginAt is { } at
-            ? $"上次登录：{at:yyyy-MM-dd HH:mm}"
+            // M7.3: LastLoginAt 持久化是 UTC，UI 显示转本地
+            ? $"上次登录：{at.ToLocalTime():yyyy-MM-dd HH:mm}"
             : "首次登录或未记录";
 
     /// <summary>自上次成功登录以来的失败尝试次数，&gt; 0 时显示。</summary>
@@ -836,11 +837,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         if (IsManualRobotPageVisible && RobotControlViewModel is not null)
         {
             _ = RefreshRobotStatusAsync();
-        }
-        // 路径B：若启用了设计器布局，按子页签加载对应 manual.* 页
-        if (this is ApexHMI.ViewModels.Shell.MainWindowViewModel mvm)
-        {
-            _ = mvm.LoadManualPageForCurrentSubSectionAsync();
         }
         // 子页面切换后立即刷新
         if (AutoRefreshEnabled && _opcUaService.IsConnected)
@@ -1389,11 +1385,18 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         CurrentUserRole = account.Role;
+        var enteredPassword = LoginPassword ?? string.Empty;
         LoginPassword = string.Empty;
         SystemMessage = $"已登录为：{CurrentRoleText}";
         AddLog("登录", SystemMessage, "Info");
         AddAudit("登录", CurrentRoleText, "成功", SystemMessage);
+
+        // M6.3: 子类（MainWindowViewModel）挂钩执行密码策略 + 过期检查
+        OnAfterLogin(account, enteredPassword);
     }
+
+    /// <summary>M6.3: 登录成功后子类挂钩 — 用于密码策略校验、过期提醒、强制改密。</summary>
+    protected virtual void OnAfterLogin(UserAccount account, string enteredPassword) { }
 
     /// <summary>L4: 弹层切换用户，不退出会话（不离开当前页面）。</summary>
     [RelayCommand]

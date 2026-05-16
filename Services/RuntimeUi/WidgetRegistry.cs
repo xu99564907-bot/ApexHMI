@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using ApexHMI.Models.RuntimeUi;
 using ApexHMI.ViewModels.Runtime;
 using ApexHMI.Views.Runtime.Widgets;
@@ -18,33 +20,60 @@ public class WidgetRegistry : IWidgetViewFactory
 
     public WidgetRegistry()
     {
-        Register("text",            (m, ctx) => CreateView(new TextWidgetViewModel(m, ctx),            new TextWidget()));
-        Register("bool-lamp",       (m, ctx) => CreateView(new BoolLampWidgetViewModel(m, ctx),       new BoolLampWidget()));
-        Register("numeric-readonly",(m, ctx) => CreateView(new NumericReadonlyWidgetViewModel(m, ctx), new NumericReadonlyWidget()));
-        Register("button",          (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),          new ButtonWidget()));
+        // 基本对象（P3）
+        Register("text",         (m, ctx) => CreateView(new TextWidgetViewModel(m, ctx),         new TextWidget()));
+        Register("rectangle",    (m, ctx) => CreateView(new RectangleWidgetViewModel(m, ctx),    new RectangleWidget()));
+        Register("ellipse",      (m, ctx) => CreateView(new EllipseWidgetViewModel(m, ctx),      new EllipseWidget()));
+        Register("line",         (m, ctx) => CreateView(new LineWidgetViewModel(m, ctx),         new LineWidget()));
+        Register("polyline",     (m, ctx) => CreateView(new PolylineWidgetViewModel(m, ctx),     new PolylineWidget()));
+        Register("polygon",      (m, ctx) => CreateView(new PolygonWidgetViewModel(m, ctx),      new PolygonWidget()));
+        Register("graphic-view", (m, ctx) => CreateView(new GraphicViewWidgetViewModel(m, ctx),  new GraphicViewWidget()));
+        Register("io-numeric",   (m, ctx) => CreateView(new IoNumericWidgetViewModel(m, ctx),    new IoNumericWidget()));
+        Register("io-symbolic",  (m, ctx) => CreateView(new IoSymbolicWidgetViewModel(m, ctx),   new IoSymbolicWidget()));
+        Register("io-graphic",   (m, ctx) => CreateView(new IoGraphicWidgetViewModel(m, ctx),    new IoGraphicWidget()));
+        Register("datetime",     (m, ctx) => CreateView(new DateTimeWidgetViewModel(m, ctx),     new DateTimeWidget()));
 
-        // 业务复合控件：复用 Tab 3 手动页的真实卡片 UI/数据
-        Register("manual-cylinder-block", (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
-        Register("manual-axis-block",     (m, ctx) => CreateView(new ManualAxisBlockWidgetViewModel(m, ctx),     new ManualAxisBlockWidget()));
-        Register("manual-robot-block",    (m, ctx) => CreateView(new ManualRobotBlockWidgetViewModel(m, ctx),    new ManualRobotBlockWidget()));
-        Register("manual-stopper-block",  (m, ctx) => CreateView(new ManualStopperBlockWidgetViewModel(m, ctx),  new ManualStopperBlockWidget()));
+        // 元素
+        Register("button",       (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),       new ButtonWidget()));
+        Register("round-button", (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx),       new RoundButtonWidget()));
+        Register("switch",       (m, ctx) => CreateView(new SwitchWidgetViewModel(m, ctx),       new SwitchWidget()));
+        Register("bar",          (m, ctx) => CreateView(new BarWidgetViewModel(m, ctx),          new BarWidget()));
+        Register("gauge",        (m, ctx) => CreateView(new GaugeWidgetViewModel(m, ctx),        new GaugeWidget()));
+        Register("slider",       (m, ctx) => CreateView(new SliderWidgetViewModel(m, ctx),       new SliderWidget()));
+        Register("scrollbar",    (m, ctx) => CreateView(new SliderWidgetViewModel(m, ctx),       new ScrollBarWidget()));
+        Register("clock",        (m, ctx) => CreateView(new ClockWidgetViewModel(m, ctx),        new ClockWidget()));
+        Register("combobox",     (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new ComboBoxWidget()));
+        Register("listbox",      (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new ListBoxWidget()));
+        Register("checkbox",     (m, ctx) => CreateView(new CheckBoxWidgetViewModel(m, ctx),     new CheckBoxWidget()));
+        Register("optiongroup",  (m, ctx) => CreateView(new OptionItemsWidgetViewModel(m, ctx),  new OptionGroupWidget()));
 
-        // 兼容旧 typeId：自动升级到 manual-* 业务控件
-        Register("cylinder", (m, ctx) => CreateView(new ManualCylinderBlockWidgetViewModel(m, ctx), new ManualCylinderBlockWidget()));
-        Register("axis",     (m, ctx) => CreateView(new ManualAxisBlockWidgetViewModel(m, ctx),     new ManualAxisBlockWidget()));
-        Register("robot",    (m, ctx) => CreateView(new ManualRobotBlockWidgetViewModel(m, ctx),    new ManualRobotBlockWidget()));
-        Register("stopper",  (m, ctx) => CreateView(new ManualStopperBlockWidgetViewModel(m, ctx),  new ManualStopperBlockWidget()));
+        // P5 控件
+        Register("screen-window", (m, ctx) => CreateView(new ScreenWindowWidgetViewModel(m, ctx), new ScreenWindowWidget()));
+        Register("table-view",    (m, ctx) => CreateView(new TableViewWidgetViewModel(m, ctx),    new TableViewWidget()));
+        Register("alarm-view",    (m, ctx) => CreateView(new AlarmViewWidgetViewModel(m, ctx),    new AlarmViewWidget()));
+        Register("trend-view",    (m, ctx) => CreateView(new TrendViewWidgetViewModel(m, ctx),    new TrendViewWidget()));
 
-        // 暂未升级的工业控件（继续用通用 StatusWidget）
-        Register("motor",        (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
-        Register("alarm-banner", (m, ctx) => CreateView(new StatusWidgetViewModel(m, ctx), new StatusWidget()));
+        // P8A 配方视图
+        Register("recipe-view",   (m, ctx) => CreateView(new RecipeViewWidgetViewModel(m, ctx),   new RecipeViewWidget()));
 
-        // 业务控件第二批：报警列表 / 通用 Tag 值
-        Register("alarm-list",     (m, ctx) => CreateView(new AlarmListWidgetViewModel(m, ctx),    new AlarmListWidget()));
-        Register("opc-tag-value",  (m, ctx) => CreateView(new OpcTagValueWidgetViewModel(m, ctx),  new OpcTagValueWidget()));
+        // P8B 用户视图
+        Register("user-view",     (m, ctx) => CreateView(new UserViewWidgetViewModel(m, ctx),     new UserViewWidget()));
 
-        // page-button 复用 ButtonWidget
-        Register("page-button",  (m, ctx) => CreateView(new ButtonWidgetViewModel(m, ctx), new ButtonWidget()));
+        // P8C 系统诊断视图
+        Register("diagnostic-view", (m, ctx) => CreateView(new DiagnosticViewWidgetViewModel(m, ctx), new DiagnosticViewWidget()));
+
+        // P8D 报警指示器
+        Register("alarm-indicator", (m, ctx) => CreateView(new AlarmIndicatorWidgetViewModel(m, ctx), new AlarmIndicatorWidget()));
+
+        // P8E 状态强制（调试）
+        Register("status-force",  (m, ctx) => CreateView(new StatusForceWidgetViewModel(m, ctx),  new StatusForceWidget()));
+
+        // P9 媒体/分析类高级控件
+        Register("html-browser",  (m, ctx) => CreateView(new HtmlBrowserWidgetViewModel(m, ctx),  new HtmlBrowserWidget()));
+        Register("pdf-view",      (m, ctx) => CreateView(new PdfViewWidgetViewModel(m, ctx),      new PdfViewWidget()));
+        Register("media-player",  (m, ctx) => CreateView(new MediaPlayerWidgetViewModel(m, ctx),  new MediaPlayerWidget()));
+        Register("xy-trend",      (m, ctx) => CreateView(new XyTrendWidgetViewModel(m, ctx),      new XyTrendWidget()));
+        Register("report-view",   (m, ctx) => CreateView(new ReportViewWidgetViewModel(m, ctx),   new ReportViewWidget()));
     }
 
     public void Register(string typeId, Func<WidgetInstance, IWidgetDataContext, FrameworkElement> factory)
@@ -52,12 +81,112 @@ public class WidgetRegistry : IWidgetViewFactory
 
     public FrameworkElement Create(WidgetInstance model, IWidgetDataContext dataContext)
     {
+        // P7B: faceplate:<id> 前缀 → 渲染 Faceplate 实例
+        if (model.TypeId is { Length: > 10 } tid && tid.StartsWith("faceplate:", StringComparison.OrdinalIgnoreCase))
+        {
+            return CreateFaceplateInstance(model, dataContext, tid.Substring("faceplate:".Length));
+        }
+
         if (_factories.TryGetValue(model.TypeId, out var factory))
         {
             return factory(model, dataContext);
         }
 
         return CreateFallback(model);
+    }
+
+    // ===== P7B: Faceplate 渲染 =====
+
+    [ThreadStatic] private static HashSet<string>? _renderStack;
+
+    private FrameworkElement CreateFaceplateInstance(WidgetInstance model, IWidgetDataContext dataContext, string faceplateId)
+    {
+        var lib = DesignerContext.Document?.Faceplates;
+        var fp = lib?.Faceplates.FirstOrDefault(f => string.Equals(f.Id, faceplateId, StringComparison.Ordinal));
+        if (fp is null)
+        {
+            return CreatePlaceholder(model, $"[未知 Faceplate: {faceplateId}]", Brushes.Crimson);
+        }
+
+        // 嵌套深度 / 循环检测
+        _renderStack ??= new HashSet<string>(StringComparer.Ordinal);
+        if (_renderStack.Count >= 5 || _renderStack.Contains(faceplateId))
+        {
+            return CreatePlaceholder(model, "[Faceplate 嵌套过深或循环]", Brushes.OrangeRed);
+        }
+
+        _renderStack.Add(faceplateId);
+        try
+        {
+            // 合并接口属性默认值与实例覆盖值
+            var propValues = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var def in fp.InterfaceProperties)
+            {
+                propValues[def.Key] = def.DefaultValue ?? string.Empty;
+            }
+            foreach (var kv in model.Properties)
+            {
+                propValues[kv.Key] = kv.Value;
+            }
+
+            var childCtx = new FaceplateChildDataContext(dataContext, propValues);
+            var canvas = new Canvas
+            {
+                Width = model.Width,
+                Height = model.Height,
+                Background = Brushes.Transparent,
+                ClipToBounds = true,
+            };
+
+            // 根据 Faceplate.DefaultWidth/Height 与实例 Width/Height 之比缩放内部坐标
+            double sx = fp.DefaultWidth > 0 ? model.Width / fp.DefaultWidth : 1.0;
+            double sy = fp.DefaultHeight > 0 ? model.Height / fp.DefaultHeight : 1.0;
+            if (Math.Abs(sx - 1.0) > 0.001 || Math.Abs(sy - 1.0) > 0.001)
+            {
+                canvas.LayoutTransform = new ScaleTransform(sx, sy);
+                canvas.Width = fp.DefaultWidth;
+                canvas.Height = fp.DefaultHeight;
+            }
+
+            foreach (var inner in fp.InnerScreen.Widgets)
+            {
+                var innerView = Create(inner, childCtx);
+                innerView.Width = inner.Width;
+                innerView.Height = inner.Height;
+                Canvas.SetLeft(innerView, inner.X);
+                Canvas.SetTop(innerView, inner.Y);
+                canvas.Children.Add(innerView);
+            }
+
+            return canvas;
+        }
+        finally
+        {
+            _renderStack.Remove(faceplateId);
+        }
+    }
+
+    private static FrameworkElement CreatePlaceholder(WidgetInstance model, string text, Brush border)
+    {
+        return new Border
+        {
+            Width = model.Width,
+            Height = model.Height,
+            BorderBrush = border,
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(4),
+            Background = new SolidColorBrush(Color.FromArgb(20, 200, 50, 50)),
+            Child = new TextBlock
+            {
+                Text = text,
+                Foreground = border,
+                FontSize = 11,
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            }
+        };
     }
 
     private static FrameworkElement CreateView<TViewModel>(TViewModel vm, FrameworkElement view) where TViewModel : class

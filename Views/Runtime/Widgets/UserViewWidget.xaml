@@ -1,0 +1,44 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.UserViewWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <Border BorderBrush="#94A3B8" BorderThickness="1" Background="{Binding Background}">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Background="#F1F5F9" Padding="4">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="刷新"     Command="{Binding RefreshCommand}"        Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="新增用户" Command="{Binding AddUserCommand}"        Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="删除"     Command="{Binding RemoveUserCommand}"     Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="修改密码" Command="{Binding ChangePasswordCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="切换角色" Command="{Binding SwitchRoleCommand}"     Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="解锁"     Command="{Binding UnlockCommand}"         Margin="2" Padding="6,2" FontSize="12"
+                            Visibility="{Binding CanUnlockVisibility}"
+                            ToolTip="管理员手工解除选中用户的账户锁定（仅 admin 可见）"/>
+                    <Button Content="密码策略" Command="{Binding OpenPasswordPolicyCommand}" Margin="2" Padding="6,2" FontSize="12"
+                            Visibility="{Binding CanUnlockVisibility}"
+                            ToolTip="M7.2: 配置密码长度/复杂度/历史/过期策略（仅 admin 可见）"/>
+                </StackPanel>
+            </Border>
+
+            <DataGrid ItemsSource="{Binding Users}"
+                      SelectedItem="{Binding SelectedUser, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      HeadersVisibility="Column"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      IsReadOnly="True"
+                      GridLinesVisibility="Horizontal"
+                      RowHeight="22"
+                      FontSize="12"
+                      Foreground="{Binding Foreground}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="用户名"    Binding="{Binding Username}"    Width="120"/>
+                    <DataGridTextColumn Header="显示名"    Binding="{Binding DisplayName}" Width="120"/>
+                    <DataGridTextColumn Header="角色"      Binding="{Binding Role}"        Width="100"/>
+                    <DataGridTextColumn Header="上次登录"  Binding="{Binding LastLoginAtLocal, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="160"/>
+                    <DataGridTextColumn Header="失败次数"  Binding="{Binding FailedAttempts}" Width="80"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Border>
+</UserControl>

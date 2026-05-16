@@ -4,10 +4,25 @@
              xmlns:vm="clr-namespace:ApexHMI.ViewModels.Modules"
              xmlns:model="clr-namespace:ApexHMI.Models.RuntimeUi"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:b="clr-namespace:ApexHMI.Behaviors"
+             xmlns:propEditors="clr-namespace:ApexHMI.Views.Controls.PropertyEditors"
              mc:Ignorable="d"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              d:DesignHeight="720" d:DesignWidth="1280">
+    <UserControl.Resources>
+        <!-- P7C: Faceplate 接口属性类型枚举（用于 ComboBox.ItemsSource） -->
+        <ObjectDataProvider x:Key="FaceplatePropertyTypes"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type system:Enum}"
+                            xmlns:system="clr-namespace:System;assembly=mscorlib">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="model:FaceplatePropertyType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+        <!-- P7.5: Schema-driven 属性编辑器模板选择器 -->
+        <propEditors:PropertyEditorTemplateSelector x:Key="PropEditorSelector"/>
+    </UserControl.Resources>
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -17,45 +32,14 @@
         <!-- Row 0: 横向工具箱 + 右侧紧凑动作组 -->
         <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}" Padding="10,8" Margin="0,0,0,10">
             <DockPanel>
-                <!-- 右侧动作 / 状态 -->
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
-                    <!-- PLC 变量表导入状态 -->
-                    <Border Background="#0369A1" CornerRadius="12" Padding="8,3"
-                            VerticalAlignment="Center" Margin="0,0,8,0">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding PlcVariableStatus}" Value="">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock Text="{Binding PlcVariableStatus}" Foreground="White"
-                                   FontWeight="SemiBold" FontSize="11"
-                                   ToolTip="{Binding PlcVariableFilePath}"/>
-                    </Border>
-                    <Border Background="#10B981" CornerRadius="12" Padding="8,3"
-                            VerticalAlignment="Center" Margin="0,0,8,0">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Visibility" Value="Visible"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SaveStatus}" Value="">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock Text="{Binding SaveStatus}" Foreground="White"
-                                   FontWeight="SemiBold" FontSize="11"/>
-                    </Border>
-                    <!-- 紧凑图标按钮组 -->
+                <!-- 右侧动作 / 状态：固定宽度 WrapPanel，自动多行 + ItemHeight 制造行间距
+                     C2: 统一 PackIcon 14×14、Padding 6,4；按"数据 / 资源 / 编辑 / 工程"分组并加 Separator -->
+                <WrapPanel DockPanel.Dock="Right" Orientation="Horizontal" Width="460" ItemHeight="36" Margin="10,0,0,0">
+                    <!-- ===== 组 1：数据 ===== -->
                     <Button Command="{Binding ReloadPlcVariablesCommand}"
                             Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
-                            Padding="8,5" Margin="0,0,4,0"
-                            ToolTip="从 PLC 程序保存目录加载 Device.Application.xml 变量表">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="加载 PLC 变量表（Device.Application.xml）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="DatabaseImport" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="PLC 变量" Margin="4,0,0,0" FontSize="11"/>
@@ -63,60 +47,150 @@
                     </Button>
                     <Button Command="{Binding BrowsePlcVariableFileCommand}"
                             Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
-                            Padding="6,5" Margin="0,0,8,0"
-                            ToolTip="手动选择 Device.Application.xml 文件">
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="选择 PLC 变量文件（Device.Application.xml）">
                         <materialDesign:PackIcon Kind="FolderOpen" Width="14" Height="14"/>
                     </Button>
-                    <Button Command="{Binding PreviewCommand}"
-                            Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"
-                            Padding="8,5" Margin="0,0,4,0"
-                            ToolTip="预览：保存并在运行视图中查看当前页面">
+                    <Separator Width="1" Height="24" Background="#CBD5E1" Margin="4,0,8,0"/>
+
+                    <!-- ===== 组 2：资源（样式 / 文本 / 列表） ===== -->
+                    <!-- P6A: 全局样式编辑入口 -->
+                    <Button Command="{Binding OpenStyleEditorCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="打开样式编辑器（色板 + 字体预设）">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="Eye" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="预览" Margin="4,0,0,0" FontSize="11"/>
+                            <materialDesign:PackIcon Kind="Palette" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="样式" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding SaveCommand}"
-                            Background="#0F766E" Foreground="White" BorderBrush="#0F766E"
-                            Padding="8,5" Margin="0,0,4,0"
-                            ToolTip="保存工程 (Ctrl+S)">
+                    <!-- P6B: 多语言文本资源 + 当前语言切换 -->
+                    <Button Command="{Binding OpenTextEditorCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="打开多语言文本资源编辑器">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="ContentSave" Width="14" Height="14" VerticalAlignment="Center"/>
-                            <TextBlock Text="保存" Margin="4,0,0,0" FontSize="11"/>
+                            <materialDesign:PackIcon Kind="Translate" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="文本" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
+                    <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                              SelectedItem="{Binding CurrentLanguage, UpdateSourceTrigger=PropertyChanged}"
+                              MinWidth="80" Margin="0,0,4,0" VerticalAlignment="Center"
+                              ToolTip="切换当前显示语言（刷新 {text:...} 引用）"/>
+                    <!-- P6E: 列表资源编辑入口 -->
+                    <Button Command="{Binding OpenListEditorCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="打开列表资源编辑器（文本列表 / 图形列表）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FormatListBulleted" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="列表" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <Separator Width="1" Height="24" Background="#CBD5E1" Margin="4,0,8,0"/>
+
+                    <!-- ===== 组 3：编辑（Faceplate / 库） ===== -->
+                    <!-- P7C: Faceplate 编辑模式切换 -->
+                    <ToggleButton IsChecked="{Binding IsFaceplateEditMode}"
+                                  Padding="6,4" Margin="0,0,4,0"
+                                  ToolTip="切换 Faceplate 编辑模式（编辑内部画面与接口属性）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ViewModule" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="Faceplate" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </ToggleButton>
+                    <!-- P6C: 把当前选中控件存入项目库 / 全局库 -->
+                    <Button Command="{Binding SaveSelectedToProjectLibraryCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="保存当前控件到项目库">
+                        <materialDesign:PackIcon Kind="BookmarkPlus" Width="14" Height="14"/>
+                    </Button>
+                    <Button Command="{Binding SaveSelectedToGlobalLibraryCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="保存当前控件到全局库（跨工程共享）">
+                        <materialDesign:PackIcon Kind="EarthPlus" Width="14" Height="14"/>
+                    </Button>
+                    <Separator Width="1" Height="24" Background="#CBD5E1" Margin="4,0,8,0"/>
+
+                    <!-- ===== 组 4：工程（导入 / 导出 / 模拟 / 发布） ===== -->
+                    <!-- P10D: 导出 / 导入 zip 包 -->
+                    <Button Command="{Binding ImportProjectZipCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="导入工程 zip 包（覆盖当前工程）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="PackageUp" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="导入" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ExportProjectZipCommand}"
+                            Background="#E2E8F0" Foreground="{DynamicResource Brush.Text}" BorderBrush="#CBD5E1"
+                            Padding="6,4" Margin="0,0,4,0"
+                            ToolTip="导出工程为 zip 包">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="PackageDown" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="导出" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </Button>
+                    <!-- P10F: 离线模拟模式 -->
+                    <ToggleButton IsChecked="{Binding DataContext.IsSimulationMode, RelativeSource={RelativeSource AncestorType=Window}}"
+                                  Padding="6,4" Margin="0,0,4,0"
+                                  ToolTip="切换离线模拟模式（注入 SimTag/SimBool/SimText 假数据）">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="SineWave" Width="14" Height="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="模拟" Margin="4,0,0,0" FontSize="11"/>
+                        </StackPanel>
+                    </ToggleButton>
                     <Button Command="{Binding PublishCommand}"
                             Background="#7C3AED" Foreground="White" BorderBrush="#7C3AED"
-                            Padding="8,5"
-                            ToolTip="发布到运行时：保存并刷新运行时页面">
+                            Padding="6,4"
+                            ToolTip="发布到运行时（保存并刷新页面）">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Rocket" Width="14" Height="14" VerticalAlignment="Center"/>
                             <TextBlock Text="发布" Margin="4,0,0,0" FontSize="11"/>
                         </StackPanel>
                     </Button>
-                </StackPanel>
+                </WrapPanel>
 
-                <!-- 横向工具箱（按分组） -->
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <!-- 工具箱：每分组一行，组内 WrapPanel 自适应换行 -->
+                <Border x:Name="ToolboxPanel" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="0">
+                    <DockPanel>
+                        <Thumb x:Name="ToolboxDragHandle" DockPanel.Dock="Top" Height="14"
+                               Background="#94A3B8" Cursor="SizeAll" Visibility="Collapsed"
+                               DragDelta="ToolboxDragHandle_DragDelta"
+                               ToolTip="拖动可移动工具栏"/>
+                        <Button x:Name="ToolboxFloatToggle" DockPanel.Dock="Right"
+                                Click="ToolboxFloatToggle_Click"
+                                Background="Transparent" BorderThickness="0" Padding="4"
+                                VerticalAlignment="Top" Margin="4,0,0,0"
+                                ToolTip="切换悬浮 / 固定">
+                            <materialDesign:PackIcon x:Name="ToolboxFloatIcon" Kind="PinOutline" Width="14" Height="14"/>
+                        </Button>
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" MaxHeight="130">
                     <ItemsControl x:Name="ToolboxItemsControl">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <StackPanel Orientation="Horizontal"/>
+                                <StackPanel Orientation="Vertical"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Margin="0,0,14,0">
-                                    <TextBlock Text="{Binding Title}" FontSize="10" Foreground="{DynamicResource Brush.TextMuted}" Margin="2,0,0,3"/>
+                                <DockPanel Margin="0,0,0,4">
+                                    <TextBlock DockPanel.Dock="Left" Text="{Binding Title}" Width="60"
+                                               FontSize="10" Foreground="{DynamicResource Brush.TextMuted}"
+                                               VerticalAlignment="Top" Margin="0,8,6,0"/>
                                     <ItemsControl ItemsSource="{Binding Items}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal"/>
+                                                <WrapPanel Orientation="Horizontal"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Button Margin="0,0,4,0" Padding="8,5"
+                                                <Button Margin="0,0,4,4" Padding="6,4"
                                                         Background="#F8FAFC" Foreground="#334155"
                                                         BorderBrush="{DynamicResource Brush.Border}" FontWeight="Normal"
                                                         Command="{Binding DataContext.AddWidgetCommand,
@@ -128,21 +202,23 @@
                                                         PreviewMouseLeftButtonUp="ToolboxItem_PreviewMouseLeftButtonUp">
                                                     <StackPanel Orientation="Horizontal">
                                                         <materialDesign:PackIcon Kind="{Binding IconKind, FallbackValue=Widgets}"
-                                                                                Width="16" Height="16"
+                                                                                Width="14" Height="14"
                                                                                 VerticalAlignment="Center"
                                                                                 Foreground="#2563EB"
-                                                                                Margin="0,0,6,0"/>
-                                                        <TextBlock Text="{Binding DisplayName}" FontSize="12" VerticalAlignment="Center"/>
+                                                                                Margin="0,0,4,0"/>
+                                                        <TextBlock Text="{Binding DisplayName}" FontSize="11" VerticalAlignment="Center"/>
                                                     </StackPanel>
                                                 </Button>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
-                                </StackPanel>
+                                </DockPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </ScrollViewer>
+                    </DockPanel>
+                </Border>
             </DockPanel>
         </Border>
 
@@ -162,6 +238,97 @@
                         <TextBlock Text="工程名称" Foreground="{DynamicResource Brush.TextSecondary}"/>
                         <TextBox Text="{Binding Document.ProjectName, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,8"/>
+
+                        <!-- ===== P7C: Faceplate 编辑模式专属面板 ===== -->
+                        <StackPanel Visibility="{Binding IsFaceplateEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Border Background="#FFEDD5" BorderBrush="#F97316" BorderThickness="1"
+                                    CornerRadius="4" Padding="8,4" Margin="0,0,0,8">
+                                <TextBlock Text="正在 Faceplate 编辑模式" Foreground="#9A3412" FontSize="11" FontWeight="SemiBold"/>
+                            </Border>
+                            <TextBlock Text="Faceplate 列表" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4"/>
+                            <ListBox ItemsSource="{Binding AvailableFaceplates}"
+                                     SelectedItem="{Binding SelectedFaceplate}"
+                                     DisplayMemberPath="Name"
+                                     MaxHeight="180"
+                                     BorderBrush="{DynamicResource Brush.Border}" Margin="0,0,0,6"/>
+                            <WrapPanel Margin="0,0,0,10">
+                                <Button Content="+ 新建" Command="{Binding AddNewFaceplateCommand}"
+                                        Background="#374151" Foreground="White" BorderBrush="#374151"
+                                        Padding="8,4" Margin="0,0,4,0"/>
+                                <Button Content="🗑 删除" Command="{Binding DeleteFaceplateCommand}"
+                                        Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                        Padding="8,4"/>
+                            </WrapPanel>
+                            <!-- Faceplate 元数据 -->
+                            <Expander Header="Faceplate 元数据" IsExpanded="True"
+                                      FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"
+                                      Visibility="{Binding SelectedFaceplate, Converter={StaticResource NullToVisibilityConverter}}">
+                                <StackPanel TextElement.FontWeight="Normal" Margin="6,4,0,0">
+                                    <TextBlock Text="名称" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.Name, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="版本" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.Version, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="分类" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.Category, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="图标 (MaterialDesign Kind)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBox Text="{Binding SelectedFaceplate.IconKind, UpdateSourceTrigger=PropertyChanged}" Margin="0,2,0,6"/>
+                                    <TextBlock Text="默认尺寸 (W, H)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <UniformGrid Columns="2" Margin="0,2,0,8">
+                                        <TextBox Text="{Binding SelectedFaceplate.DefaultWidth, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,4,0"/>
+                                        <TextBox Text="{Binding SelectedFaceplate.DefaultHeight, UpdateSourceTrigger=PropertyChanged}" Margin="4,0,0,0"/>
+                                    </UniformGrid>
+                                    <TextBlock Text="接口属性 (内部 widget 用 {prop:key} 引用)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" FontWeight="SemiBold"/>
+                                    <ItemsControl ItemsSource="{Binding SelectedFaceplateProperties}" Margin="0,4,0,4">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                                        CornerRadius="3" Padding="4" Margin="0,0,0,4">
+                                                    <StackPanel>
+                                                        <DockPanel Margin="0,0,0,2">
+                                                            <Button DockPanel.Dock="Right" Content="✕" Padding="4,0" FontSize="10"
+                                                                    Background="Transparent" BorderThickness="0" Foreground="#B91C1C"
+                                                                    Command="{Binding DataContext.RemoveInterfacePropertyCommand,
+                                                                              RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                    CommandParameter="{Binding}"/>
+                                                            <TextBox Text="{Binding Key, UpdateSourceTrigger=PropertyChanged}"
+                                                                     ToolTip="Key（内部 widget 通过 {prop:Key} 引用）" FontSize="11"/>
+                                                        </DockPanel>
+                                                        <TextBox Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                                                 ToolTip="显示名" FontSize="11" Margin="0,0,0,2"/>
+                                                        <DockPanel>
+                                                            <ComboBox DockPanel.Dock="Left" Width="100" FontSize="11"
+                                                                      SelectedItem="{Binding Type}"
+                                                                      ItemsSource="{Binding Source={StaticResource FaceplatePropertyTypes}}"/>
+                                                            <TextBox Text="{Binding DefaultValue, UpdateSourceTrigger=PropertyChanged}"
+                                                                     ToolTip="默认值" FontSize="11" Margin="4,0,0,0"/>
+                                                        </DockPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Content="+ 添加接口属性" Command="{Binding AddInterfacePropertyCommand}"
+                                            Background="#475569" Foreground="White" BorderBrush="#475569"
+                                            Padding="8,4" HorizontalAlignment="Left" FontSize="11"/>
+                                    <TextBlock Text="TODO: 内部 widget 属性中 [插入接口属性] 下拉留 v2.0" FontSize="10"
+                                               Foreground="{DynamicResource Brush.TextMuted}" FontStyle="Italic" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+
+                        <!-- ===== 页面编辑模式专属面板（与 Faceplate 编辑模式互斥） ===== -->
+                      <StackPanel>
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFaceplateEditMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
 
                         <!-- P3.1 模板页 RouteKey -->
                         <TextBlock Text="模板页 RouteKey (页眉/页脚共享)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
@@ -236,18 +403,156 @@
                         <TextBox Text="{Binding SelectedPage.NavOrder, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,4,0,10" FontSize="12"/>
 
+                        <!-- ===== P6C 项目库 ===== -->
+                        <Expander Header="我的库（项目级）" IsExpanded="False" Margin="0,4,0,4"
+                                  FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"
+                                  ToolTip="拖动库资产到画布生成实例；从画布右上角『存入库』把当前选中控件保存进来">
+                            <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                    CornerRadius="4" MaxHeight="200">
+                                <ListBox x:Name="ProjectLibraryList"
+                                         ItemsSource="{Binding ProjectLibraryAssets}"
+                                         BorderThickness="0" FontSize="11"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         PreviewMouseLeftButtonDown="LibraryItem_PreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="LibraryItem_PreviewMouseMove">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel>
+                                                <materialDesign:PackIcon Kind="Bookmark" Width="14" Height="14"
+                                                                         VerticalAlignment="Center" Foreground="#0F766E" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{Binding Category}" Foreground="#64748B" FontSize="10"
+                                                           VerticalAlignment="Center" Width="40"/>
+                                                <TextBlock Text="{Binding Name}" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Expander>
+
+                        <!-- ===== P6C 全局库 ===== -->
+                        <Expander Header="全局库（跨工程）" IsExpanded="False" Margin="0,0,0,4"
+                                  FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"
+                                  ToolTip="存放在 %USERPROFILE%\.apexhmi\global-library.json，所有工程共享">
+                            <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                    CornerRadius="4" MaxHeight="200">
+                                <ListBox x:Name="GlobalLibraryList"
+                                         ItemsSource="{Binding GlobalLibraryAssets}"
+                                         BorderThickness="0" FontSize="11"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         PreviewMouseLeftButtonDown="LibraryItem_PreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="LibraryItem_PreviewMouseMove">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel>
+                                                <materialDesign:PackIcon Kind="Earth" Width="14" Height="14"
+                                                                         VerticalAlignment="Center" Foreground="#7C3AED" Margin="0,0,6,0"/>
+                                                <TextBlock Text="{Binding Category}" Foreground="#64748B" FontSize="10"
+                                                           VerticalAlignment="Center" Width="40"/>
+                                                <TextBlock Text="{Binding Name}" Foreground="#0F172A" VerticalAlignment="Center"/>
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Expander>
+
+                        <!-- ===== P6D 符号库 ===== -->
+                        <Expander Header="符号库（工业图标）" IsExpanded="False" Margin="0,0,0,4"
+                                  FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}"
+                                  ToolTip="拖到画布即生成 graphic-view + iconKind">
+                            <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                    CornerRadius="4" MaxHeight="240">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding SymbolGroups}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="2,2,2,6">
+                                                    <TextBlock Text="{Binding Title}" FontSize="10"
+                                                               Foreground="{DynamicResource Brush.TextMuted}" Margin="0,2,0,2"/>
+                                                    <ItemsControl ItemsSource="{Binding Items}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Horizontal"/>
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Margin="2" Padding="4"
+                                                                        Background="#F8FAFC" BorderBrush="#CBD5E1"
+                                                                        BorderThickness="1" CornerRadius="4"
+                                                                        ToolTip="{Binding Name}"
+                                                                        Tag="{Binding}"
+                                                                        PreviewMouseLeftButtonDown="SymbolItem_PreviewMouseLeftButtonDown"
+                                                                        PreviewMouseMove="SymbolItem_PreviewMouseMove">
+                                                                    <StackPanel Width="56">
+                                                                        <materialDesign:PackIcon Kind="{Binding IconKind, FallbackValue=Cog}"
+                                                                                                 Width="22" Height="22"
+                                                                                                 HorizontalAlignment="Center"
+                                                                                                 Foreground="#1E40AF"/>
+                                                                        <TextBlock Text="{Binding Name}" FontSize="10"
+                                                                                   HorizontalAlignment="Center"
+                                                                                   Foreground="#0F172A" Margin="0,2,0,0"/>
+                                                                    </StackPanel>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </Expander>
+
+                        <!-- ===== PLC 变量（可拖到画布生成控件） ===== -->
+                        <Expander Header="PLC 变量 (拖到画布)" IsExpanded="True" Margin="0,4,0,0"
+                                  FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}">
+                            <Border BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                    CornerRadius="4" MaxHeight="260">
+                                <ListBox x:Name="PlcVariableList"
+                                         ItemsSource="{Binding PlcTags}"
+                                         BorderThickness="0"
+                                         FontSize="11"
+                                         FontFamily="Consolas"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         PreviewMouseLeftButtonDown="PlcVariableItem_PreviewMouseLeftButtonDown"
+                                         PreviewMouseMove="PlcVariableItem_PreviewMouseMove">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" ToolTip="{Binding Name}">
+                                                <TextBlock Text="{Binding DataType}" Width="48"
+                                                           Foreground="#2563EB" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Name}" Foreground="#0F172A"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+                        </Expander>
+                      </StackPanel> <!-- /P7C 页面编辑模式专属面板 -->
                     </StackPanel>
                 </ScrollViewer>
             </Border>
 
             <!-- ===== 中栏：设计画布 ===== -->
-            <Border Grid.Column="1" Style="{StaticResource CardBorderStyle}" Padding="10" Margin="0,0,10,0">
+            <ContentControl x:Name="CanvasHost" Grid.Column="1">
+            <Border x:Name="CanvasBorder" Style="{StaticResource CardBorderStyle}" Padding="10" Margin="0,0,10,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <StackPanel Margin="0,0,0,10">
+                        <!-- P7C: Faceplate 编辑模式 banner -->
+                        <Border Background="#FFEDD5" BorderBrush="#F97316" BorderThickness="1"
+                                CornerRadius="4" Padding="8,6" Margin="0,0,0,6"
+                                Visibility="{Binding IsFaceplateEditMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <TextBlock Text="{Binding FaceplateEditBannerText}" Foreground="#9A3412"
+                                       FontSize="12" FontWeight="SemiBold"/>
+                        </Border>
                         <DockPanel>
                             <TextBlock Text="设计画布" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Brush.Text}"/>
                             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -255,6 +560,17 @@
                                 <CheckBox Content="吸附" IsChecked="{Binding SnapToGrid}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                 <TextBlock Text="间距" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                                 <TextBox Text="{Binding GridSize, UpdateSourceTrigger=PropertyChanged}" Width="44" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                                <TextBlock Text="缩放" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                <ComboBox ItemsSource="{Binding ZoomOptions}"
+                                          SelectedItem="{Binding CanvasZoom}"
+                                          Width="76" VerticalAlignment="Center" Margin="0,0,4,0">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding StringFormat={}{0:P0}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <Button Content="{Binding FitButtonText}" Click="FitToWindow_Click" Padding="8,3" VerticalAlignment="Center" Margin="0,0,12,0" MinWidth="80"/>
                                 <TextBlock Text="{Binding MouseCoord, StringFormat=({0})}" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0" FontFamily="Consolas"/>
                                 <TextBlock Text="{Binding CurrentWidgets.Count, Mode=OneWay, StringFormat=控件数: {0}}"
                                            Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center"/>
@@ -275,8 +591,9 @@
                                     Padding="8,4" Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"/>
                         </WrapPanel>
                     </StackPanel>
-                    <ScrollViewer Grid.Row="1" 
-                                  HorizontalScrollBarVisibility="Auto" 
+                    <ScrollViewer Grid.Row="1"
+                                  x:Name="DesignerCanvasScrollViewer"
+                                  HorizontalScrollBarVisibility="Auto"
                                   VerticalScrollBarVisibility="Auto">
                         <Canvas x:Name="DesignerCanvas"
                                 Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
@@ -289,6 +606,16 @@
                                 MouseLeftButtonUp="DesignerCanvas_BackgroundMouseUp"
                                 DragOver="DesignerCanvas_DragOver"
                                 Drop="DesignerCanvas_Drop">
+                            <Canvas.LayoutTransform>
+                                <ScaleTransform ScaleX="{Binding CanvasZoom}" ScaleY="{Binding CanvasZoom}"/>
+                            </Canvas.LayoutTransform>
+                            <!-- 画布有效范围边框 -->
+                            <Rectangle Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
+                                       Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}"
+                                       Stroke="#64748B" StrokeThickness="1"
+                                       Fill="Transparent"
+                                       IsHitTestVisible="False"
+                                       Panel.ZIndex="2000"/>
                             <!-- 网格背景层 -->
                             <Rectangle Width="{Binding SelectedPage.CanvasWidth, FallbackValue=1280}"
                                        Height="{Binding SelectedPage.CanvasHeight, FallbackValue=720}"
@@ -437,13 +764,21 @@
                     </ScrollViewer>
                 </Grid>
             </Border>
+            </ContentControl>
 
-            <!-- ===== 右栏：属性编辑器 ===== -->
-            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="12">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <!-- ===== 右栏：属性编辑器 V2（4 Tab） ===== -->
+            <Border Grid.Column="2" Style="{StaticResource CardBorderStyle}" Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="属性编辑器" FontSize="16" FontWeight="Bold"
+                               Foreground="{DynamicResource Brush.Text}" Margin="12,12,12,4"/>
+                <TabControl Grid.Row="1" Background="Transparent" BorderThickness="0" Padding="0">
+                <TabItem Header="属性">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12">
                     <StackPanel>
-                        <TextBlock Text="属性编辑器" FontSize="18" FontWeight="Bold" 
-                                   Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,12"/>
 
                         <!-- 未选中控件时的提示 -->
                         <TextBlock Text="请从画布中选中一个控件"
@@ -460,8 +795,65 @@
                                            VerticalAlignment="Center" FontSize="11"/>
                             </WrapPanel>
 
+                            <!-- P7E: 版本升级提示条（仅 Faceplate 实例 + 版本落后时显示） -->
+                            <Border Background="#FFEDD5" BorderBrush="#F97316" BorderThickness="1"
+                                    CornerRadius="4" Padding="8,6" Margin="0,0,0,8">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsSelectedWidgetFaceplateInstance}" Value="True"/>
+                                                    <Condition Binding="{Binding IsFaceplateVersionOutdated}" Value="True"/>
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Content="升级"
+                                            Command="{Binding UpgradeFaceplateInstanceCommand}"
+                                            Background="#F97316" Foreground="White" BorderBrush="#F97316"
+                                            Padding="8,2" FontSize="11"/>
+                                    <TextBlock Text="{Binding FaceplateVersionUpgradeText}" Foreground="#9A3412"
+                                               FontSize="11" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,8,0"/>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- P7D: 接口属性（仅 Faceplate 实例时显示） -->
+                            <Expander Header="接口属性" IsExpanded="True" FontWeight="SemiBold"
+                                      Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4"
+                                      Visibility="{Binding IsSelectedWidgetFaceplateInstance, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <!-- P7.5D: Schema-driven 接口属性编辑器（每行 DisplayName + 类型化编辑器） -->
+                                    <ItemsControl ItemsSource="{Binding FaceplateInterfacePropertyEditors}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,6">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="92"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding DisplayName}"
+                                                               Foreground="{DynamicResource Brush.TextSecondary}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"
+                                                               ToolTip="{Binding Description}"/>
+                                                    <ContentControl Grid.Column="1"
+                                                                    Content="{Binding}"
+                                                                    ContentTemplateSelector="{StaticResource PropEditorSelector}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Expander>
+
                             <!-- 几何 -->
-                            <Expander Header="几何" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4">
+                            <Expander Header="几何" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,4">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
                                     <TextBlock Text="位置 (X, Y)" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <UniformGrid Columns="2" Margin="0,4,0,6">
@@ -476,112 +868,215 @@
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 外观 / 控件属性 -->
-                            <Expander Header="外观 / 属性" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
-                                <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                            <ItemsControl ItemsSource="{Binding CurrentWidgetProperties}">
+                            <!-- P7.5B: Schema-driven 属性面板（按 Category 分组，类型化编辑器） -->
+                            <ItemsControl ItemsSource="{Binding GroupedPropertyEditors}"
+                                          Visibility="{Binding HasSchemaForSelectedWidget, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid Margin="0,0,0,8">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" MinWidth="92"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0"
-                                                       Text="{Binding DisplayName}"
-                                                       Foreground="{DynamicResource Brush.TextSecondary}"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"
-                                                       ToolTip="{Binding Key}"/>
-                                            <!-- 普通属性：TextBox -->
-                                            <TextBox Grid.Column="1"
-                                                     Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
-                                                     VerticalAlignment="Center">
-                                                <TextBox.Style>
-                                                    <Style TargetType="TextBox">
-                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsDeviceNameProp}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
+                                        <Expander Header="{Binding Category}" IsExpanded="True" FontWeight="SemiBold"
+                                                  Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                                            <ItemsControl ItemsSource="{Binding Items}"
+                                                          Margin="6,4,0,0" TextElement.FontWeight="Normal"
+                                                          ItemTemplateSelector="{StaticResource PropEditorSelector}">
+                                                <ItemsControl.ItemContainerStyle>
+                                                    <Style TargetType="ContentPresenter">
+                                                        <Setter Property="Margin" Value="0,0,0,8"/>
                                                     </Style>
-                                                </TextBox.Style>
-                                            </TextBox>
-                                            <!-- deviceName 属性：下拉框（自动列出真实设备） -->
-                                            <ComboBox Grid.Column="1"
-                                                      ItemsSource="{Binding DataContext.AvailableDeviceNames, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                      Text="{Binding Value, UpdateSourceTrigger=LostFocus}"
-                                                      IsEditable="True" IsTextSearchEnabled="True"
-                                                      VerticalAlignment="Center"
-                                                      ToolTip="选择设备；列表为空时可手动输入设备名">
-                                                <ComboBox.Style>
-                                                    <Style TargetType="ComboBox">
-                                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsDeviceNameProp}" Value="True">
-                                                                <Setter Property="Visibility" Value="Visible"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </ComboBox.Style>
-                                            </ComboBox>
-                                            <!-- 颜色属性显示色板预览 -->
-                                            <Border Grid.Column="2"
-                                                    Width="22" Height="22" CornerRadius="4"
-                                                    Margin="6,0,0,0" BorderBrush="#CBD5E1" BorderThickness="1"
-                                                    Visibility="{Binding IsColorProperty, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                    Background="{Binding Value, Converter={StaticResource StringToBrushConverter}}"/>
-                                        </Grid>
+                                                </ItemsControl.ItemContainerStyle>
+                                                <ItemsControl.Template>
+                                                    <ControlTemplate TargetType="ItemsControl">
+                                                        <Grid>
+                                                            <ItemsPresenter/>
+                                                        </Grid>
+                                                    </ControlTemplate>
+                                                </ItemsControl.Template>
+                                            </ItemsControl>
+                                        </Expander>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
+
+                            <!-- P7.5B: Fallback —— schema 找不到时显示旧 generic 属性面板 -->
+                            <Expander Header="外观 / 属性 (回退)" IsExpanded="False" FontWeight="SemiBold"
+                                      Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="{Binding HasNoSchemaForSelectedWidget, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <TextBlock Text="该控件类型未注册 Schema，使用通用编辑器"
+                                               Foreground="#94A3B8" FontSize="10" FontStyle="Italic" Margin="0,0,0,4"/>
+                                    <ItemsControl ItemsSource="{Binding CurrentWidgetProperties}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="92"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="{Binding DisplayName}"
+                                                               Foreground="{DynamicResource Brush.TextSecondary}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"
+                                                               ToolTip="{Binding Key}"/>
+                                                    <TextBox Grid.Column="1"
+                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                             VerticalAlignment="Center">
+                                                        <TextBox.Style>
+                                                            <Style TargetType="TextBox">
+                                                                <Setter Property="b:TagAutoComplete.IsEnabled" Value="False"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Key}" Value="variable">
+                                                                        <Setter Property="b:TagAutoComplete.IsEnabled" Value="True"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBox.Style>
+                                                    </TextBox>
+                                                    <Border Grid.Column="2"
+                                                            Width="22" Height="22" CornerRadius="4"
+                                                            Margin="6,0,0,0" BorderBrush="#CBD5E1" BorderThickness="1"
+                                                            Visibility="{Binding IsColorProperty, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                            Background="{Binding Value, Converter={StaticResource StringToBrushConverter}}"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
                                 </StackPanel>
                             </Expander>
 
                             <!-- 数据绑定 -->
-                            <Expander Header="数据绑定" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- P7.5E: 旧'数据绑定'Expander 隐藏，绑定能力已迁移到 schema 中的 TagAddress 字段 / 顶部「事件」Tab -->
+                            <Expander Header="数据绑定" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="Collapsed">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
-                                    <TextBlock Text="绑定 Tag" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <TextBlock Text="读取地址（订阅）" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11" FontWeight="SemiBold"/>
+                                    <TextBlock Foreground="{DynamicResource Brush.TextMuted}" FontSize="10" TextWrapping="Wrap" Margin="0,2,0,2"
+                                               Text="控件订阅此变量并实时刷新。当此变量在 PLC 端发生变化时：&#x0a;&#xa0;• 「指示灯 / 数值显示」等控件 → 直接显示新值&#xa;&#xa0;• 「切换开关」模式 → 决定下次写入的取反值&#xa;&#xa0;• 「状态动画」→ 根据条件自动改变控件外观&#xa;留空 = 不订阅，控件只响应点击不显示状态。"/>
                                     <DockPanel Margin="0,4,0,4">
                                         <Button DockPanel.Dock="Right" Content="🔍"
                                                 Command="{Binding OpenTagBrowserCommand}"
                                                 Padding="6,0" Margin="4,0,0,0"
                                                 ToolTip="打开 Tag 浏览器"/>
-                                        <ComboBox ItemsSource="{Binding AvailableTags}"
-                                                  DisplayMemberPath="Name"
-                                                  SelectedValuePath="Name"
-                                                  SelectedValue="{Binding CurrentBindingTagId, UpdateSourceTrigger=PropertyChanged}"
-                                                  IsEditable="False"
-                                                  ToolTip="选择要绑定的 OPC UA Tag，留空取消绑定"/>
+                                        <TextBox Text="{Binding CurrentBindingTagId, UpdateSourceTrigger=PropertyChanged}"
+                                                 VerticalContentAlignment="Center"
+                                                 b:TagAutoComplete.IsEnabled="True"
+                                                 ToolTip="绑定 Tag 名（输入时下方列出候选；Tab/Enter 补全，Esc 关闭，↑↓ 切换）"/>
                                     </DockPanel>
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 事件 / 动作 -->
-                            <Expander Header="事件 / 动作" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- P7.5E: 旧'事件/动作单动作'Expander 隐藏，已被顶部「事件」Tab 多动作链取代 -->
+                            <Expander Header="事件 / 动作（单动作快捷）" IsExpanded="True" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="Collapsed">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <TextBlock Text="提示：高级编辑请见顶部「事件」Tab 多动作链"
+                                               Foreground="#0EA5E9" FontSize="10" FontStyle="Italic" Margin="0,0,0,4"/>
                                     <TextBlock Text="点击动作" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
                                     <ComboBox Margin="0,4,0,4"
+                                              SelectedValuePath="Tag"
                                               SelectedValue="{Binding SelectedWidget.ActionType, UpdateSourceTrigger=PropertyChanged}">
-                                        <ComboBoxItem Content="无"/>
-                                        <ComboBoxItem Content="write-bool"/>
-                                        <ComboBoxItem Content="write-int"/>
-                                        <ComboBoxItem Content="write-float"/>
-                                        <ComboBoxItem Content="navigate"/>
-                                        <ComboBoxItem Content="show-dialog"/>
+                                        <ComboBoxItem Content="无"          Tag="无"/>
+                                        <ComboBoxItem Content="设为 ON"     Tag="set-on"      ToolTip="按钮模式：单击写 True"/>
+                                        <ComboBoxItem Content="设为 OFF"    Tag="set-off"     ToolTip="按钮模式：单击写 False"/>
+                                        <ComboBoxItem Content="切换开关"    Tag="toggle"      ToolTip="按钮模式：单击读后写反值（读地址 = 数据绑定 Tag；留空 = 复用写地址）"/>
+                                        <ComboBoxItem Content="复归型 / 点动" Tag="momentary"  ToolTip="按钮模式：按下写 True，松开写 False"/>
+                                        <ComboBoxItem Content="写入布尔"    Tag="write-bool"  ToolTip="参数格式：TagName|True/False"/>
+                                        <ComboBoxItem Content="写入整数"    Tag="write-int"   ToolTip="参数格式：TagName|123"/>
+                                        <ComboBoxItem Content="写入浮点"    Tag="write-float" ToolTip="参数格式：TagName|1.23"/>
+                                        <ComboBoxItem Content="页面跳转"    Tag="navigate"    ToolTip="参数：目标 RouteKey"/>
+                                        <ComboBoxItem Content="弹窗提示"    Tag="show-dialog" ToolTip="参数：弹窗文字"/>
                                     </ComboBox>
                                     <TextBlock Text="动作参数" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                    <!-- 通用 TextBox：set-on/off/toggle/momentary 模式（地址）+ show-dialog（弹窗文字）+ 无动作 -->
                                     <TextBox Text="{Binding SelectedWidget.ActionParam, UpdateSourceTrigger=PropertyChanged}"
                                              Margin="0,4,0,4"
-                                             ToolTip="write-bool: TagName|True/False; navigate: 目标 RouteKey"/>
+                                             b:TagAutoComplete.IsEnabled="True"
+                                             ToolTip="set-on/off/toggle/momentary：写入 Tag 地址（值由模式决定）&#x0a;show-dialog：弹窗文字">
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="navigate">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-bool">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-int">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-float">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                    <!-- 写入布尔/整数/浮点：拆成 写入地址 + 写入值 两个独立字段，底层合并为 addr|value 存入 ActionParam -->
+                                    <StackPanel>
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-bool">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-int">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="write-float">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+                                        <TextBlock Text="写入地址" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                        <TextBox Text="{Binding WriteAddress, UpdateSourceTrigger=PropertyChanged}"
+                                                 Margin="0,4,0,6"
+                                                 b:TagAutoComplete.IsEnabled="True"
+                                                 ToolTip="目标 Tag 地址（点击时把下面的值写入此地址）"/>
+                                        <TextBlock Text="写入值" Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"/>
+                                        <TextBox Text="{Binding WriteValue, UpdateSourceTrigger=PropertyChanged}"
+                                                 Margin="0,4,0,4"
+                                                 ToolTip="布尔：True / False&#x0a;整数：如 42&#x0a;浮点：如 3.14"/>
+                                    </StackPanel>
+                                    <!-- 页面下拉：仅 navigate 时显示，列出固定页 + 工程内用户页面 -->
+                                    <ComboBox ItemsSource="{Binding NavigateTargets}"
+                                              SelectedValuePath="RouteKey"
+                                              SelectedValue="{Binding SelectedWidget.ActionParam, UpdateSourceTrigger=PropertyChanged}"
+                                              Margin="0,4,0,4"
+                                              ToolTip="选择跳转目标（写入 RouteKey 或固定段名）">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding Group, StringFormat=[{0}]}"
+                                                               Foreground="#2563EB" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding DisplayName}"/>
+                                                    <TextBlock Text="{Binding RouteKey, StringFormat=  ({0})}"
+                                                               Foreground="{DynamicResource Brush.TextMuted}" FontSize="11" VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                        <ComboBox.Style>
+                                            <Style TargetType="ComboBox">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SelectedWidget.ActionType}" Value="navigate">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ComboBox.Style>
+                                    </ComboBox>
                                 </StackPanel>
                             </Expander>
 
-                            <!-- 状态动画 -->
-                            <Expander Header="状态动画" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4">
+                            <!-- P7.5E: 旧'状态动画'Expander 隐藏，已被顶部「动画」Tab 取代 -->
+                            <Expander Header="状态动画（旧版）" IsExpanded="False" FontWeight="SemiBold" Foreground="{DynamicResource Brush.Text}" Margin="0,4,0,4"
+                                      Visibility="Collapsed">
                                 <StackPanel Margin="6,4,0,0" TextElement.FontWeight="Normal">
+                                    <TextBlock Text="提示：推荐使用顶部「动画」Tab 配置外观/可见性/移动动画（结构化模型，运行更顺滑）；本区域为旧版兼容入口"
+                                               Foreground="#94A3B8" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
                                     <Button Content="+ 添加动画" Command="{Binding AddAnimationCommand}"
                                             Padding="8,4" Margin="0,0,0,6" HorizontalAlignment="Left"
                                             Background="#0EA5E9" Foreground="White" BorderBrush="#0EA5E9"/>
@@ -604,7 +1099,8 @@
                                                                 <ColumnDefinition Width="*"/>
                                                             </Grid.ColumnDefinitions>
                                                             <TextBlock Grid.Column="0" Text="Tag" Foreground="{DynamicResource Brush.TextMuted}" VerticalAlignment="Center" FontSize="11"/>
-                                                            <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}" FontSize="11"/>
+                                                            <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}" FontSize="11"
+                                                                     b:TagAutoComplete.IsEnabled="True"/>
                                                         </Grid>
                                                         <Grid Margin="0,2,0,2">
                                                             <Grid.ColumnDefinitions>
@@ -669,7 +1165,627 @@
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== 动画 Tab (P2-V2) ===== -->
+                <TabItem Header="动画">
+                    <Grid Margin="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="请从画布中选中一个控件"
+                                   Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="13"
+                                   Margin="12,12,0,0"
+                                   Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                        <Grid Grid.Row="1"
+                              Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 左：分组导航 -->
+                            <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="0,0,1,0">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding AnimationCategories}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel>
+                                                    <Button DockPanel.Dock="Top"
+                                                            Command="{Binding DataContext.SelectAnimationCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding CategoryId}"
+                                                            BorderThickness="0" Padding="8,6"
+                                                            HorizontalContentAlignment="Stretch" Margin="0,0,0,1">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Background" Value="Transparent"/>
+                                                                <Setter Property="Foreground" Value="#334155"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                        <Setter Property="Background" Value="#2563EB"/>
+                                                                        <Setter Property="Foreground" Value="White"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                        <DockPanel>
+                                                            <!-- 启用状态点 -->
+                                                            <Ellipse DockPanel.Dock="Left" Width="8" Height="8" Margin="0,0,6,0" VerticalAlignment="Center">
+                                                                <Ellipse.Style>
+                                                                    <Style TargetType="Ellipse">
+                                                                        <Setter Property="Fill" Value="#CBD5E1"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                                                <Setter Property="Fill" Value="#16A34A"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Ellipse.Style>
+                                                            </Ellipse>
+                                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" FontSize="12"/>
+                                                        </DockPanel>
+                                                    </Button>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- 右：内容区按选中分类切换 -->
+                            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Margin="10,8,8,8">
+                                <Grid>
+                                    <!-- ====== 总览面板 ====== -->
+                                    <StackPanel Visibility="{Binding IsOverviewSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <TextBlock Text="总览" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}" Margin="0,0,0,8"/>
+                                        <ItemsControl ItemsSource="{Binding AnimationCategories}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Margin="0,0,0,6" Padding="8,6"
+                                                            BorderBrush="{DynamicResource Brush.BorderSoft}" BorderThickness="1"
+                                                            CornerRadius="4" Background="White"
+                                                            Visibility="{Binding Group, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=总览}">
+                                                        <!-- 总览自身不显示 → 用反向 visibility -->
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <!-- 简洁版：直接渲染非总览的 6 项 -->
+                                        <ItemsControl ItemsSource="{Binding AnimationCategories}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,0,0,6">
+                                                        <Grid.Style>
+                                                            <Style TargetType="Grid">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding CategoryId}" Value="overview">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Grid.Style>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="22"/>
+                                                            <ColumnDefinition Width="100"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14" FontWeight="Bold">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Text" Value="✗"/>
+                                                                    <Setter Property="Foreground" Value="#94A3B8"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsEnabled}" Value="True">
+                                                                            <Setter Property="Text" Value="✓"/>
+                                                                            <Setter Property="Foreground" Value="#16A34A"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock Grid.Column="1" Text="{Binding DisplayName}" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Brush.Text}" FontSize="12"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Summary}" VerticalAlignment="Center"
+                                                                   Foreground="{DynamicResource Brush.TextSecondary}" FontSize="11"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <Button Grid.Column="3" Content="跳转" Padding="6,2" FontSize="11" Margin="0,0,4,0"
+                                                                Command="{Binding DataContext.SelectAnimationCategoryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding CategoryId}"
+                                                                Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                        <Button Grid.Column="4" Content="删除" Padding="6,2" FontSize="11"
+                                                                Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                                Command="{Binding DataContext.DisableAnimationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding CategoryId}"
+                                                                Visibility="{Binding IsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+
+                                    <!-- ====== 外观面板 ====== -->
+                                    <StackPanel Visibility="{Binding IsAppearanceSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="外观动画" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}"/>
+                                            <Button DockPanel.Dock="Right" Content="启用" Padding="10,3"
+                                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                    Command="{Binding EnableAnimationCommand}" CommandParameter="appearance"
+                                                    Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                            <Button DockPanel.Dock="Right" Content="停用" Padding="10,3" Margin="0,0,6,0"
+                                                    Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                    Command="{Binding DisableAnimationCommand}" CommandParameter="appearance"
+                                                    Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                        </DockPanel>
+                                        <TextBlock Text="该控件未启用外观动画" Foreground="#94A3B8" FontSize="12" Margin="0,4,0,0"
+                                                   Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                        <StackPanel Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}}"
+                                                    DataContext="{Binding WidgetAppearance}">
+                                            <!-- 变量 -->
+                                            <Grid Margin="0,4,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="60"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="变量" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}"
+                                                         b:TagAutoComplete.IsEnabled="True"
+                                                         VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <!-- 匹配类型 -->
+                                            <StackPanel Orientation="Horizontal" Margin="60,0,0,8">
+                                                <RadioButton Content="范围"   GroupName="AppMatch" Margin="0,0,12,0"
+                                                             IsChecked="{Binding MatchType, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Range}"/>
+                                                <RadioButton Content="多个位" GroupName="AppMatch" Margin="0,0,12,0"
+                                                             IsChecked="{Binding MatchType, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=MultiBit}"/>
+                                                <RadioButton Content="单个位" GroupName="AppMatch"
+                                                             IsChecked="{Binding MatchType, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=SingleBit}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <!-- 行表格 -->
+                                        <DockPanel Visibility="{Binding WidgetAppearance, Converter={StaticResource NullToVisibilityConverter}}" Margin="0,0,0,4">
+                                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,4">
+                                                <Button Content="＋ 新增行" Padding="8,3"
+                                                        Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                        Command="{Binding AddAppearanceRowCommand}"/>
+                                            </StackPanel>
+                                            <ItemsControl ItemsSource="{Binding AppearanceRows}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4"
+                                                                Background="White" Padding="6" Margin="0,0,0,4">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="110"/>
+                                                                    <ColumnDefinition Width="110"/>
+                                                                    <ColumnDefinition Width="50"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <!-- 范围编辑（按 MatchType 切换；先实现 Range：From-To） -->
+                                                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                                                    <TextBlock Text="从" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="0,0,4,0"/>
+                                                                    <TextBox Width="60" Text="{Binding RangeFrom, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                    <TextBlock Text="到" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="4,0,4,0"/>
+                                                                    <TextBox Width="60" Text="{Binding RangeTo, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                    <TextBlock Text="位号" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="8,0,4,0"/>
+                                                                    <TextBox Width="40" Text="{Binding BitIndex, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                    <TextBlock Text="掩码" VerticalAlignment="Center" Foreground="#64748B" FontSize="11" Margin="8,0,4,0"/>
+                                                                    <TextBox Width="60" Text="{Binding BitMask, UpdateSourceTrigger=PropertyChanged}"/>
+                                                                </StackPanel>
+                                                                <!-- 背景色 + 动态化图标 demo -->
+                                                                <Grid Grid.Column="1">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBox Grid.Column="0" Text="{Binding Background, UpdateSourceTrigger=PropertyChanged}" ToolTip="背景色 hex（如 #2563EB）"/>
+                                                                    <materialDesign:PackIcon Grid.Column="1" Kind="TriangleSmallDown" Width="12" Height="12"
+                                                                                              Foreground="#94A3B8" VerticalAlignment="Center" Margin="2,0,2,0"
+                                                                                              ToolTip="动态化（点击绑定到变量，演示中）"
+                                                                                              Cursor="Hand"/>
+                                                                </Grid>
+                                                                <TextBox Grid.Column="2" Text="{Binding Foreground, UpdateSourceTrigger=PropertyChanged}"
+                                                                         ToolTip="前景色 hex（如 #FFFFFF）" Margin="4,0,0,0"/>
+                                                                <CheckBox Grid.Column="3" IsChecked="{Binding Blink}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                                                <StackPanel Grid.Column="4" Orientation="Horizontal">
+                                                                    <Button Content="↑" Padding="4,1" Margin="4,0,2,0" FontSize="11"
+                                                                            Command="{Binding DataContext.MoveAppearanceRowUpCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                            CommandParameter="{Binding}"/>
+                                                                    <Button Content="↓" Padding="4,1" Margin="0,0,2,0" FontSize="11"
+                                                                            Command="{Binding DataContext.MoveAppearanceRowDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                            CommandParameter="{Binding}"/>
+                                                                    <Button Content="✕" Padding="4,1" FontSize="11"
+                                                                            Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                                            Command="{Binding DataContext.RemoveAppearanceRowCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                            CommandParameter="{Binding}"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </DockPanel>
+                                    </StackPanel>
+
+                                    <!-- ====== 可见性面板 ====== -->
+                                    <StackPanel Visibility="{Binding IsVisibilitySelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock Text="可见性动画" FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}"/>
+                                            <Button DockPanel.Dock="Right" Content="启用" Padding="10,3"
+                                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                    Command="{Binding EnableAnimationCommand}" CommandParameter="visibility"
+                                                    Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                            <Button DockPanel.Dock="Right" Content="停用" Padding="10,3" Margin="0,0,6,0"
+                                                    Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                    Command="{Binding DisableAnimationCommand}" CommandParameter="visibility"
+                                                    Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                        </DockPanel>
+                                        <TextBlock Text="该控件未启用可见性动画" Foreground="#94A3B8" FontSize="12"
+                                                   Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                        <StackPanel Visibility="{Binding WidgetVisibility, Converter={StaticResource NullToVisibilityConverter}}"
+                                                    DataContext="{Binding WidgetVisibility}">
+                                            <Grid Margin="0,4,0,6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="60"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="变量" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                <TextBox Grid.Column="1" Text="{Binding TagId, UpdateSourceTrigger=PropertyChanged}"
+                                                         b:TagAutoComplete.IsEnabled="True" VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <TextBlock Text="条件" Margin="0,4,0,2" Foreground="#64748B" FontSize="12"/>
+                                            <StackPanel Margin="60,0,0,6">
+                                                <RadioButton Content="变量为 True 时显示" GroupName="VisMode"
+                                                             IsChecked="{Binding Mode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=WhenTrue}"/>
+                                                <RadioButton Content="变量为 False 时显示" GroupName="VisMode" Margin="0,4,0,0"
+                                                             IsChecked="{Binding Mode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=WhenFalse}"/>
+                                                <DockPanel Margin="0,4,0,0">
+                                                    <RadioButton Content="值在范围" GroupName="VisMode" VerticalAlignment="Center"
+                                                                 IsChecked="{Binding Mode, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=WhenInRange}"/>
+                                                    <TextBox Width="60" Margin="6,0,0,0" Text="{Binding RangeFrom, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="-" Margin="4,0,4,0" VerticalAlignment="Center"/>
+                                                    <TextBox Width="60" Text="{Binding RangeTo, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="内显示" Margin="6,0,0,0" Foreground="#64748B" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </StackPanel>
+                                            <TextBlock Text="否则" Margin="0,4,0,2" Foreground="#64748B" FontSize="12"/>
+                                            <StackPanel Orientation="Horizontal" Margin="60,0,0,0">
+                                                <RadioButton Content="隐藏" GroupName="VisOther" Margin="0,0,12,0"
+                                                             IsChecked="{Binding Otherwise, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Hidden}"/>
+                                                <RadioButton Content="禁用（灰色）" GroupName="VisOther"
+                                                             IsChecked="{Binding Otherwise, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Disabled}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- ====== 移动面板（4 类共用） ====== -->
+                                    <StackPanel>
+                                        <StackPanel.Style>
+                                            <Style TargetType="StackPanel">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsHorizontalSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsVerticalSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsDirectSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsDiagonalSelected}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </StackPanel.Style>
+
+                                        <DockPanel Margin="0,0,0,8">
+                                            <TextBlock FontWeight="SemiBold" FontSize="14" Foreground="{DynamicResource Brush.Text}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Text" Value="移动动画"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsHorizontalSelected}" Value="True"><Setter Property="Text" Value="水平移动"/></DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsVerticalSelected}" Value="True"><Setter Property="Text" Value="垂直移动"/></DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsDirectSelected}" Value="True"><Setter Property="Text" Value="直接移动"/></DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsDiagonalSelected}" Value="True"><Setter Property="Text" Value="对角线移动"/></DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <Button DockPanel.Dock="Right" Content="启用" Padding="10,3"
+                                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"
+                                                    Command="{Binding EnableAnimationCommand}"
+                                                    CommandParameter="{Binding SelectedAnimationCategory}"
+                                                    Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                            <Button DockPanel.Dock="Right" Content="停用" Padding="10,3" Margin="0,0,6,0"
+                                                    Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                                    Command="{Binding DisableAnimationCommand}"
+                                                    CommandParameter="{Binding SelectedAnimationCategory}"
+                                                    Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                        </DockPanel>
+
+                                        <TextBlock Text="该控件未启用此类移动动画" Foreground="#94A3B8" FontSize="12"
+                                                   Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+
+                                        <StackPanel Visibility="{Binding WidgetMovement, Converter={StaticResource NullToVisibilityConverter}}"
+                                                    DataContext="{Binding WidgetMovement}">
+                                            <!-- X 轴变量 + 范围 -->
+                                            <Grid Margin="0,4,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="变量 X" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                <TextBox Grid.Column="1" Text="{Binding TagIdX, UpdateSourceTrigger=PropertyChanged}"
+                                                         b:TagAutoComplete.IsEnabled="True" VerticalContentAlignment="Center"/>
+                                            </Grid>
+                                            <Grid Margin="0,0,0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="X 变量范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <TextBlock Text="从" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding RangeMinX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="到" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding RangeMaxX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                            <Grid Margin="0,0,0,8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="X 像素范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <TextBlock Text="起" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding PixelStartX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    <TextBlock Text="终" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                    <TextBox Width="70" Text="{Binding PixelEndX, UpdateSourceTrigger=PropertyChanged}"/>
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Y 轴（仅 Vertical/Direct/Diagonal 显示） -->
+                                            <StackPanel>
+                                                <StackPanel.Style>
+                                                    <Style TargetType="StackPanel">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding MoveType, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=Vertical}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding MoveType, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=Direct}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding MoveType, Converter={StaticResource EqualsToBoolConverter}, ConverterParameter=Diagonal}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </StackPanel.Style>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="变量 Y" VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                                                    <TextBox Grid.Column="1" Text="{Binding TagIdY, UpdateSourceTrigger=PropertyChanged}"
+                                                             b:TagAutoComplete.IsEnabled="True" VerticalContentAlignment="Center"/>
+                                                </Grid>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Y 变量范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="从" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding RangeMinY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        <TextBlock Text="到" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding RangeMaxY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                                <Grid Margin="0,0,0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="80"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Grid.Column="0" Text="Y 像素范围" VerticalAlignment="Center" Foreground="#64748B" FontSize="11"/>
+                                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                        <TextBlock Text="起" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding PixelStartY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                        <TextBlock Text="终" VerticalAlignment="Center" Margin="6,0,4,0"/>
+                                                        <TextBox Width="70" Text="{Binding PixelEndY, UpdateSourceTrigger=PropertyChanged}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- ===== 事件 Tab ===== -->
+                <TabItem Header="事件">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="请从画布中选中一个控件"
+                                   Foreground="{DynamicResource Brush.TextPlaceholder}" FontSize="13"
+                                   Margin="6,12,0,0"
+                                   Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}"/>
+                        <Grid Grid.Row="1"
+                              Visibility="{Binding SelectedWidget, Converter={StaticResource NullToVisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- 左：事件入口列表 -->
+                            <Border Grid.Column="0" Background="#F8FAFC" BorderBrush="{DynamicResource Brush.BorderSoft}"
+                                    BorderThickness="0,0,1,0">
+                                <ItemsControl ItemsSource="{Binding AvailableEvents}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Command="{Binding DataContext.SelectEventCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding EventId}"
+                                                    BorderThickness="0" Padding="8,8"
+                                                    HorizontalContentAlignment="Stretch" Margin="0,0,0,1">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Background" Value="Transparent"/>
+                                                        <Setter Property="Foreground" Value="#334155"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="Background" Value="#2563EB"/>
+                                                                <Setter Property="Foreground" Value="White"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                                <DockPanel>
+                                                    <Border DockPanel.Dock="Right" Background="#F59E0B" CornerRadius="8"
+                                                            Padding="6,1" Margin="6,0,0,0" VerticalAlignment="Center"
+                                                            Visibility="{Binding HasSteps, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <TextBlock Text="{Binding StepCount}" Foreground="White" FontSize="10" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                            <!-- 右：动作列表 -->
+                            <DockPanel Grid.Column="1" Margin="8,0,0,0">
+                                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,4,0,8">
+                                    <Button Content="↑" Command="{Binding MoveActionUpCommand}"
+                                            CommandParameter="{Binding SelectedItem, ElementName=EventActionList}"
+                                            Padding="8,3" Margin="0,0,4,0" ToolTip="上移"/>
+                                    <Button Content="↓" Command="{Binding MoveActionDownCommand}"
+                                            CommandParameter="{Binding SelectedItem, ElementName=EventActionList}"
+                                            Padding="8,3" Margin="0,0,4,0" ToolTip="下移"/>
+                                    <Button Content="✕" Command="{Binding DeleteActionCommand}"
+                                            CommandParameter="{Binding SelectedItem, ElementName=EventActionList}"
+                                            Padding="8,3" Margin="0,0,12,0"
+                                            Background="#B91C1C" Foreground="White" BorderBrush="#B91C1C"
+                                            ToolTip="删除"/>
+                                    <Button Content="＋ 新建动作" Command="{Binding AddActionCommand}"
+                                            Padding="10,3"
+                                            Background="#2563EB" Foreground="White" BorderBrush="#2563EB"/>
+                                </StackPanel>
+                                <ListBox x:Name="EventActionList"
+                                         ItemsSource="{Binding CurrentEventSteps}"
+                                         Background="Transparent" BorderThickness="0"
+                                         HorizontalContentAlignment="Stretch"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0,0,0,6"/>
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="4"
+                                                    Background="White" Padding="8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold"
+                                                               Foreground="{DynamicResource Brush.Text}"/>
+                                                    <ItemsControl ItemsSource="{Binding ArgEditors}" Margin="0,4,0,0">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid Margin="0,4,0,0">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="80"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Label}"
+                                                                               Foreground="#64748B" VerticalAlignment="Center" FontSize="11"/>
+                                                                    <!-- TagAddress: TextBox + 自动补全 -->
+                                                                    <TextBox Grid.Column="1"
+                                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                             b:TagAutoComplete.IsEnabled="True"
+                                                                             VerticalContentAlignment="Center"
+                                                                             Visibility="{Binding IsTagAddress, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                    <!-- Text/Number: 普通 TextBox -->
+                                                                    <TextBox Grid.Column="1"
+                                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                             VerticalContentAlignment="Center"
+                                                                             Visibility="{Binding IsText, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                    <TextBox Grid.Column="1"
+                                                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                             VerticalContentAlignment="Center"
+                                                                             Visibility="{Binding IsNumber, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                                    <!-- Boolean: True/False ComboBox -->
+                                                                    <ComboBox Grid.Column="1"
+                                                                              SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                              SelectedValuePath="Content"
+                                                                              IsEditable="True"
+                                                                              Visibility="{Binding IsBoolean, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <ComboBoxItem Content="True"/>
+                                                                        <ComboBoxItem Content="False"/>
+                                                                    </ComboBox>
+                                                                    <!-- PageRouteKey: NavigateTargets ComboBox -->
+                                                                    <ComboBox Grid.Column="1"
+                                                                              ItemsSource="{Binding DataContext.NavigateTargets, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                              SelectedValuePath="RouteKey"
+                                                                              SelectedValue="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                              Visibility="{Binding IsPageRouteKey, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                                        <ComboBox.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <StackPanel Orientation="Horizontal">
+                                                                                    <TextBlock Text="{Binding Group, StringFormat=[{0}]}"
+                                                                                               Foreground="#2563EB" FontSize="11" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                                                                    <TextBlock Text="{Binding DisplayName}"/>
+                                                                                </StackPanel>
+                                                                            </DataTemplate>
+                                                                        </ComboBox.ItemTemplate>
+                                                                    </ComboBox>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- ===== 文本 Tab（P6B）===== -->
+                <TabItem Header="文本">
+                    <DockPanel Margin="8">
+                        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <TextBlock Text="多语言文本（P6B）" FontSize="14" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Brush.Text}"/>
+                            <TextBlock Text="点击下方按钮打开项目级文本资源编辑器；控件属性写 {text:welcome} 即可引用。"
+                                       FontSize="11" Foreground="{DynamicResource Brush.TextMuted}"
+                                       TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            <Button Content="打开文本资源编辑器…"
+                                    Command="{Binding OpenTextEditorCommand}"
+                                    HorizontalAlignment="Left" Margin="0,8,0,0" Padding="12,5"
+                                    Background="#2563EB" Foreground="White" BorderBrush="#2563EB"/>
+                        </StackPanel>
+                        <TextBlock Text="（当前控件用到的文本 key 检索预览将在 P7 完善。）"
+                                   FontSize="11" Foreground="{DynamicResource Brush.TextMuted}"
+                                   VerticalAlignment="Top"/>
+                    </DockPanel>
+                </TabItem>
+                </TabControl>
+                </Grid>
             </Border>
+
+            <!-- 悬浮工具栏宿主层（默认无内容；点击图钉时把 ToolboxPanel 移入此层）-->
+            <Canvas x:Name="OverlayLayer" Grid.ColumnSpan="3" Background="{x:Null}" Panel.ZIndex="999"/>
         </Grid>
     </Grid>
 </UserControl>

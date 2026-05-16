@@ -5,30 +5,12 @@ using Serilog;
 
 namespace ApexHMI.Services.RuntimeUi;
 
-/// <summary>控件编辑器服务实现。</summary>
+/// <summary>控件编辑器服务实现。
+/// <para>P10A: 旧 DefaultProperties 硬编码表已移除（212 行），默认值统一改由
+/// <see cref="WidgetSchemaCatalog"/> 提供，schema 是唯一真值来源。</para>
+/// </summary>
 public sealed class WidgetEditorService : IWidgetEditorService
 {
-    private static readonly Dictionary<string, Dictionary<string, string>> DefaultProperties = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["text"] = new() { ["text"] = "文本", ["fontSize"] = "14", ["foreground"] = "#0F172A" },
-        ["bool-lamp"] = new() { ["label"] = "指示灯", ["trueColor"] = "#22C55E", ["falseColor"] = "#EF4444" },
-        ["numeric-readonly"] = new() { ["label"] = "数值", ["unit"] = "", ["format"] = "0.00" },
-        ["button"] = new() { ["text"] = "按钮", ["background"] = "#2563EB", ["foreground"] = "#FFFFFF" },
-        ["motor"] = new() { ["label"] = "电机", ["runningColor"] = "#22C55E", ["stoppedColor"] = "#64748B" },
-        ["cylinder"] = new() { ["deviceName"] = "" },
-        ["manual-cylinder-block"] = new() { ["deviceName"] = "" },
-        ["axis"] = new() { ["deviceName"] = "" },
-        ["manual-axis-block"] = new() { ["deviceName"] = "" },
-        ["robot"] = new() { ["deviceName"] = "" },
-        ["manual-robot-block"] = new() { ["deviceName"] = "" },
-        ["stopper"] = new() { ["deviceName"] = "Stopper_Up", ["displayName"] = "挡停" },
-        ["manual-stopper-block"] = new() { ["deviceName"] = "Stopper_Up", ["displayName"] = "挡停" },
-        ["alarm-banner"] = new() { ["label"] = "报警条", ["activeColor"] = "#EF4444", ["inactiveColor"] = "#64748B" },
-        ["page-button"] = new() { ["text"] = "页面跳转", ["background"] = "#6366F1", ["foreground"] = "#FFFFFF" },
-        ["alarm-list"] = new() { ["filterLevel"] = "", ["filterSource"] = "", ["maxRows"] = "20", ["onlyActive"] = "true" },
-        ["opc-tag-value"] = new() { ["tagName"] = "", ["label"] = "", ["unit"] = "", ["format"] = "" },
-    };
-
     public WidgetInstance AddWidget(PageDefinition page, string typeId, double x, double y)
     {
         var widget = new WidgetInstance
@@ -40,11 +22,16 @@ public sealed class WidgetEditorService : IWidgetEditorService
             Height = GetDefaultHeight(typeId),
         };
 
-        if (DefaultProperties.TryGetValue(typeId, out var defaults))
+        // P10A: schema 是唯一默认值来源
+        var schema = WidgetSchemaCatalog.Lookup(typeId);
+        if (schema is not null)
         {
-            foreach (var kv in defaults)
+            foreach (var desc in schema.Properties)
             {
-                widget.Properties[kv.Key] = kv.Value;
+                if (!widget.Properties.ContainsKey(desc.Key) && !string.IsNullOrEmpty(desc.DefaultValue))
+                {
+                    widget.Properties[desc.Key] = desc.DefaultValue;
+                }
             }
         }
 
@@ -100,32 +87,45 @@ public sealed class WidgetEditorService : IWidgetEditorService
 
     private static double GetDefaultWidth(string typeId) => typeId.ToLowerInvariant() switch
     {
-        "text" => 160,
-        "bool-lamp" => 160,
-        "numeric-readonly" => 200,
-        "button" => 120,
-        "motor" => 180,
-        "cylinder" or "manual-cylinder-block" => 240,
-        "axis" or "manual-axis-block" => 260,
-        "robot" or "manual-robot-block" => 360,
-        "stopper" or "manual-stopper-block" => 180,
-        "alarm-banner" => 280,
-        "page-button" => 140,
-        "alarm-list" => 360,
-        "opc-tag-value" => 160,
+        "text"         => 160,
+        "button"       => 120,
+        "round-button" => 80,
+        "rectangle"    => 120,
+        "ellipse"      => 80,
+        "line"         => 120,
+        "polyline"     => 120,
+        "polygon"      => 120,
+        "graphic-view" => 120,
+        "io-numeric"   => 120,
+        "io-symbolic"  => 120,
+        "io-graphic"   => 80,
+        "datetime"     => 160,
+        "switch"       => 100,
+        "bar"          => 60,
+        "gauge"        => 160,
+        "slider"       => 200,
+        "scrollbar"    => 200,
+        "clock"        => 180,
+        "combobox"     => 160,
+        "listbox"      => 160,
+        "checkbox"     => 120,
+        "optiongroup"  => 160,
         _ => 120,
     };
 
     private static double GetDefaultHeight(string typeId) => typeId.ToLowerInvariant() switch
     {
-        "alarm-banner" => 60,
-        "alarm-list" => 220,
-        "opc-tag-value" => 80,
-        "motor" => 100,
-        "cylinder" or "manual-cylinder-block" => 250,
-        "axis" or "manual-axis-block" => 230,
-        "robot" or "manual-robot-block" => 340,
-        "stopper" or "manual-stopper-block" => 130,
+        "ellipse"      => 80,
+        "polyline"     => 80,
+        "polygon"      => 120,
+        "graphic-view" => 80,
+        "io-graphic"   => 80,
+        "round-button" => 80,
+        "bar"          => 160,
+        "gauge"        => 140,
+        "listbox"      => 120,
+        "optiongroup"  => 120,
+        "clock"        => 36,
         _ => 40,
     };
 }

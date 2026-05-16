@@ -45,16 +45,74 @@ public sealed class PlcVariableImportService
     /// <summary>单次导入叶子上限（防御 Space 类大数组爆炸）。</summary>
     private const int MaxLeafCount = 200_000;
 
+    /// <summary>未分类 / 共享变量（如 Clock、Constants）在 allowedOps 集合中的 key。</summary>
+    public const string UncategorizedOpKey = "__shared__";
+
+    // ============================================================
+    // 持久化导入设置（重启后自动按上次选择重新导入）
+    // ============================================================
+
+    private static readonly string SettingsPath = Path.Combine(
+        AppDomain.CurrentDomain.BaseDirectory, "config", "plc-variable-import.json");
+
+    public sealed class ImportSettings
+    {
+        public string FilePath { get; set; } = string.Empty;
+        /// <summary>null = 全部；否则只导入这些 OP 对应的顶层组。</summary>
+        public List<string>? SelectedOps { get; set; }
+    }
+
+    public ImportSettings? LoadSettings()
+    {
+        try
+        {
+            if (!File.Exists(SettingsPath)) return null;
+            var json = File.ReadAllText(SettingsPath);
+            return System.Text.Json.JsonSerializer.Deserialize<ImportSettings>(json);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "PlcVariableImport: 加载 {Path} 失败", SettingsPath);
+            return null;
+        }
+    }
+
+    public void SaveSettings(string filePath, ISet<string>? selectedOps)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
+            var s = new ImportSettings
+            {
+                FilePath = filePath,
+                SelectedOps = selectedOps?.OrderBy(x => x, StringComparer.Ordinal).ToList()
+            };
+            var json = System.Text.Json.JsonSerializer.Serialize(s, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(SettingsPath, json);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "PlcVariableImport: 保存 {Path} 失败", SettingsPath);
+        }
+    }
+
     public string? ResolveDefaultPath(string? plcRoot)
     {
         if (string.IsNullOrWhiteSpace(plcRoot) || !Directory.Exists(plcRoot)) return null;
 
+        // 1) 精确匹配 Device.Application.xml
         var direct = Path.Combine(plcRoot!, DefaultFileName);
         if (File.Exists(direct)) return direct;
 
         try
         {
-            return Directory.EnumerateFiles(plcRoot!, DefaultFileName, SearchOption.AllDirectories)
+            // 2) 递归搜 Device.Application.xml
+            var exact = Directory.EnumerateFiles(plcRoot!, DefaultFileName, SearchOption.AllDirectories)
+                                 .FirstOrDefault();
+            if (!string.IsNullOrEmpty(exact)) return exact;
+
+            // 3) 递归搜 *.Device.Application.xml（带项目名前缀的）
+            return Directory.EnumerateFiles(plcRoot!, "*." + DefaultFileName, SearchOption.AllDirectories)
                             .FirstOrDefault();
         }
         catch (Exception ex)
@@ -64,7 +122,56 @@ public sealed class PlcVariableImportService
         }
     }
 
-    public IReadOnlyList<TagItem> LoadFromFile(string xmlPath)
+    /// <summary>从顶层组名提取所属工位 OP 号。约定两种命名：</summary>
+    /// <list type="bullet">
+    /// <item><c>OP\d+_*</c>     → 直接取（如 OP20_Fault → "OP20"）</item>
+    /// <item><c>DB(\d)\d{3}_*</c> → 千位×10 得 OP（如 DB2000_Control → "OP20"、DB7050_X → "OP70"）</item>
+    /// </list>
+    /// 都不匹配 → null（未分类 / 共享变量，如 Clock、Constants）。
+    public static string? ExtractOpFromGroup(string topGroup)
+    {
+        if (string.IsNullOrWhiteSpace(topGroup)) return null;
+        var m1 = System.Text.RegularExpressions.Regex.Match(topGroup, @"^OP(\d+)");
+        if (m1.Success) return "OP" + m1.Groups[1].Value;
+        var m2 = System.Text.RegularExpressions.Regex.Match(topGroup, @"^DB(\d)\d{3}");
+        if (m2.Success) return "OP" + m2.Groups[1].Value + "0";
+        return null;
+    }
+
+    /// <summary>预扫描：只列出 Application 下的顶层组名 + 推断 OP（不做类型展开，极快）。</summary>
+    public IReadOnlyList<(string Group, string? Op)> ScanTopGroups(string xmlPath)
+    {
+        if (string.IsNullOrWhiteSpace(xmlPath) || !File.Exists(xmlPath))
+            return Array.Empty<(string, string?)>();
+        try
+        {
+            var doc = XDocument.Load(xmlPath);
+            var root = doc.Root;
+            if (root is null) return Array.Empty<(string, string?)>();
+            var ns = root.GetDefaultNamespace();
+            var nodeList = root.Element(ns + "NodeList");
+            if (nodeList is null) return Array.Empty<(string, string?)>();
+
+            var result = new List<(string, string?)>();
+            foreach (var appNode in nodeList.Elements(ns + "Node"))
+            {
+                foreach (var child in appNode.Elements(ns + "Node"))
+                {
+                    var name = child.Attribute("name")?.Value;
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    result.Add((name!, ExtractOpFromGroup(name!)));
+                }
+            }
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "PlcVariableImport: ScanTopGroups 失败 path={Path}", xmlPath);
+            return Array.Empty<(string, string?)>();
+        }
+    }
+
+    public IReadOnlyList<TagItem> LoadFromFile(string xmlPath, ISet<string>? allowedOps = null)
     {
         if (string.IsNullOrWhiteSpace(xmlPath) || !File.Exists(xmlPath))
             return Array.Empty<TagItem>();
@@ -111,6 +218,13 @@ public sealed class PlcVariableImportService
                 foreach (var child in appNode.Elements(ns + "Node"))
                 {
                     if (tags.Count >= MaxLeafCount) break;
+                    if (allowedOps is not null)
+                    {
+                        var childName = child.Attribute("name")?.Value;
+                        var op = ExtractOpFromGroup(childName ?? string.Empty);
+                        var key = op ?? UncategorizedOpKey;
+                        if (!allowedOps.Contains(key)) continue;
+                    }
                     WalkNode(child, startPath, types, deviceName, appName, tags, ns, depth: 0);
                 }
             }

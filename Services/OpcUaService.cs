@@ -14,6 +14,7 @@ using Opc.Ua.Client;
 using Opc.Ua.Configuration;
 using ApexHMI.Interfaces;
 using ApexHMI.Models;
+using ApexHMI.Models.RuntimeUi;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Context;
@@ -45,6 +46,8 @@ public class OpcUaService : IOpcUaService
     public string ConnectionStatus => IsConnected ? "已连接" : "未连接";
     public IReadOnlyCollection<string> SubscribedTagNames => _subscribedTagNames.Keys.ToArray();
     public event Action<string, string>? TagValueChanged;
+    /// <summary>M3.1: 带 quality 的值变化事件（与 TagValueChanged 同时触发）。</summary>
+    public event Action<string, string, TagQuality>? TagValueQualityChanged;
 
     public async Task ConnectAsync(OpcUaConnectionOptions options, CancellationToken cancellationToken = default)
     {
@@ -471,6 +474,54 @@ public class OpcUaService : IOpcUaService
         ClientBase.ValidateDiagnosticInfos(response.DiagnosticInfos, collection);
     }
 
+    /// <summary>M3.2: 写 PLC + 同步等待响应 + 超时 + 状态码校验。WinCC 真实行为。</summary>
+    public async Task<WriteTagResult> WriteTagWithConfirmAsync(
+        TagItem tag, object value, TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        var sw = Stopwatch.StartNew();
+        if (_session is null || !_session.Connected)
+        {
+            return WriteTagResult.Fail("OPC UA 未连接", sw.Elapsed);
+        }
+
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        cts.CancelAfter(timeout);
+        try
+        {
+            var nodeId = await ResolveNodeIdAsync(tag.NodeId).ConfigureAwait(false);
+            var writeValue = new WriteValue
+            {
+                NodeId = nodeId,
+                AttributeId = Attributes.Value,
+                Value = new DataValue(new Variant(value)),
+            };
+            var collection = new WriteValueCollection { writeValue };
+            var response = await _session.WriteAsync(null, collection, cts.Token).ConfigureAwait(false);
+            if (response.Results.Count > 0 && StatusCode.IsBad(response.Results[0]))
+            {
+                return WriteTagResult.Fail(response.Results[0].ToString(), sw.Elapsed);
+            }
+            return WriteTagResult.Ok(sw.Elapsed);
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            return WriteTagResult.Timeout(sw.Elapsed);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "WriteTagWithConfirm 失败 tag={Tag}", tag.Name);
+            return WriteTagResult.Fail(ex.Message, sw.Elapsed);
+        }
+    }
+
+    /// <summary>M3.1: OPC UA StatusCode → TagQuality 映射（StatusCodes.cs IsGood/IsUncertain/IsBad）。</summary>
+    private static TagQuality MapStatusCode(StatusCode code)
+    {
+        if (StatusCode.IsBad(code)) return TagQuality.Bad;
+        if (StatusCode.IsUncertain(code)) return TagQuality.Uncertain;
+        return TagQuality.Good;
+    }
+
     public async Task SubscribeTagsAsync(IEnumerable<TagItem> tags, int publishingInterval = 500, CancellationToken cancellationToken = default)
     {
         var sw = Stopwatch.StartNew();
@@ -524,7 +575,11 @@ public class OpcUaService : IOpcUaService
                     {
                         foreach (var value in monitoredItem.DequeueValues())
                         {
-                            TagValueChanged?.Invoke(tag.Name, value.Value?.ToString() ?? string.Empty);
+                            var raw = value.Value?.ToString() ?? string.Empty;
+                            TagValueChanged?.Invoke(tag.Name, raw);
+                            // M3.1: 把 OPC UA StatusCode 映射到 TagQuality 并同时发 quality 事件
+                            var quality = MapStatusCode(value.StatusCode);
+                            TagValueQualityChanged?.Invoke(tag.Name, raw, quality);
                         }
                     };
 

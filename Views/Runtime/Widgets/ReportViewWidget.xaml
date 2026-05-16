@@ -1,0 +1,22 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.ReportViewWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <Border BorderBrush="#94A3B8" BorderThickness="1" Background="#FFFFFF">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Background="#F1F5F9" Padding="4">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="刷新"     Command="{Binding RefreshCommand}"   Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="打印"     Command="{Binding PrintCommand}"     Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="导出 PDF" Command="{Binding ExportPdfCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <Button Content="导出 CSV" Command="{Binding ExportCsvCommand}" Margin="2" Padding="6,2" FontSize="12"/>
+                    <TextBlock Text="{Binding TemplateName}" Margin="12,0,0,0"
+                               VerticalAlignment="Center" Foreground="#64748B" FontSize="12"/>
+                </StackPanel>
+            </Border>
+            <FlowDocumentScrollViewer x:Name="Viewer"
+                                      Document="{Binding Document}"
+                                      VerticalScrollBarVisibility="Auto"/>
+        </DockPanel>
+    </Border>
+</UserControl>

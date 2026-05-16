@@ -643,8 +643,8 @@
                         </Button>
                         <Border Grid.Column="4" Margin="12,8" CornerRadius="14" Background="#FFFFFF" BorderBrush="{DynamicResource Brush.Border}" BorderThickness="1">
                             <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="{l:Loc Nav_CurrentSection}" Foreground="{DynamicResource Brush.TextMuted}" FontSize="12" HorizontalAlignment="Center"/>
-                                <TextBlock Text="{Binding CurrentSection}" Foreground="{DynamicResource Brush.Text}" FontSize="22" FontWeight="Bold" Margin="0,6,0,0" HorizontalAlignment="Center"/>
+                                <TextBlock Text="工程名称" Foreground="{DynamicResource Brush.TextMuted}" FontSize="12" HorizontalAlignment="Center"/>
+                                <TextBlock Text="{Binding DesignerEditor.Document.ProjectName}" Foreground="{DynamicResource Brush.Text}" FontSize="18" FontWeight="Bold" Margin="0,4,0,0" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="320" ToolTip="{Binding DesignerEditor.Document.ProjectName}"/>
                             </StackPanel>
                         </Border>
                         <Button Grid.Column="5" Style="{StaticResource TopNavigationIconButtonStyle}" Command="{Binding NavigateCommand}" CommandParameter="配方管理" ToolTip="配方管理">
@@ -835,6 +835,15 @@
                     </Border>
                     <Border Background="#ECFDF5" BorderBrush="#A7F3D0" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0">
                             <TextBlock Text="{Binding CurrentRoleText}" Foreground="#047857" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </Border>
+                    <!-- M6.2: Session 剩余时间徽标。仅登录后显示；剩余 ≤ 5 分钟时变橙色提示主动延期 -->
+                    <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="12"
+                            Padding="10,4" Margin="0,0,10,0"
+                            Visibility="{Binding SessionRemainingVisibility}"
+                            ToolTip="距会话超时倒计时；执行任意操作或写入 PLC 即可重置">
+                        <TextBlock Text="{Binding SessionRemainingText}"
+                                   Foreground="{Binding SessionRemainingForeground, Converter={StaticResource StringToBrushConverter}}"
+                                   FontWeight="SemiBold" VerticalAlignment="Center"/>
                     </Border>
                     <Border Background="#DBEAFE" BorderBrush="#93C5FD" BorderThickness="1" CornerRadius="12" Padding="10,4" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">

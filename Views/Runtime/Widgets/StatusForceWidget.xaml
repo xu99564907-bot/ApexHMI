@@ -1,0 +1,39 @@
+<UserControl x:Class="ApexHMI.Views.Runtime.Widgets.StatusForceWidget"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="{Binding Model.Width}" Height="{Binding Model.Height}">
+    <Border BorderBrush="#94A3B8" BorderThickness="1" Background="{Binding Background}">
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Background="#F1F5F9" Padding="4">
+                <TextBlock Text="状态 / 强制（调试）" FontWeight="SemiBold" FontSize="12"/>
+            </Border>
+            <DataGrid ItemsSource="{Binding Items}"
+                      AutoGenerateColumns="False"
+                      HeadersVisibility="Column"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False"
+                      GridLinesVisibility="All"
+                      RowHeight="24"
+                      FontSize="12"
+                      Foreground="{Binding Foreground}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tag" Binding="{Binding TagAddress}" IsReadOnly="True" Width="180"/>
+                    <DataGridTextColumn Header="当前值" Binding="{Binding CurrentValue}" IsReadOnly="True" Width="120"/>
+                    <DataGridTextColumn Header="强制值"
+                                        Binding="{Binding ForceValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Width="120"/>
+                    <DataGridTemplateColumn Header="操作" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="写入"
+                                        Command="{Binding Owner.ApplyForceCommand}"
+                                        CommandParameter="{Binding}"
+                                        Padding="6,1" Margin="2" FontSize="11"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+    </Border>
+</UserControl>

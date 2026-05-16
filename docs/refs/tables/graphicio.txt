@@ -1,0 +1,160 @@
+Table 1-44 Properties
+
+Properties              RT Profes-  RT Ad-     Panel RT  Description
+                        sional      vanced
+AboveUpperLimitColor    -           -          -         -
+AdaptPicture            -           -          -         -
+AllTagTypesAllowed      -           -          -         -
+Authorization           RW          RW         RW        Specifies operating rights.
+(Page 517)
+AutoSizing              -           -          -         -
+BackColor (Page 526)    -           RW         RW        Specifies the background color.
+BackFillStyle           -           -          -         -
+BelowLowerLimitColor    -           -          -         -
+BitNumber               -           -          -         -
+BorderBackColor         RW          -          -         Specifies the background color of the broken border
+(Page 558)                                               line.
+BorderColor (Page 562)  RW          -          -         Specifies the line color.
+BorderFlashingColorOff  RW          -          -         Specifies the color of the border line for the flashing
+(Page 566)                                               status "Off".
+BorderFlashingColorOn   RW          -          -         Specifies the color of the border line for the flashing
+(Page 567)                                               status "On".
+BorderFlashingEnabled   RW          -          -         Specifies whether the limit of the object can flash in
+(Page 569)                                               runtime.
+BorderFlashingRate      -           -          -         -
+BorderStyle (Page 576)  RW          -          -         Specifies the type of border lines.
+BorderWidth (Page 577)  RW          -          -         Specifies the line thickness.
+Bounds                  -           -          -         -
+CanBeGrouped            -           -          -         -
+CornerStyle (Page 635)  RW          -          -         Specifies the shape of the corners.
+DrawInsideFrame         RW          -          -         Specifies whether the border line is to be shown with
+(Page 655)                                               a line thickness of greater than 1 within the border or
+                                               -         symmetrically to the border.
+EdgeStyle (Page 657) RW             -          RW        Specifies the line style.
+                                                         Specifies whether the selected object can be operat-
+Enabled (Page 660)      RW          RW         -         ed in runtime.
+                                               -         -
+FitToLargest            -           -          -         -
+                                                         Specifies whether flashing is activated for the object
+Flashing                -           -          -         in runtime.
+                                                         -
+FlashingEnabled         RW          -          -
+                                               -         Specifies the flash rate of the border line.
+(Page 697)                                               Specifies the color of the bitmap object of a flashing
+                                                         graphic that is set to "transparent".
+FlashingOnLimitViola- -             -
+
+tion
+
+FlashingRate (Page 699) RW          -
+
+FlashTransparentColor RW            -
+
+(Page 701)
+
+WinCC Engineering V18 ­ Programming reference            325
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties             RT Profes-  RT Ad-  Panel RT  Description
+FocusColor (Page 703)  sional      vanced
+                                           RW        Specifies the color of the focus border when the ob-
+                       -           RW                ject has the focus.
+                                           RW        Specifies the border width when the object has the
+FocusWidth (Page 704) -            RW                focus.
+                                           R         Specifies the height.
+Height (Page 720)      RW          R       RW        Specifies the tooltip that is shown in Runtime as user
+                                                     help for the specified object.
+HelpText (Page 724)    -           RW      -         -
+                                           RW        Specifies the layer in the screen that contains an ob-
+IsImageMiddleAligned -             -                 ject.
+                                           RW        Specifies the value of the X coordinate.
+Layer (Page 764)       RW          RW      -         Specifies the shape of the line ends.
+
+Left (Page 770)        RW          RW      -         -
+                                           -         -
+LineEndShapeStyle      RW          -       -         -
+                                           -         -
+(Page 787)                                 -         -
+                                           -         Specifies the picture that is displayed in the "Off" sta-
+Location               -           -                 tus.
+                                           -         Specifies the graphic that is displayed in the "On" sta-
+Mode                   -           -                 tus.
+                                           -         -
+Name                   -           -       -         Specifies the default for the value to be displayed.
+                                           -         -
+OnValue                -           -       -         -
+                                           -         -
+PictureList            -           -       -         -
+                                           -         -
+PictureOff (Page 866) RW           -       RW        Specifies the tooltip text.
+                                           RW        Specifies the value of the Y coordinate.
+PictureOn (Page 867) RW            -       -         Specifies the object transparency in percent.
+
+PictureRotation        -           -       RW        Specifies which color of the allocated graphic (*.bmp,
+                                                     *dib) is to be set to "transparent".
+ProcessValue (Page 874) RW         -       -         Specifies whether the object is displayed with global
+                                                     shading.
+ScrollBarOrientation   -           -       -         Specifies whether the color of the bitmap object of a
+                                                     flashing graphic is set to "transparent".
+ShowScrollBar          -           -       RW        Specifies whether the color defined with the "Trans-
+                                                     parentColor" property is shown as transparent.
+Size                   -           -       RW        Specifies whether the selected object is visible.
+                                           R         Specifies the width of the object in pixels.
+TabIndex               -           -
+
+TabIndexAlpha          -           -
+
+ToolTipText (Page 1082) RW         RW
+
+Top (Page 1083)        RW          RW
+
+Transparency           RW          -
+(Page 1087)
+
+TransparentColor       RW          RW
+
+(Page 1089)
+
+UseDesignShadowSet- RW             -
+
+tings (Page 1150)
+
+UseFlashTransparent- RW            -
+
+Color (Page 1153)
+
+UseTransparentColor RW             RW
+
+(Page 1159)
+
+Visible (Page 1204)    RW          RW
+
+Width (Page 1217)      RW          R
+
+326                                                  WinCC Engineering V18 ­ Programming reference
+                                                      System Manual, 11/2022, Online documentation
+                                                                        VB scripting
+                                                            1.5 VBS object model
+
+Table 1-45  Methods
+ Methods
+                      RT Profes-         RT Ad-  Panel RT   Description
+Activate (Page 1250)  sional             vanced
+                      Yes                Yes     Yes        Enables the permanent area or the root screen.
+ActivateDynamic       Yes                -       -          Dynamically activates a trigger and the specified cycle
+(Page 1252)                                                 for a property at runtime.
+                      Yes                -       -          Deactivates the trigger of the "ActivateDynamic"
+DeactivateDynamic                                           method used for the specified property in/during run-
+(Page 1259)                                                 time.
+
+GraphicView
+Description
+
+                        6FUHHQV
+                         6FUHHQ
+
+                      6FUHHQ,WHPV
+                      6FUHHQ,WHP
+

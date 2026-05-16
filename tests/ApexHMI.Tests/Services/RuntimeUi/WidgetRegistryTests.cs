@@ -94,7 +94,9 @@ public class WidgetRegistryTests
     private sealed class StubDataContext : IWidgetDataContext
     {
         public void RegisterValueCallback(string tagId, System.Action<string> callback) { }
+        public void RegisterValueCallback(string tagId, System.Action<string, ApexHMI.Models.RuntimeUi.TagQuality> callback) { }
         public void ExecuteAction(string actionType, string actionParam) { }
         public object? Shell => null;
+        public System.Collections.Generic.IReadOnlyDictionary<string, string>? CurrentFaceplateProperties => null;
     }
 }

@@ -1,0 +1,463 @@
+Table 1-7 Properties
+
+Properties            RT Profes-           RT Ad-  Panel RT   Description
+                      sional               vanced  -
+AlarmLowerLimit       RW                   -       -          Specifies the low limit at which the alarm is triggered
+(Page 503)                                         -
+AlarmLowerLimitColor  RW                   -       -          Specifies the bar color for the "AlarmLowerLimit" lim-
+(Page 504)                                                    it.
+AlarmLowerLimitEna-   RW                   -                  Specifies whether the "AlarmLowerLimit" limit is
+bled (Page 505)                                               monitored.
+AlarmLowerLimitRela-  RW                   -                  Specifies whether the low limit at which the interrupt
+tive (Page 505)                                               is triggered is evaluated as a percentage or an abso-
+                                                              lute value.
+
+WinCC Engineering V18 ­ Programming reference                                                    259
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-  Panel RT  Description
+                      sional      vanced
+AlarmUpperLimit       RW          -       -         Specifies the high limit that triggers the interrupt.
+(Page 506)
+AlarmUpperLimitColor  RW          -       -         Specifies the bar color for the "AlarmUpperLimit" lim-
+(Page 507)                                          it.
+AlarmUpperLimitEna-   RW          -       -         Specifies whether the "AlarmUpperLimit" limit is
+bled (Page 508)                                     monitored.
+AlarmUpperLimitRela-  RW          -       -         Specifies whether the high limit at which the inter-
+tive (Page 508)                                     rupt is triggered is evaluated as a percentage or an
+                                          -         absolute value.
+AllTagTypesAllowed    -           -       -         -
+                                                    Specifies operating rights.
+Authorization         RW          -       -
+(Page 517)                                          Specifies whether the average of the last 15 values is
+                                          RW        to be shown.
+AverageLast15Values RW            -       -         Specifies the background color.
+                                          -         Specifies the fill pattern.
+(Page 524)                                          Specifies the background color for flash state "Off".
+                                          -
+BackColor (Page 526) RW           RW                Specifies the background color for flash state "On".
+                                          -
+BackFillStyle (Page 531) RW       -                 Specifies whether the background flashes in run-
+                                          -         time.
+BackFlashingColorOff RW           -                 Specifies the flash rate of the background.
+                                          RW
+(Page 533)                                          Specifies the color of the bar background for the se-
+                                          -         lected object.
+BackFlashingColorOn RW            -                 Specifies the fill style for the bar.
+                                          -
+(Page 534)                                -         -
+                                          -         -
+BackFlashingEnabled RW            -       -         -
+                                          -         -
+(Page 535)                                -         -
+                                                    Specifies the bar alignment.
+BackFlashingRate      RW          -       -
+                                                    Specifies the background color of the broken border
+(Page 536)                                -         line.
+                                          -         Specifies the line color.
+BarBackColor (Page 539) RW        RW                Specifies the color of the border line for the flashing
+                                          -         status "Off".
+BarBackFillStyle      RW          -                 Specifies the color of the border line for the flashing
+                                          -         status "On".
+(Page 540)                                          Specifies whether the limit of the object can flash in
+                                          -         runtime.
+BarBackFlashingColorOff -         -                 Specifies the flash rate of the border line.
+
+BarBackFlashingColorOn -          -
+
+BarBackFlashingEnabled -          -
+
+BarBackFlashingRate   -           -
+
+BarEdgeStyle          -           -
+
+BarOrientation        RW          -
+
+(Page 544)
+
+BorderBackColor       RW          -
+
+(Page 558)
+
+BorderColor (Page 562) RW         -
+
+BorderFlashingColorOff RW         -
+
+(Page 566)
+
+BorderFlashingColorOn RW          -
+
+(Page 567)
+
+BorderFlashingEnabled RW          -
+
+(Page 569)
+
+BorderFlashingRate    RW          -
+
+(Page 570)
+
+260                                                 WinCC Engineering V18 ­ Programming reference
+                                                     System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-     Panel RT  Description
+                        sional      vanced
+BorderStyle (Page 576)  RW          -          -         Specifies the type of border lines.
+BorderWidth (Page 577)  RW          -          -         Specifies the line thickness of the selected object.
+BorderWidth3D           -           -          -         -
+Bounds                  -           -          -         -
+CanBeGrouped            -           -          -         -
+ColorChangeHysteresis   RW          -          -         Specifies the hysteresis as a percentage of the display
+(Page 601)                                               value.
+ColorChangeHysteresi-   RW          -          -         Specifies whether the object is displayed with hyste-
+sEnabled (Page 601)                                      resis.
+CompatibilityMode       -           -          -         -
+CornerRadius            -           -          -         -
+CornerStyle (Page 635)  RW          -          -         Specifies the shape of the corners of the specified
+                                                         object.
+CountDivisions          RW          -          -         Specifies the number of segments into which the bar
+                                                         will be split by means of the large scale tick marks.
+(Page 637)                                     RW        Specifies the number of scale marks between two
+                                                         main marks.
+CountSubDivisions       -           RW         -         -
+                                               -         Specifies whether the border line of the selected ob-
+(Page 637)                                               ject with a line thickness greater than 1 should be
+                                               -         drawn within the border or symmetrically to the bor-
+DeviceStyle             -           -          RW        der.
+                                                         Specifies the line style of the selected object.
+DrawInsideFrame         RW          -          -         Specifies whether the selected object can be operat-
+                                                         ed in runtime.
+(Page 655)                                     -         Specifies the color of the fill pattern for the selected
+                                               -         object.
+EdgeStyle (Page 657) RW             -          -         -
+                                               -         -
+Enabled (Page 660)      RW          RW         -         -
+                                                         -
+FillPatternColor        RW          -          -         -
+                                               -
+(Page 685)                                     -         -
+                                                         -
+Flashing                -           -          -         Specifies whether the text of the selected object is
+                                               -         shown in bold.
+FlashingColorOff        -           -                    Specifies the font of the selected object.
+                                               RW        Specifies the font size of the text for the selected ob-
+FlashingColorOn         -           -                    ject.
+                                               -         Specifies the font color of the text for the selected
+FlashingEnabled         -           -          R         object.
+                                               -         -
+FlashingOnLimitViola- -             -                    Specifies the height of the selected object.
+                                                         -
+tion
+
+FlashingRate            -           -
+
+Font                    -           -
+
+FontBold (Page 708)     RW          -
+
+FontName (Page 709) RW              -
+
+FontSize (Page 711)     RW          -
+
+ForeColor (Page 712) RW             RW
+
+ForeColorTransparency -             -
+
+Height (Page 720)       RW          R
+
+InnerHeight             -           -
+
+WinCC Engineering V18 ­ Programming reference            261
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties                RT Profes-  RT Ad-  Panel RT  Description
+                          sional      vanced  -
+InnerWidth                                    -         -
+IntegerDigits (Page 748)  -           -       -         Specifies the number of digits to the left of the deci-
+                                              -         mal point (0 to 20).
+                          RW          -       -         Returns which scale sections are labeled.
+                                              RW
+LargeTickLabelingStep R               -       RW        Specifies whether the long tick marks of a scale are
+                                              -         shown in bold.
+(Page 760)                                    -         Specifies the length of the long tick marks of a scale.
+                                              -
+LargeTicksBold            RW          -       -         Specifies the layer in the screen that contains an ob-
+                                              -         ject.
+(Page 760)                                    -         Specifies the value of the X coordinate of the selected
+                                              -         object.
+LargeTicksSize            RW          -       -         Specifies the low limit for "Reserve4".
+                                              -
+(Page 761)                                    -         Specifies the color for the "Reserve4" low limit.
+                                              -
+Layer (Page 764)          RW          RW      -         Specifies whether the "Reserve4" low limit is moni-
+                                              -         tored.
+Left (Page 770)           RW          RW      -         Specifies whether the "Reserve4" low limit is evalu-
+                                              -         ated as a percentage or an absolute value.
+Limit4LowerLimit          RW          -       -         Specifies the high limit for "Reserve4".
+                                              -
+(Page 775)                                              Specifies the color for the "Reserve4" high limit.
+
+Limit4LowerLimitColor RW              -                 Specifies whether the "Reserve4" high limit is moni-
+                                                        tored.
+(Page 776)                                              Specifies whether the "Reserve4" high limit is evalu-
+                                                        ated as a percentage or an absolute value.
+Limit4LowerLimitEna- RW               -                 Specifies the low limit for "Reserve5".
+
+bled (Page 777)                                         Sets the color for the "Reserve5" low limit.
+
+Limit4LowerLimitRela- RW              -                 Specifies whether the "Reserve5" low limit is moni-
+                                                        tored.
+tive (Page 777)                                         Specifies whether the "Reserve5" low limit is evalu-
+                                                        ated as a percentage or an absolute value.
+Limit4UpperLimit          RW          -                 Specifies the high limit for "Reserve5".
+
+(Page 778)                                              Specifies the color for the "Reserve5" high limit.
+
+Limit4UpperLimitColor RW              -                 Specifies whether the "Reserve5" high limit is moni-
+                                                        tored.
+(Page 779)                                              Specifies whether the "Reserve5" high limit is evalu-
+                                                        ated as a percentage or an absolute value.
+Limit4UpperLimitEna- RW               -                 -
+
+bled (Page 779)
+
+Limit4UpperLimitRela- RW              -
+
+tive (Page 780)
+
+Limit5LowerLimit          RW          -
+
+(Page 781)
+
+Limit5LowerLimitColor RW              -
+
+(Page 781)
+
+Limit5LowerLimitEna- RW               -
+
+bled (Page 782)
+
+Limit5LowerLimitRela- RW              -
+
+tive (Page 783)
+
+Limit5UpperLimit          RW          -
+
+(Page 783)
+
+Limit5UpperLimitColor RW              -
+
+(Page 784)
+
+Limit5UpperLimitEna- RW               -
+
+bled (Page 785)
+
+Limit5UpperLimitRela- RW              -
+
+tive (Page 785)
+
+LimitRangeCollection -                -
+
+262                                                     WinCC Engineering V18 ­ Programming reference
+                                                         System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties                RT Profes-  RT Ad-   Panel RT  Description
+                          sional      vanced
+LineEndShapeStyle         RW          -        -         Specifies the shape of the line ends.
+(Page 787)
+Location                  -           -        -         -
+MaximumValue              RW          RW       RW        Specifies the maximum value of the scale in the se-
+(Page 799)                                               lected object.
+MinimumValue              RW          RW       RW        Specifies the minimum value of the scale in the se-
+(Page 822)                                               lected object.
+Name                      -           -        -         -
+Precision (Page 871)      RW          -        -         Specifies the number of decimal places (0 to 20).
+ProcessValue (Page 874)   RW          RW       RW        Specifies the default for the value to be displayed.
+ScaleColor (Page 892)     RW          RW       RW        Specifies the color of the scale of the selected object.
+ScaleGradation            RW          RW       RW        Specifies the distance between two large tick marks
+(Page 893)                                               of the scale.
+ScaleLabelFieldLength     -           -        -         -
+ScaleLabelingDouble-      -           -        -         -
+Lined
+ScalePosition (Page 896)  RW          -        -         Specifies the position of the scale of the selected ob-
+                                                         ject.
+ScaleStart                -           -        -         -
+                                               -         Specifies the type of bar scaling.
+ScalingType (Page 899) RW             -        RW        Specifies the type of color change to be displayed if
+                                                         the limits are exceeded.
+SegmentColoring           RW          RW       -         Defines whether the object is grayed out when a bad
+                                                         quality code or tag status is detected.
+(Page 904)                                     -         Specifies whether only large scale marks are shown.
+
+ShowBadTagState           RW          -        -         -
+                                               -         Specifies whether the limit values are shown as a
+(Page 926)                                               scale value.
+                                               -         -
+ShowLargeTicksOnly        RW          -        -         -
+                                               -         Specifies whether the values are also shown in a
+(Page 935)                                               scale.
+                                               -         -
+ShowLimitLines            -           -
+                                               -         -
+ShowLimitMarkers          RW          -        -         Specifies whether the trend (rising or falling) of the
+                                                         measured value to be monitored is indicated by
+(Page 936)                                     -         means of a small arrow.
+                                               -         -
+ShowLimitRanges           -           -                  Defines the absolute value of the zero point of the
+                                               -         scale indicator.
+ShowProcessValue          -           -        -         -
+                                               -         -
+ShowScale (Page 940) RW               -                  -
+
+ShowSignForPositiveLa- -              -
+
+bel
+
+ShowTickLabels            -           -
+
+ShowTrendIndicator        RW          -
+
+(Page 950)
+
+Size                      -           -
+
+StartValue (Page 958) RW              -
+
+StyleItem                 -           -
+
+TabIndex                  -           -
+
+TabIndexAlpha             -           -
+
+WinCC Engineering V18 ­ Programming reference            263
+System Manual, 11/2022, Online documentation
+VB scripting
+1.5 VBS object model
+
+Properties              RT Profes-  RT Ad-  Panel RT  Description
+                        sional      vanced  -
+ToleranceLowerLimit     RW          -       -         Sets the low limit for tolerance 1.
+(Page 1054)                                 -
+ToleranceLowerLimit-    RW          -       -         Specifies the color for the low limit "ToleranceLower-
+Color (Page 1054)                                     Limit".
+ToleranceLowerLimitEn-  RW          -       -         Specifies whether the "ToleranceLowerLimit" limit is
+abled (Page 1055)                           -         monitored.
+ToleranceLowerLimitRe-  RW          -       -         Specifies whether the low limit "ToleranceLowerLi-
+lative (Page 1056)                          -         mit" is evaluated as a percentage or as an absolute
+                                                      value.
+ToleranceUpperLimit     RW          -       RW        Sets the high limit for tolerance 1.
+                                            RW
+(Page 1056)                                 -         Specifies the color for the high limit "ToleranceUp-
+                                            -         perLimit".
+ToleranceUpperLimit- RW             -       -         Specifies whether the "ToleranceUpperLimit" limit is
+                                            -         monitored.
+Color (Page 1057)                           -         Specifies whether the high limit "ToleranceUpperLi-
+                                                      mit" is to be evaluated as a percentage or as an ab-
+ToleranceUpperLimitEn- RW           -       -         solute value.
+                                            -         Specifies the tooltip text.
+abled (Page 1058)                           RW        Specifies the value of the Y coordinate of the selected
+                                            -         object.
+ToleranceUpperLimitRe- RW           -       -         Specifies the object transparency in percent.
+                                            -
+lative (Page 1058)                          -         Specifies the color for the trend view.
+                                            -
+ToolTipText (Page 1082) RW          RW      R         Specifies the unit of measurement.
+                                                      -
+Top (Page 1083)         RW          RW                Specifies whether the colors defined in the global
+                                                      color scheme of the current design are to be used for
+Transparency            RW          -                 this object.
+(Page 1087)                                           Specifies whether the object is displayed with global
+                                                      shading.
+TrendIndicatorColor     RW          -                 Specifies whether the numbers are displayed with
+                                                      exponentials (e.g. "1.00e+000").
+(Page 1101)                                           Specifies whether the selected object is visible.
+                                                      Specifies the low limit for "WarningLowerLimit".
+Unit (Page 1142)        RW          -
+                                                      Specifies the color for the low limit "WarningLower-
+UseAutoScaling          -           -                 Limit".
+                                                      Specifies whether the "WarningLowerLimit" limit is
+UseDesignColorSchema RW             -                 monitored.
+                                                      Specifies whether the low limit "WarningLowerLimit"
+(Page 1148)                                           is evaluated as a percentage or as an absolute value.
+                                                      Specifies the upper warning limit.
+UseDesignShadowSet- RW              -
+                                                      Specifies the color for the high limit "WarningUpper-
+tings (Page 1150)                                     Limit".
+
+UseExponentialFormat RW             -
+
+(Page 1153)
+
+Visible (Page 1204)     RW          RW
+
+WarningLowerLimit       RW          -
+
+(Page 1209)
+
+WarningLowerLimitCol- RW            -
+
+or (Page 1210)
+
+WarningLowerLimitEna- RW            -
+
+bled (Page 1211)
+
+WarningLowerLimitRela- RW           -
+
+tive (Page 1212)
+
+WarningUpperLimit       RW          -
+
+(Page 1214)
+
+WarningUpperLimitCol- RW            R
+
+or (Page 1215)
+
+264                                                   WinCC Engineering V18 ­ Programming reference
+                                                       System Manual, 11/2022, Online documentation
+                                                                     VB scripting
+                                                         1.5 VBS object model
+
+Properties            RT Profes-  RT Ad-       Panel RT  Description
+                      sional      vanced       R
+                                  R            RW        Specifies whether the high limit is to be monitored.
+WarningUpperLimitEna- RW
+bled (Page 1216)                  RW           R         Specifies whether the high limit "WarningUpperLi-
+                                               RW        mit" is to be evaluated as a percentage or as an ab-
+WarningUpperLimitRela- RW                                solute value.
+tive (Page 1216)                                         Specifies the width of the object in pixels.
+                                                         Specifies the position of the zero point as a percent-
+Width (Page 1217)     RW          R                      age of the bar height.
+
+ZeroPoint (Page 1249) RW          RW
+
+Table 1-8   Methods
+ Methods
+                      RT Profes-  RT Ad-       Panel RT  Description
+Activate (Page 1250)  sional      vanced
+                      Yes         Yes          Yes       Enables the permanent area or the root screen.
+ActivateDynamic       Yes         -            -         Dynamically activates a trigger and the specified cycle
+(Page 1252)                                              for a property at runtime.
+                      Yes         -            -         Deactivates the trigger of the "ActivateDynamic"
+DeactivateDynamic                                        method used for the specified property in/during run-
+(Page 1259)                                              time.
+
+BatteryView
+Description
+
+                        6FUHHQV
+                         6FUHHQ
+
+                      6FUHHQ,WHPV
+                      6FUHHQ,WHP
+

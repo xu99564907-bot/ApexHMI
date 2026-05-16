@@ -47,8 +47,11 @@ public class RuntimeProjectService
                 if (v1Project is not null)
                 {
                     var migrated = V1ProjectMigrator.MigrateProject(v1Project);
+                    migrated = ProjectMigration.Migrate(migrated);
+                    ApexHMI.Services.RuntimeUi.BuiltInFaceplates.EnsureInjected(migrated.Faceplates ??= new Models.RuntimeUi.FaceplateLibrary());
                     Save(migrated, DefaultProjectPath);
                     Current = migrated;
+                    ApexHMI.Services.RuntimeUi.DesignerContext.Document = migrated;
                     return migrated;
                 }
             }
@@ -59,8 +62,12 @@ public class RuntimeProjectService
         }
 
         var demo = CreateDemoProject();
+        demo = ProjectMigration.Migrate(demo);
+        // P7F: 注入内置 Faceplate
+        ApexHMI.Services.RuntimeUi.BuiltInFaceplates.EnsureInjected(demo.Faceplates ??= new Models.RuntimeUi.FaceplateLibrary());
         Save(demo, DefaultProjectPath);
         Current = demo;
+        ApexHMI.Services.RuntimeUi.DesignerContext.Document = demo;
         return demo;
     }
 
@@ -70,7 +77,10 @@ public class RuntimeProjectService
         var doc = JsonSerializer.Deserialize<ProjectDocument>(json, _jsonOptions)
                   ?? new ProjectDocument();
         doc = ProjectMigration.Migrate(doc);
+        // P7F: 注入内置 Faceplate（不在 Migration 内做，避免 Models → Services 反向依赖）
+        ApexHMI.Services.RuntimeUi.BuiltInFaceplates.EnsureInjected(doc.Faceplates ??= new Models.RuntimeUi.FaceplateLibrary());
         Current = doc;
+        ApexHMI.Services.RuntimeUi.DesignerContext.Document = doc;
         return doc;
     }
 
@@ -108,47 +118,25 @@ public class RuntimeProjectService
                         },
                         new()
                         {
-                            TypeId = "bool-lamp",
-                            X = 40, Y = 100, Width = 160, Height = 32,
-                            Properties = { ["label"] = "系统就绪", ["trueColor"] = "#22C55E", ["falseColor"] = "#EF4444" },
-                            Binding = new() { TagId = "SystemReady", AccessMode = BindingAccessMode.Subscribe, DataType = "Bool" }
-                        },
-                        new()
-                        {
-                            TypeId = "bool-lamp",
-                            X = 40, Y = 144, Width = 160, Height = 32,
-                            Properties = { ["label"] = "运行中", ["trueColor"] = "#3B82F6", ["falseColor"] = "#94A3B8" },
-                            Binding = new() { TagId = "Running", AccessMode = BindingAccessMode.Subscribe, DataType = "Bool" }
-                        },
-                        new()
-                        {
-                            TypeId = "numeric-readonly",
-                            X = 40, Y = 200, Width = 160, Height = 60,
-                            Properties = { ["label"] = "产量", ["unit"] = "件", ["format"] = "F0" },
-                            Binding = new() { TagId = "ProductCount", AccessMode = BindingAccessMode.Subscribe, DataType = "Int" }
-                        },
-                        new()
-                        {
-                            TypeId = "numeric-readonly",
-                            X = 220, Y = 200, Width = 160, Height = 60,
-                            Properties = { ["label"] = "节拍", ["unit"] = "s", ["format"] = "F1" },
-                            Binding = new() { TagId = "CycleTime", AccessMode = BindingAccessMode.Subscribe, DataType = "Float" }
+                            TypeId = "text",
+                            X = 40, Y = 100, Width = 200, Height = 32,
+                            Properties = { ["text"] = "示例文本", ["fontSize"] = "14", ["foreground"] = "#0F172A" }
                         },
                         new()
                         {
                             TypeId = "button",
-                            X = 40, Y = 300, Width = 120, Height = 40,
-                            Properties = { ["text"] = "前往手动页", ["background"] = "#374151", ["foreground"] = "#FFFFFF" },
+                            X = 40, Y = 200, Width = 120, Height = 40,
+                            Properties = { ["text"] = "前往第二页", ["background"] = "#374151", ["foreground"] = "#FFFFFF" },
                             ActionType = "navigate",
-                            ActionParam = "manual"
+                            ActionParam = "page2"
                         }
                     ]
                 },
                 new()
                 {
-                    Id = "page-manual",
-                    Title = "手动操作",
-                    RouteKey = "manual",
+                    Id = "page-2",
+                    Title = "页面 2",
+                    RouteKey = "page2",
                     CanvasWidth = 1280,
                     CanvasHeight = 720,
                     Widgets =
@@ -157,35 +145,12 @@ public class RuntimeProjectService
                         {
                             TypeId = "text",
                             X = 40, Y = 40, Width = 200, Height = 36,
-                            Properties = { ["text"] = "手动操作", ["fontSize"] = "22", ["foreground"] = "#0F172A" }
-                        },
-                        new()
-                        {
-                            TypeId = "bool-lamp",
-                            X = 40, Y = 100, Width = 160, Height = 32,
-                            Properties = { ["label"] = "气缸1 到位", ["trueColor"] = "#22C55E", ["falseColor"] = "#94A3B8" },
-                            Binding = new() { TagId = "Cyl1_FwdSensor", AccessMode = BindingAccessMode.Subscribe, DataType = "Bool" }
+                            Properties = { ["text"] = "页面 2", ["fontSize"] = "22", ["foreground"] = "#0F172A" }
                         },
                         new()
                         {
                             TypeId = "button",
-                            X = 40, Y = 150, Width = 120, Height = 40,
-                            Properties = { ["text"] = "气缸1 前进", ["background"] = "#2563EB", ["foreground"] = "#FFFFFF" },
-                            ActionType = "write-bool",
-                            ActionParam = "Cyl1_FwdCmd|True"
-                        },
-                        new()
-                        {
-                            TypeId = "button",
-                            X = 180, Y = 150, Width = 120, Height = 40,
-                            Properties = { ["text"] = "气缸1 退回", ["background"] = "#64748B", ["foreground"] = "#FFFFFF" },
-                            ActionType = "write-bool",
-                            ActionParam = "Cyl1_FwdCmd|False"
-                        },
-                        new()
-                        {
-                            TypeId = "button",
-                            X = 40, Y = 240, Width = 120, Height = 40,
+                            X = 40, Y = 120, Width = 120, Height = 40,
                             Properties = { ["text"] = "返回总览", ["background"] = "#374151", ["foreground"] = "#FFFFFF" },
                             ActionType = "navigate",
                             ActionParam = "overview"

@@ -148,6 +148,26 @@ public sealed class RemoveWidgetEdit : IRevertibleEdit
     public void Redo() => _editor.RemoveWidget(_page, _widget.Id);
 }
 
+/// <summary>P10G: 通用 lambda 编辑包装 — 任意 (Undo,Redo,Desc) 三元组都能挂到 EditStack。
+/// 用于动画修改 / 事件链增删 / Faceplate 实例化 / 多选批量改 等场景。</summary>
+public sealed class ActionEdit : IRevertibleEdit
+{
+    private readonly Action _undo;
+    private readonly Action _redo;
+
+    public string Description { get; }
+
+    public ActionEdit(string description, Action undo, Action redo)
+    {
+        Description = description;
+        _undo = undo;
+        _redo = redo;
+    }
+
+    public void Undo() => _undo();
+    public void Redo() => _redo();
+}
+
 /// <summary>可撤销编辑栈，支持 Undo/Redo。</summary>
 public sealed class EditStack
 {
