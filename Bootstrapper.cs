@@ -49,7 +49,10 @@ public static class Bootstrapper
         // M5.2: 用户会话管理 / 密码策略 / 账户锁定（三件套）
         services.AddSingleton<SessionManager>();
         services.AddSingleton<PasswordPolicy>();
-        services.AddSingleton<AccountLockoutService>();
+        // M7.1: AccountLockoutService 持久化到 data/audit.db（共用），重启不丢锁定状态
+        services.AddSingleton<AccountLockoutService>(sp => new AccountLockoutService(
+            sp.GetRequiredService<IAuditService>(),
+            System.IO.Path.Combine(System.AppContext.BaseDirectory, "data")));
         // M4.3: 审计服务升级到 SQLite 后端（90 天自动滚动）
         // CSV 实现保留作 fallback / 开发场景，由 IAuditService 抽象兼容。
         // 内存 sink 由 MainWindowViewModel 在构造后注入（避免循环依赖）。
