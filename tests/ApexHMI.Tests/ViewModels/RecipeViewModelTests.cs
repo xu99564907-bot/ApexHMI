@@ -1,26 +1,31 @@
-﻿using ApexHMI.ViewModels.Shell;
-using Microsoft.Extensions.DependencyInjection;
+#nullable enable
+using ApexHMI.Interfaces;
+using ApexHMI.ViewModels.Modules;
+using Moq;
 using Xunit;
 
 namespace ApexHMI.Tests.ViewModels;
 
-public class RecipeViewModelTests {
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+/// <summary>M7.4: Moq + TestShell 重写。验证 Recipe 模块命令独立于 Shell 命令。</summary>
+public class RecipeViewModelTests
+{
+    [Fact]
     public void RecipeModuleOwnsRecipeCommands()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
+        var shell = new TestShell();
+        var recipeSvc = new Mock<IRecipeService>(MockBehavior.Loose).Object;
+        var recipe = new RecipeViewModel(shell, recipeSvc);
 
-        Assert.NotNull(shell.Recipe.ApplyRecipeCommand);
-        Assert.NotNull(shell.Recipe.CreateRecipeCommand);
-        Assert.NotNull(shell.Recipe.DuplicateRecipeCommand);
-        Assert.NotNull(shell.Recipe.DeleteRecipeCommand);
-        Assert.NotNull(shell.Recipe.CaptureCurrentParametersToRecipeCommand);
-        Assert.NotNull(shell.Recipe.LoadRecipesCommand);
-        Assert.NotNull(shell.Recipe.SaveRecipesCommand);
+        Assert.NotNull(recipe.ApplyRecipeCommand);
+        Assert.NotNull(recipe.CreateRecipeCommand);
+        Assert.NotNull(recipe.DuplicateRecipeCommand);
+        Assert.NotNull(recipe.DeleteRecipeCommand);
+        Assert.NotNull(recipe.CaptureCurrentParametersToRecipeCommand);
+        Assert.NotNull(recipe.LoadRecipesCommand);
+        Assert.NotNull(recipe.SaveRecipesCommand);
 
-        Assert.NotSame(shell.ApplyRecipeCommand, shell.Recipe.ApplyRecipeCommand);
-        Assert.NotSame(shell.LoadRecipesCommand, shell.Recipe.LoadRecipesCommand);
-        Assert.NotSame(shell.SaveRecipesCommand, shell.Recipe.SaveRecipesCommand);
+        Assert.NotSame(shell.ApplyRecipeCommand, recipe.ApplyRecipeCommand);
+        Assert.NotSame(shell.LoadRecipesCommand, recipe.LoadRecipesCommand);
+        Assert.NotSame(shell.SaveRecipesCommand, recipe.SaveRecipesCommand);
     }
 }

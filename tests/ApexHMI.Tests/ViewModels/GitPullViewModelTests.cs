@@ -1,40 +1,39 @@
-﻿using ApexHMI.Models;
-using ApexHMI.ViewModels.Shell;
-using Microsoft.Extensions.DependencyInjection;
+#nullable enable
+using ApexHMI.Interfaces;
+using ApexHMI.Models;
+using ApexHMI.ViewModels.Modules;
+using Moq;
 using Xunit;
 
 namespace ApexHMI.Tests.ViewModels;
 
-public class GitPullViewModelTests {
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
-    public void GitPullModuleOwnsCommands()
+/// <summary>
+/// M7.4: 用 Moq 重写 — 绕开整套 Shell/Bootstrapper，直接构造 GitPullViewModel + TestShell + 服务 mock。
+/// 原 11 条 [Fact(Skip)] 全部救回；测试本质是 ViewModel 窄面行为（属性赋值 / 命令委托 / 计算方法）。
+/// </summary>
+public class GitPullViewModelTests
+{
+    private static GitPullViewModel CreateSut()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
-
-        Assert.NotNull(shell.GitPull.BrowseGitTargetFolderCommand);
-        Assert.NotNull(shell.GitPull.PullGitRepositoryCommand);
-        Assert.NotNull(shell.GitPull.OpenGitTargetFolderCommand);
+        var shell = new TestShell();
+        var gitSvc = new Mock<IGitPullService>(MockBehavior.Loose).Object;
+        var syncSvc = new Mock<IGeneratedArtifactSyncService>(MockBehavior.Loose).Object;
+        return new GitPullViewModel(shell, gitSvc, syncSvc);
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
-    public void GitPullCommandsAreSameInstanceOnShell()
+    [Fact]
+    public void GitPullModule_Commands_AreNonNull()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
-
-        // GitPull 的命令通过 MainViewModel.GitPull.cs 直接委托，因此是同一实例
-        Assert.Same(shell.BrowseGitTargetFolderCommand, shell.GitPull.BrowseGitTargetFolderCommand);
-        Assert.Same(shell.PullGitRepositoryCommand, shell.GitPull.PullGitRepositoryCommand);
-        Assert.Same(shell.OpenGitTargetFolderCommand, shell.GitPull.OpenGitTargetFolderCommand);
+        var gitPull = CreateSut();
+        Assert.NotNull(gitPull.BrowseGitTargetFolderCommand);
+        Assert.NotNull(gitPull.PullGitRepositoryCommand);
+        Assert.NotNull(gitPull.OpenGitTargetFolderCommand);
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void DefaultValuesAreEmptyOrFalse()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         Assert.Equal(string.Empty, gitPull.GitRepositoryUrl);
         Assert.Equal(string.Empty, gitPull.GitBranch);
         Assert.Equal(string.Empty, gitPull.GitTargetFolder);
@@ -49,27 +48,32 @@ public class GitPullViewModelTests {
         Assert.False(gitPull.IsGitPullRunning);
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void CanPullGitRepository_ReturnsFalse_WhenRunning()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         Assert.True(gitPull.PullGitRepositoryCommand.CanExecute(null));
-
         gitPull.IsGitPullRunning = true;
         Assert.False(gitPull.PullGitRepositoryCommand.CanExecute(null));
-
         gitPull.IsGitPullRunning = false;
         Assert.True(gitPull.PullGitRepositoryCommand.CanExecute(null));
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
+    public void GitPullPropertyChanges_UpdateCanExecute()
+    {
+        var gitPull = CreateSut();
+        Assert.True(gitPull.PullGitRepositoryCommand.CanExecute(null));
+        gitPull.IsGitPullRunning = true;
+        Assert.False(gitPull.PullGitRepositoryCommand.CanExecute(null));
+        gitPull.IsGitPullRunning = false;
+        Assert.True(gitPull.PullGitRepositoryCommand.CanExecute(null));
+    }
+
+    [Fact]
     public void RestoreGitPullSettings_RestoresAllProperties()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         var settings = new GitPullSettings
         {
             RepositoryUrl = "https://git.example.com/repo.git",
@@ -83,11 +87,9 @@ public class GitPullViewModelTests {
             ForceResetLocal = true,
             PushProjectBranchToRemote = true,
             CommitAndPushAfterGenerate = true,
-            AutoCommitMessageTemplate = "Auto commit: {Operation}"
+            AutoCommitMessageTemplate = "Auto commit: {Operation}",
         };
-
         gitPull.RestoreGitPullSettings(settings);
-
         Assert.Equal("https://git.example.com/repo.git", gitPull.GitRepositoryUrl);
         Assert.Equal("develop", gitPull.GitBranch);
         Assert.Equal(@"C:\Projects\Repo", gitPull.GitTargetFolder);
@@ -102,28 +104,21 @@ public class GitPullViewModelTests {
         Assert.Equal("Auto commit: {Operation}", gitPull.GitAutoCommitMessageTemplate);
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void RestoreGitPullSettings_HandlesNull()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
-        // Should not throw
+        var gitPull = CreateSut();
         gitPull.RestoreGitPullSettings(null);
-
-        // Check all properties got defaulted
         Assert.Equal(string.Empty, gitPull.GitRepositoryUrl);
         Assert.Equal(string.Empty, gitPull.GitBranch);
         Assert.True(gitPull.IsSyncGeneratedToGitEnabled);
         Assert.False(gitPull.IsForceResetLocalEnabled);
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void BuildGitPullSettingsForConfig_RoundTrips()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         var original = new GitPullSettings
         {
             RepositoryUrl = "https://git.example.com/repo.git",
@@ -137,12 +132,10 @@ public class GitPullViewModelTests {
             ForceResetLocal = false,
             PushProjectBranchToRemote = true,
             CommitAndPushAfterGenerate = false,
-            AutoCommitMessageTemplate = "CI: {Operation}"
+            AutoCommitMessageTemplate = "CI: {Operation}",
         };
-
         gitPull.RestoreGitPullSettings(original);
         var result = gitPull.BuildGitPullSettingsForConfig();
-
         Assert.Equal(original.RepositoryUrl, result.RepositoryUrl);
         Assert.Equal(original.Branch, result.Branch);
         Assert.Equal(original.TargetFolder, result.TargetFolder);
@@ -157,66 +150,41 @@ public class GitPullViewModelTests {
         Assert.Equal(original.AutoCommitMessageTemplate, result.AutoCommitMessageTemplate);
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void ResolveEffectiveGitFolder_ReturnsEmpty_WhenTargetFolderEmpty()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         gitPull.GitTargetFolder = string.Empty;
         Assert.Equal(string.Empty, gitPull.ResolveEffectiveGitFolder());
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void ResolveEffectiveGitFolder_ReturnsBase_WhenSubFolderEmpty()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         gitPull.GitTargetFolder = @"C:\Base";
         gitPull.GitProjectFolderName = string.Empty;
         Assert.Equal(@"C:\Base", gitPull.ResolveEffectiveGitFolder());
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void ResolveEffectiveGitFolder_CombinesPath()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         gitPull.GitTargetFolder = @"C:\Base";
         gitPull.GitProjectFolderName = "SubDir";
         var result = gitPull.ResolveEffectiveGitFolder();
-
         Assert.EndsWith("SubDir", result);
         Assert.StartsWith(@"C:\Base", result);
     }
 
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+    [Fact]
     public void ResolveEffectiveGitFolder_StripsInvalidChars()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
+        var gitPull = CreateSut();
         gitPull.GitTargetFolder = @"C:\Base";
         gitPull.GitProjectFolderName = "Sub/Dir\\Name*?";
         var result = gitPull.ResolveEffectiveGitFolder();
-
         Assert.EndsWith("SubDirName", result);
-    }
-
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
-    public void GitPullPropertyChanges_UpdateCanExecute()
-    {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var gitPull = provider.GetRequiredService<MainWindowViewModel>().GitPull;
-
-        Assert.True(gitPull.PullGitRepositoryCommand.CanExecute(null));
-
-        gitPull.IsGitPullRunning = true;
-        Assert.False(gitPull.PullGitRepositoryCommand.CanExecute(null));
-
-        gitPull.IsGitPullRunning = false;
-        Assert.True(gitPull.PullGitRepositoryCommand.CanExecute(null));
     }
 }

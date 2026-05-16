@@ -138,6 +138,16 @@ public partial class MainViewModel
         RobotControlViewModel.Robot.Command.ProductType = 1;
     }
 
+    /// <summary>
+    /// M7.4: 测试专用 ctor — 跳过所有 WPF/Dispatcher/Seed 初始化，只让 Module ViewModel 能以本实例为 Shell 实例化。
+    /// 不要在生产代码调用。所有服务字段保持 null，调用任何使用它们的方法都会 NRE，这是设计意图（让测试只触发被测窄面）。
+    /// </summary>
+    protected MainViewModel(string testSentinel)
+    {
+        _ = testSentinel; // 仅作 ctor 标识符，避免与 protected default ctor 混淆
+        // 故意不调用 BuildNavigation / BindingOperations / DispatcherTimer / SeedXxx / _ = InitializeAsync()
+    }
+
     private async Task InitializeAsync()
     {
         try

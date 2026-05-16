@@ -1,19 +1,26 @@
-﻿using ApexHMI.ViewModels.Shell;
-using Microsoft.Extensions.DependencyInjection;
+#nullable enable
+using ApexHMI.Interfaces;
+using ApexHMI.ViewModels.Modules;
+using Moq;
 using Xunit;
 
 namespace ApexHMI.Tests.ViewModels;
 
-public class ParameterViewModelTests {
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+/// <summary>
+/// M7.4: Moq + TestShell 重写。验证 Parameter 模块命令独立于 Shell 命令。
+/// </summary>
+public class ParameterViewModelTests
+{
+    [Fact]
     public void ParameterModuleOwnsParameterPersistenceCommands()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
+        var shell = new TestShell();
+        var paramSvc = new Mock<IParameterService>(MockBehavior.Loose).Object;
+        var parameters = new ParameterViewModel(shell, paramSvc);
 
-        Assert.NotNull(shell.ParametersModule.LoadParametersCommand);
-        Assert.NotNull(shell.ParametersModule.SaveParametersCommand);
-        Assert.NotSame(shell.LoadParametersCommand, shell.ParametersModule.LoadParametersCommand);
-        Assert.NotSame(shell.SaveParametersCommand, shell.ParametersModule.SaveParametersCommand);
+        Assert.NotNull(parameters.LoadParametersCommand);
+        Assert.NotNull(parameters.SaveParametersCommand);
+        Assert.NotSame(shell.LoadParametersCommand, parameters.LoadParametersCommand);
+        Assert.NotSame(shell.SaveParametersCommand, parameters.SaveParametersCommand);
     }
 }

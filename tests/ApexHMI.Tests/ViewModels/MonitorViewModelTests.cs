@@ -1,30 +1,32 @@
-﻿using ApexHMI.ViewModels.Shell;
-using Microsoft.Extensions.DependencyInjection;
+#nullable enable
+using ApexHMI.ViewModels.Modules;
 using Xunit;
 
 namespace ApexHMI.Tests.ViewModels;
 
-public class MonitorViewModelTests {
-    [Fact(Skip = "M6.4: 需要完整 WPF Application 集成测试基座 — 推迟到 M7 窄面重写")]
+/// <summary>M7.4: Moq + TestShell 重写。验证 Monitor 模块命令独立于 Shell 命令。</summary>
+public class MonitorViewModelTests
+{
+    [Fact]
     public void MonitorModuleOwnsMonitorPageCommands()
     {
-        using var provider = Bootstrapper.BuildServiceProvider();
-        var shell = provider.GetRequiredService<MainWindowViewModel>();
+        var shell = new TestShell();
+        var monitor = new MonitorViewModel(shell);
 
-        Assert.NotNull(shell.Monitor.RefreshTagsCommand);
-        Assert.NotNull(shell.Monitor.LoadTrendHistoryCommand);
-        Assert.NotNull(shell.Monitor.ImportFlowCsvCommand);
-        Assert.NotNull(shell.Monitor.LoadOpcUaBrowserRootCommand);
-        Assert.NotNull(shell.Monitor.SwitchIoMonitorTypeCommand);
-        Assert.NotNull(shell.Monitor.PauseProgramMonitorTraceCommand);
-        Assert.NotNull(shell.Monitor.ExportProgramMonitorTraceCsvCommand);
+        Assert.NotNull(monitor.RefreshTagsCommand);
+        Assert.NotNull(monitor.LoadTrendHistoryCommand);
+        Assert.NotNull(monitor.ImportFlowCsvCommand);
+        Assert.NotNull(monitor.LoadOpcUaBrowserRootCommand);
+        Assert.NotNull(monitor.SwitchIoMonitorTypeCommand);
+        Assert.NotNull(monitor.PauseProgramMonitorTraceCommand);
+        Assert.NotNull(monitor.ExportProgramMonitorTraceCsvCommand);
 
-        Assert.NotSame(shell.RefreshTagsCommand, shell.Monitor.RefreshTagsCommand);
-        Assert.NotSame(shell.LoadTrendHistoryCommand, shell.Monitor.LoadTrendHistoryCommand);
-        Assert.NotSame(shell.ImportFlowCsvCommand, shell.Monitor.ImportFlowCsvCommand);
-        Assert.NotSame(shell.LoadOpcUaBrowserRootCommand, shell.Monitor.LoadOpcUaBrowserRootCommand);
-        Assert.NotSame(shell.SwitchIoMonitorTypeCommand, shell.Monitor.SwitchIoMonitorTypeCommand);
-        Assert.NotSame(shell.PauseProgramMonitorTraceCommand, shell.Monitor.PauseProgramMonitorTraceCommand);
-        Assert.NotSame(shell.ExportProgramMonitorTraceCsvCommand, shell.Monitor.ExportProgramMonitorTraceCsvCommand);
+        Assert.NotSame(shell.RefreshTagsCommand, monitor.RefreshTagsCommand);
+        Assert.NotSame(shell.LoadTrendHistoryCommand, monitor.LoadTrendHistoryCommand);
+        Assert.NotSame(shell.ImportFlowCsvCommand, monitor.ImportFlowCsvCommand);
+        Assert.NotSame(shell.LoadOpcUaBrowserRootCommand, monitor.LoadOpcUaBrowserRootCommand);
+        Assert.NotSame(shell.SwitchIoMonitorTypeCommand, monitor.SwitchIoMonitorTypeCommand);
+        Assert.NotSame(shell.PauseProgramMonitorTraceCommand, monitor.PauseProgramMonitorTraceCommand);
+        Assert.NotSame(shell.ExportProgramMonitorTraceCsvCommand, monitor.ExportProgramMonitorTraceCsvCommand);
     }
 }
