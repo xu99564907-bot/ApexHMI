@@ -172,7 +172,8 @@ public class UserService : IUserService
             return null;
         }
 
-        user.LastLoginAt = DateTime.Now;
+        // M7.3: LastLoginAt 持久化到 users.json，用 UTC（UI 显示侧 ToLocalTime）
+        user.LastLoginAt = DateTime.UtcNow;
         user.FailedAttempts = 0;
         AccountLockout?.ResetCounter(user.Username);
         SaveTo(_configPath, _users);

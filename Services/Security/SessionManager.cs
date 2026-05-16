@@ -28,7 +28,7 @@ public sealed class SessionManager
         get
         {
             if (_currentUser is null) return TimeSpan.Zero;
-            var elapsed = DateTime.Now - _lastActivity;
+            var elapsed = DateTime.UtcNow - _lastActivity;
             var left = Timeout - elapsed;
             return left < TimeSpan.Zero ? TimeSpan.Zero : left;
         }
@@ -63,7 +63,7 @@ public sealed class SessionManager
     public void Login(string username)
     {
         _currentUser = username;
-        _lastActivity = DateTime.Now;
+        _lastActivity = DateTime.UtcNow;
         EnsureTimer();
         if (_timer is { IsEnabled: false }) _timer.Start();
     }
@@ -78,13 +78,13 @@ public sealed class SessionManager
     public void KeepAlive()
     {
         if (_currentUser is null) return;
-        _lastActivity = DateTime.Now;
+        _lastActivity = DateTime.UtcNow;
     }
 
     private void OnTick(object? sender, EventArgs e)
     {
         if (_currentUser is null) return;
-        if (DateTime.Now - _lastActivity >= Timeout)
+        if (DateTime.UtcNow - _lastActivity >= Timeout)
         {
             var u = _currentUser;
             _currentUser = null;

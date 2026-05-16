@@ -805,7 +805,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>当前账号的最近一次成功登录时间，用于 LoginView 显示。</summary>
     public string LastLoginText =>
         CurrentAccount?.LastLoginAt is { } at
-            ? $"上次登录：{at:yyyy-MM-dd HH:mm}"
+            // M7.3: LastLoginAt 持久化是 UTC，UI 显示转本地
+            ? $"上次登录：{at.ToLocalTime():yyyy-MM-dd HH:mm}"
             : "首次登录或未记录";
 
     /// <summary>自上次成功登录以来的失败尝试次数，&gt; 0 时显示。</summary>

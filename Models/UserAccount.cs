@@ -21,6 +21,10 @@ public class UserAccount
 
     public DateTime? LastLoginAt { get; set; }
 
+    /// <summary>M7.3: UI 友好的本地时间投影（LastLoginAt 持久化为 UTC，显示侧转本地）。</summary>
+    [JsonIgnore]
+    public DateTime? LastLoginAtLocal => LastLoginAt?.ToLocalTime();
+
     /// <summary>
     /// 兼容字段：M5.2 曾在此累计失败次数，M6.1 后由 <see cref="ApexHMI.Services.Security.AccountLockoutService"/>
     /// 维护内存计数。本字段仅在 users.json 序列化兼容时保留，运行时不再更新。

@@ -35,7 +35,7 @@
                     <DataGridTextColumn Header="用户名"    Binding="{Binding Username}"    Width="120"/>
                     <DataGridTextColumn Header="显示名"    Binding="{Binding DisplayName}" Width="120"/>
                     <DataGridTextColumn Header="角色"      Binding="{Binding Role}"        Width="100"/>
-                    <DataGridTextColumn Header="上次登录"  Binding="{Binding LastLoginAt, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="160"/>
+                    <DataGridTextColumn Header="上次登录"  Binding="{Binding LastLoginAtLocal, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="160"/>
                     <DataGridTextColumn Header="失败次数"  Binding="{Binding FailedAttempts}" Width="80"/>
                 </DataGrid.Columns>
             </DataGrid>

@@ -51,7 +51,8 @@ public sealed class AuditService : IAuditService
     public async Task LogOperationAsync(string user, string action, string target, bool success, string? detail = null)
     {
         var line = string.Join(",",
-            DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"),
+            // M7.3: 持久化用 UTC（CSV 字段读取时调用方可 ToLocalTime 显示）
+            DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"),
             Escape(user),
             Escape(action),
             Escape(target),

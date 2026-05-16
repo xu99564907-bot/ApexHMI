@@ -54,7 +54,8 @@ public sealed class AuditServiceSqlite : IAuditService
         try
         {
             EnsureDb();
-            var tsMs = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            // M7.3: 持久化时间戳统一 UTC（Unix ms 本身与时区无关，但显式以 UTC 入口避免歧义）
+            var tsMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             lock (_dbLock)
             {
                 using var conn = OpenConn();
@@ -85,8 +86,9 @@ public sealed class AuditServiceSqlite : IAuditService
     public Task<IReadOnlyList<AuditRecord>> QueryAsync(DateTime from, DateTime to, string? user = null, string? action = null)
     {
         EnsureDb();
-        var fromMs = new DateTimeOffset(from).ToUnixTimeMilliseconds();
-        var toMs   = new DateTimeOffset(to).ToUnixTimeMilliseconds();
+        // M7.3: 查询入参可能是 Local 或 Utc；按 Kind 自动归一化到 UTC Unix ms
+        var fromMs = ToUnixMs(from);
+        var toMs   = ToUnixMs(to);
         var list = new List<AuditRecord>();
         lock (_dbLock)
         {
@@ -110,6 +112,7 @@ public sealed class AuditServiceSqlite : IAuditService
                 {
                     list.Add(new AuditRecord(
                         rdr.GetInt64(0),
+                        // M7.3: 读出按 LocalTime 显示（DB 内部存的是 UTC Unix ms）
                         DateTimeOffset.FromUnixTimeMilliseconds(rdr.GetInt64(1)).LocalDateTime,
                         rdr.GetString(2),
                         rdr.GetString(3),
@@ -156,6 +159,18 @@ public sealed class AuditServiceSqlite : IAuditService
         }
     }
 
+    /// <summary>M7.3: 把 DateTime（Local / Utc / Unspecified）统一归一化到 UTC Unix ms。</summary>
+    private static long ToUnixMs(DateTime t)
+    {
+        var utc = t.Kind switch
+        {
+            DateTimeKind.Utc => t,
+            DateTimeKind.Local => t.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(t, DateTimeKind.Local).ToUniversalTime(),
+        };
+        return new DateTimeOffset(utc, TimeSpan.Zero).ToUnixTimeMilliseconds();
+    }
+
     private SqliteConnection OpenConn()
     {
         var conn = new SqliteConnection($"Data Source={_dbPath}");
@@ -168,7 +183,8 @@ public sealed class AuditServiceSqlite : IAuditService
         var now = Environment.TickCount;
         if (now - Interlocked.Read(ref _lastCleanupTicks) < 60_000) return;
         Interlocked.Exchange(ref _lastCleanupTicks, now);
-        var cutoff = DateTimeOffset.Now.Subtract(RetentionWindow).ToUnixTimeMilliseconds();
+        // M7.3: 清理截止点统一 UTC
+        var cutoff = DateTimeOffset.UtcNow.Subtract(RetentionWindow).ToUnixTimeMilliseconds();
         lock (_dbLock)
         {
             try
