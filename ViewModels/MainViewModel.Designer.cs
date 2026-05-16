@@ -595,11 +595,59 @@ public partial class MainViewModel
         return builder.ToString();
     }
 
+    // 会话级标记：本次启动内已经做过 InoProShop 检测（无论装没装），后续生成不再重复弹窗/打日志
+    private bool _inoProShopCheckedThisSession;
+
+    /// <summary>
+    /// 生成 PLC 程序前确认本机已安装汇川 InoProShop（生成的 .st 文件需要它来编译/下载）。
+    /// 返回 true 表示可继续生成；false 表示用户在缺失时主动取消。
+    /// 同一次启动内只弹窗一次，避免批量生成时被反复打断。
+    /// </summary>
+    private bool EnsureInoProShopOrConfirm(string generateAction)
+    {
+        var det = InoProShopDetector.Detect();
+        if (det.Installed)
+        {
+            if (!_inoProShopCheckedThisSession)
+            {
+                _inoProShopCheckedThisSession = true;
+                var verPart = string.IsNullOrEmpty(det.Version) ? "" : $" v{det.Version}";
+                var pathPart = string.IsNullOrEmpty(det.InstallPath) ? "" : $"（{det.InstallPath}）";
+                AddLog("InoProShop 检测", $"已检测到 {det.ProductName ?? "InoProShop"}{verPart}{pathPart}", "Info");
+            }
+            return true;
+        }
+
+        if (_inoProShopCheckedThisSession) return true; // 本次启动已问过，不再骚扰
+        _inoProShopCheckedThisSession = true;
+
+        var confirmed = RequestConfirmation(
+            "未检测到汇川 InoProShop",
+            $"未在本机检测到汇川 InoProShop / InoEdit / AutoShop 编程软件。\n\n" +
+            $"「{generateAction}」产生的 .st 源代码需要 InoProShop 才能加载、编译并下载到 PLC。\n" +
+            $"如果本机仅用于编辑画面、不负责编译下载，可以忽略此提示。\n\n" +
+            $"是否继续生成？");
+
+        if (!confirmed)
+        {
+            SystemMessage = $"{generateAction}已取消（缺少汇川 InoProShop）";
+            AddLog("InoProShop 检测", $"{generateAction}已取消，用户选择不继续。", "Warning");
+        }
+        else
+        {
+            AddLog("InoProShop 检测", $"未检测到 InoProShop，用户选择仍继续 {generateAction}。", "Warning");
+        }
+        return confirmed;
+    }
+
     [RelayCommand]
     private async Task GenerateIoProgramsAsync()
     {
         try
         {
+            // 生成前检测汇川 InoProShop（缺失时弹窗确认，每次启动只问一次）
+            if (!EnsureInoProShopOrConfirm("手动 IO 程序生成")) return;
+
             // D1: 生成前重新校验，存在异常则阻止
             var errs = ValidateIoTable();
             if (errs > 0)
@@ -1516,6 +1564,7 @@ public partial class MainViewModel
     private async Task GenerateSfcCode()
     {
         if (SfcSteps.Count == 0) { SystemMessage = "请先添加步骤"; return; }
+        if (!EnsureInoProShopOrConfirm("SFC 自动程序生成")) return;
         var driveDb = BuildSfcDriveDb();
         var opBase = ResolveOperationBaseNumber(IoOperationNumber);
         var controlDb = $"DB{opBase}_Control";
@@ -1631,6 +1680,7 @@ public partial class MainViewModel
     private async Task GenerateSfcInitCode()
     {
         if (SfcInitSteps.Count == 0) { SystemMessage = "请先在初始化程序页添加步骤"; return; }
+        if (!EnsureInoProShopOrConfirm("SFC 初始化程序生成")) return;
 
         var driveDb     = BuildSfcDriveDb();
         var opBase      = ResolveOperationBaseNumber(IoOperationNumber);
