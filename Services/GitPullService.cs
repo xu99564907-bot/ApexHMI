@@ -647,12 +647,19 @@ public class GitPullService : IGitPullService
     }
 
 
+    // -c safe.directory=* 前缀：抑制 Git 2.35+ "dubious ownership" 报错
+    // 触发场景：仓库目录被管理员账号创建/拷贝过来，普通用户再访问时所有者不匹配
+    // 作用范围：仅 ApexHMI 启动的 git 子进程，不写入用户全局 .gitconfig，不影响用户在命令行的 git 行为
+    // 安全性：用户主动在 UI 上配置了仓库路径并点了"拉取"，属于明确意图，不存在恶意脚本悄悄跑 git 的场景
+    private const string SafeDirectoryPrefix = "-c safe.directory=* ";
+
     private static async Task RunGitAsync(string arguments, string? workingDirectory, StringBuilder log, IProgress<string>? progress, CancellationToken cancellationToken)
     {
+        var effectiveArgs = SafeDirectoryPrefix + arguments;
         var psi = new ProcessStartInfo
         {
             FileName = "git",
-            Arguments = arguments,
+            Arguments = effectiveArgs,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -672,6 +679,7 @@ public class GitPullService : IGitPullService
 
         using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
 
+        // 日志只显示业务 arguments，前缀的 -c safe.directory=* 是基础设施，不必每行重复刷屏
         var redactedArgs = RedactArguments(arguments);
         log.AppendLine($"> git {redactedArgs}");
         progress?.Report($"git {redactedArgs}");
