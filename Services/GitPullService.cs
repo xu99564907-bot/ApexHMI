@@ -293,7 +293,7 @@ public class GitPullService : IGitPullService
     {
         var psi = new ProcessStartInfo
         {
-            FileName = "git",
+            FileName = ResolveGitExecutable(),
             Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -342,7 +342,7 @@ public class GitPullService : IGitPullService
     {
         var psi = new ProcessStartInfo
         {
-            FileName = "git",
+            FileName = ResolveGitExecutable(),
             Arguments = arguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -419,7 +419,7 @@ public class GitPullService : IGitPullService
     {
         var psi = new ProcessStartInfo
         {
-            FileName = "git",
+            FileName = ResolveGitExecutable(),
             Arguments = $"show-ref --verify --quiet \"refs/heads/{branch}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -533,7 +533,7 @@ public class GitPullService : IGitPullService
     {
         var psi = new ProcessStartInfo
         {
-            FileName = "git",
+            FileName = ResolveGitExecutable(),
             Arguments = $"config --get {key}",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -579,7 +579,13 @@ public class GitPullService : IGitPullService
         catch (Exception ex)
         {
             Log.Error(ex, "检测 git 命令失败");
-            throw new InvalidOperationException("未检测到 git 命令。请先安装 Git for Windows 并确保 git.exe 已加入 PATH。", ex);
+            var resolved = ResolveGitExecutable();
+            var msg = resolved == "git"
+                ? "未检测到 git 命令。\n" +
+                  "已尝试：① 部署包 deps\\PortableGit\\cmd\\git.exe  ② 部署包 deps\\PortableGit\\bin\\git.exe  ③ 系统 PATH\n" +
+                  "全部失败。请确认 deploy.bat 已完整运行，或手动安装 Git for Windows 并把 git.exe 加入 PATH。"
+                : $"已定位部署包内置 git（{resolved}），但调用失败：{ex.Message}";
+            throw new InvalidOperationException(msg, ex);
         }
     }
 
@@ -653,12 +659,59 @@ public class GitPullService : IGitPullService
     // 安全性：用户主动在 UI 上配置了仓库路径并点了"拉取"，属于明确意图，不存在恶意脚本悄悄跑 git 的场景
     private const string SafeDirectoryPrefix = "-c safe.directory=* ";
 
+    // 解析 git.exe 绝对路径：
+    //   1. 优先用部署包约定的内置路径 <exe目录>\..\deps\PortableGit\cmd\git.exe（MinGit）
+    //      或 ...\bin\git.exe（完整 PortableGit）
+    //   2. 找不到时回退到字面量 "git"，靠系统 PATH 解析
+    // 解决：deploy.bat 跑完 setx PATH 之后立刻启动 ApexHMI，ApexHMI 作为子进程继承
+    //      的还是旧 PATH，看不到刚加的 git。直接定位部署包内置 git 就绕开这个坑。
+    private static string? _resolvedGitPath;
+    private static readonly object _gitResolveLock = new();
+
+    private static string ResolveGitExecutable()
+    {
+        if (_resolvedGitPath is not null) return _resolvedGitPath;
+        lock (_gitResolveLock)
+        {
+            if (_resolvedGitPath is not null) return _resolvedGitPath;
+
+            try
+            {
+                var exeDir = AppContext.BaseDirectory;
+                // 部署包结构：<deploy>\ApexHMI\ApexHMI.exe + <deploy>\deps\PortableGit\...
+                var deployRoot = Path.GetFullPath(Path.Combine(exeDir, ".."));
+                string[] candidates =
+                {
+                    Path.Combine(deployRoot, "deps", "PortableGit", "cmd", "git.exe"),
+                    Path.Combine(deployRoot, "deps", "PortableGit", "bin", "git.exe"),
+                };
+                foreach (var c in candidates)
+                {
+                    if (File.Exists(c))
+                    {
+                        Log.Information("Git resolver: 使用部署包内置 git → {Path}", c);
+                        _resolvedGitPath = c;
+                        return c;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Debug(ex, "Git resolver: 探测部署包内置 git 失败，回退到 PATH");
+            }
+
+            // 回退：靠 PATH 解析
+            _resolvedGitPath = "git";
+            return _resolvedGitPath;
+        }
+    }
+
     private static async Task RunGitAsync(string arguments, string? workingDirectory, StringBuilder log, IProgress<string>? progress, CancellationToken cancellationToken)
     {
         var effectiveArgs = SafeDirectoryPrefix + arguments;
         var psi = new ProcessStartInfo
         {
-            FileName = "git",
+            FileName = ResolveGitExecutable(),
             Arguments = effectiveArgs,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
