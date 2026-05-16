@@ -1,10 +1,118 @@
+# ============================================================
+#  ApexHMI .gitattributes
+#  以 Windows 桌面项目为主，默认 CRLF；少数 shell 脚本强制 LF。
+# ============================================================
+
+# 默认：自动识别文本，签出时统一 CRLF（覆盖 core.autocrlf 设置）
 * text=auto eol=crlf
-*.cs text eol=crlf
-*.xaml text eol=crlf
-*.csproj text eol=crlf
-*.json text eol=crlf
-*.md text eol=crlf
-*.sh text eol=lf
-*.png binary
-*.jpg binary
-*.ico binary
+
+# ---------- 源代码：CRLF ----------
+*.cs            text eol=crlf diff=csharp
+*.csproj        text eol=crlf
+*.sln           text eol=crlf
+*.xaml          text eol=crlf
+*.resx          text eol=crlf
+*.config        text eol=crlf
+*.props         text eol=crlf
+*.targets       text eol=crlf
+*.editorconfig  text eol=crlf
+
+# ---------- 数据/配置：CRLF ----------
+*.json          text eol=crlf
+*.xml           text eol=crlf
+*.yml           text eol=crlf
+*.yaml          text eol=crlf
+*.csv           text eol=crlf
+*.md            text eol=crlf
+*.txt           text eol=crlf
+VERSION         text eol=crlf
+*.gitkeep       text eol=crlf
+
+# ---------- Windows 脚本：必须 CRLF（否则 cmd.exe 解析失败）----------
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.ps1           text eol=crlf
+*.psm1          text eol=crlf
+*.psd1          text eol=crlf
+
+# ---------- Web 资源：CRLF ----------
+*.html          text eol=crlf
+*.htm           text eol=crlf
+*.css           text eol=crlf
+*.js            text eol=crlf
+
+# ---------- Unix 脚本：必须 LF（否则 bash 报 ^M 错）----------
+*.sh            text eol=lf
+*.bash          text eol=lf
+Makefile        text eol=lf
+makefile        text eol=lf
+
+# ---------- Python：LF（PEP 8 / CI 友好）----------
+*.py            text eol=lf
+
+# ---------- 二进制：禁止 git 做任何换行/diff 处理 ----------
+# 图片
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.bmp           binary
+*.ico           binary
+*.webp          binary
+*.tiff          binary
+# 注意：.svg 是文本 XML，不归入二进制
+
+# 字体
+*.ttf           binary
+*.otf           binary
+*.woff          binary
+*.woff2         binary
+*.eot           binary
+
+# 文档
+*.pdf           binary
+*.doc           binary
+*.docx          binary
+*.xls           binary
+*.xlsx          binary
+*.ppt           binary
+*.pptx          binary
+
+# 压缩包
+*.zip           binary
+*.7z            binary
+*.rar           binary
+*.tar           binary
+*.gz            binary
+*.tgz           binary
+*.bz2           binary
+
+# .NET 可执行 / 库 / 调试符号
+*.exe           binary
+*.dll           binary
+*.pdb           binary
+*.lib           binary
+*.so            binary
+*.dylib         binary
+*.nupkg         binary
+*.snk           binary
+
+# 多媒体
+*.mp3           binary
+*.mp4           binary
+*.wav           binary
+*.avi           binary
+*.mov           binary
+*.mkv           binary
+*.flv           binary
+
+# 数据库 / 二进制数据
+*.db            binary
+*.sqlite        binary
+*.sqlite3       binary
+*.bin           binary
+*.dat           binary
+
+# ---------- diff 优化（GitHub Linguist 风格）----------
+*.cs            linguist-language=C#
+*.xaml          linguist-language=XML
